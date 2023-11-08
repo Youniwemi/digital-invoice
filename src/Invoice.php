@@ -55,9 +55,6 @@ use JMS\Serializer\Annotation\XmlValue;
 
 
 use Easybill\ZUGFeRD211\Validator;
-
-
-
 use Atgp\FacturX\Facturx;
 
 // Factur-X conversion functions
@@ -67,8 +64,12 @@ require __DIR__ . '/Types.php';
 
 class Invoice
 {
-    public const XRECHNUNG = 'urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_1.2';
+    public const MINIMUM = 'urn:factur-x.eu:1p0:minimum';
+    public const BASIC_WL = 'urn:factur-x.eu:1p0:basicwl';
     public const BASIC = 'urn:cen.eu:en16931:2017#compliant#urn:factur-x.eu:1p0:basic';
+    public const EN16931 = 'urn:cen.eu:en16931:2017';
+    public const EXTENDED = 'urn:cen.eu:en16931:2017#conformant#urn:zugferd.de:2p1:extended';
+    public const XRECHNUNG = 'urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_1.2';
 
 
     protected $profile;
@@ -179,17 +180,6 @@ class Invoice
     }
 
 
-
-
-    public function setTradeDelivery()
-    {
-
-        // $invoice->supplyChainTradeTransaction->applicableHeaderTradeDelivery->deliveryNoteReferencedDocument = ReferencedDocument::create('123456');
-        // $invoice->supplyChainTradeTransaction->applicableHeaderTradeDelivery->deliveryNoteReferencedDocument->formattedIssueDateTime = FormattedDateTime::create('102', '20180305');
-    }
-
-
-
     public function setBuyer(string $buyerReference, string $id, string $name)
     {
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->buyerReference = $buyerReference;
@@ -247,8 +237,6 @@ class Invoice
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->sellerTradeParty->postalTradeAddress = $this->createAddress($postCode, $city, $countryCode, $lineOne, $lineTwo, $lineThree);
         return $this;
     }
-
-
 
     public function addItem(string $name, float $price, float $taxRatePercent, float  $quantity = 1, string $unit = 'H87', ?string $globalID = null, string $globalIDCode = '0160')
     {
@@ -310,8 +298,15 @@ class Invoice
     public function validate(string $xml)
     {
         switch ($this->profile) {
+            case self::MINIMUM: $against =  Validator::SCHEMA_MINIMUM;
+                break;
             case self::BASIC: $against =  Validator::SCHEMA_BASIC;
                 break;
+            case self::BASIC_WL: $against =  Validator::SCHEMA_BASIC_WL;
+                break;
+            case self::EN16931: $against =  Validator::SCHEMA_EN16931;
+                break;
+            case self::EXTENDED:
             case self::XRECHNUNG: $against =  Validator::SCHEMA_EXTENDED;
                 break;
             default: $against =  Validator::SCHEMA_MINIMUM;

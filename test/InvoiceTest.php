@@ -3,7 +3,7 @@
 namespace DigitalInvoice\Tests;
 
 use DigitalInvoice\Invoice;
-
+use Atgp\FacturX\Facturx;
 use PHPUnit\Framework\TestCase;
 
 class InvoiceTest extends TestCase
@@ -54,6 +54,22 @@ class InvoiceTest extends TestCase
 
         $result = $invoice->validate($xml);
         self::assertNull($result, $result ?? '');
+
+        // This will for a more thorough validation
+        $pdfFile = file_get_contents(__DIR__.'/examples/basic.pdf');
+        $result = $invoice->getPdf($pdfFile);
+
+        // Check xml again
+        $facturX = new Facturx();
+        try {
+            $xml = $facturX->getFacturxXmlFromPdf($result);
+            $this->assertTrue(true);
+        } catch (\Exception $e) {
+            $this->fail('Error extractiong xml '. $e->getMessage());
+        }
+
+
+
     }
 
 }
