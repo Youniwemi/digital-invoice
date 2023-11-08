@@ -128,6 +128,11 @@ class Invoice
 
     }
 
+    protected static function decimalFormat(float|int $number)
+    {
+        return number_format($number, 2, '.', '');
+    }
+
     protected function calculateTotals()
     {
         $totalBasis = 0;
@@ -139,24 +144,24 @@ class Invoice
             $tradeTax->typeCode = TaxTypeCodeContent::VAT->value;
             $tradeTax->categoryCode = VatCategory::STANDARD->value;
             $totalBasis += $sum;
-            $tradeTax->basisAmount = Amount::create(number_format($sum));
-            $tradeTax->rateApplicablePercent = number_format($rate) ;
+            $tradeTax->basisAmount = Amount::create(self::decimalFormat($sum));
+            $tradeTax->rateApplicablePercent = self::decimalFormat($rate) ;
             $tax += $calculated = $sum * $rate / 100;
-            $tradeTax->calculatedAmount = Amount::create(number_format($calculated));
+            $tradeTax->calculatedAmount = Amount::create(self::decimalFormat($calculated));
             $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->tradeTaxes[] =$tradeTax;
         }
 
         $grand = $totalBasis + $tax  ;
 
         $summation = new TradeSettlementHeaderMonetarySummation();
-        $summation->lineTotalAmount = Amount::create(number_format($totalBasis));
+        $summation->lineTotalAmount = Amount::create(self::decimalFormat($totalBasis));
         //$summation->chargeTotalAmount = Amount::create('0.00');
         //$summation->allowanceTotalAmount = Amount::create('0.00');
-        $summation->taxBasisTotalAmount[] = Amount::create(number_format($totalBasis));
-        $summation->taxTotalAmount[] = Amount::create(number_format($tax));
-        $summation->grandTotalAmount[] = Amount::create(number_format($grand));
+        $summation->taxBasisTotalAmount[] = Amount::create(self::decimalFormat($totalBasis));
+        $summation->taxTotalAmount[] = Amount::create(self::decimalFormat($tax));
+        $summation->grandTotalAmount[] = Amount::create(self::decimalFormat($grand));
         //$summation->totalPrepaidAmount = Amount::create('0.00');
-        $summation->duePayableAmount = Amount::create(number_format($grand));
+        $summation->duePayableAmount = Amount::create(self::decimalFormat($grand));
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->specifiedTradeSettlementHeaderMonetarySummation = $summation;
 
     }
@@ -269,7 +274,7 @@ class Invoice
 
         $item->tradeAgreement = new LineTradeAgreement();
 
-        $item->tradeAgreement->netPrice = TradePrice::create(number_format($price));
+        $item->tradeAgreement->netPrice = TradePrice::create(self::decimalFormat($price));
         //$item->tradeAgreement->grossPrice = TradePrice::create(number_format( $price) );
 
         $item->delivery = new LineTradeDelivery();
@@ -279,13 +284,13 @@ class Invoice
         $item->specifiedLineTradeSettlement->tradeTax[] = $itemtax = new TradeTax();
         $itemtax->typeCode = TaxTypeCodeContent::VAT->value;
         $itemtax->categoryCode = VatCategory::STANDARD->value ;
-        $itemtax->rateApplicablePercent =  number_format($taxRatePercent);
+        $itemtax->rateApplicablePercent =  self::decimalFormat($taxRatePercent);
 
 
         $totalLineBasis = $price * $quantity;
 
 
-        $item->specifiedLineTradeSettlement->monetarySummation = TradeSettlementLineMonetarySummation::create(number_format($totalLineBasis));
+        $item->specifiedLineTradeSettlement->monetarySummation = TradeSettlementLineMonetarySummation::create(self::decimalFormat($totalLineBasis));
 
         $this->invoice->supplyChainTradeTransaction->lineItems[] = $item;
 
