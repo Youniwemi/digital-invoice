@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 class InvoiceTest extends TestCase
 {
-    public function testBasicInvoiceXml(): void
+    public function testMinimumInvoiceXml(): void
     {
         $invoice = new Invoice('123', new \Datetime('2023-11-07'));
 
@@ -33,7 +33,6 @@ class InvoiceTest extends TestCase
 
         $invoice->setBuyer(
             '12344',
-            '12344',
             'buyer'
         );
 
@@ -44,16 +43,19 @@ class InvoiceTest extends TestCase
             'FR'
         );
 
+        $invoice->setPrice(100, 20);
+
         // Item 1
-        $invoice->addItem('service a la demande', '750', 10, 0, 'DAY', 'xxxx') ;
+        //$invoice->addItem('service a la demande', '750', 10, 0, 'DAY', 'xxxx') ;
 
 
         $xml = $invoice->getXml();
         self::assertNotEmpty($xml);
 
 
+        // An easy xml validation
         $result = $invoice->validate($xml);
-        self::assertNull($result, $result ?? '');
+        self::assertNull($result, $result ? $result."\nIN\n".$xml : '');
 
         // This will for a more thorough validation
         $pdfFile = file_get_contents(__DIR__.'/examples/basic.pdf');
@@ -68,7 +70,11 @@ class InvoiceTest extends TestCase
             $this->fail('Error extractiong xml '. $e->getMessage());
         }
 
-
+        /* In progress, schematron validation library seems of..
+        // A complete validation using schematron
+        $result = $invoice->validate($xml, true);
+        $this->assertEmpty($result, $result ? implode("\n", $result) ."\nIN\n".$xml : '');
+        */
 
     }
 
