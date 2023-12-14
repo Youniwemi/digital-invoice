@@ -2,7 +2,7 @@
     "name": "youniwemi/digital-invoice",
     "type": "library",
     "description": "Digital Invoice is an easy wrapper around easybill/zugferd-php and atgp/factur-x that will allow you generate Factur-x in a very easy way.",
-    "keywords": ["Factur-x" , "Digital Invoice" , "Invoice" ],
+    "keywords": ["Factur-x" , "Digital Invoice" , "Invoice" , "E-Invoicing", "ZUGFeRD" ],
     "license": "MIT",
     "authors": [
         {
@@ -13,7 +13,7 @@
     "require": {
         "easybill/zugferd-php": "dev-master",
         "atgp/factur-x": "^1.0",
-        "milo/schematron": "^1.0"
+        "milo/schematron": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "^8 || ^9"
@@ -22,6 +22,10 @@
         {
             "type": "git",
             "url": "https://github.com/Youniwemi/zugferd-php"
+        },
+        {
+            "type": "git",
+            "url": "https://github.com/Youniwemi/schematron"
         }
     ],
     "scripts": {

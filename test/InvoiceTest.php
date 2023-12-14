@@ -3,27 +3,54 @@
 namespace DigitalInvoice\Tests;
 
 use DigitalInvoice\Invoice;
-use Atgp\FacturX\Facturx;
+use DigitalInvoice\Zugferd;
+use DigitalInvoice\FacturX;
+use DigitalInvoice\PdfWriter;
+use DigitalInvoice\CurrencyCode;
+
 use PHPUnit\Framework\TestCase;
 
 class InvoiceTest extends TestCase
 {
-    public function testMinimumInvoiceXml(): void
+    
+    public function profilesProvider()
     {
-        $invoice = new Invoice('123', new \Datetime('2023-11-07'));
+        // PROFILE/Type , isPdf
+        return [
+            [FacturX::MINIMUM , true ] ,
+            [FacturX::BASIC_WL , true ],
+            [FacturX::BASIC , true ],
+            [FacturX::EN16931 , true ],
+            [FacturX::EXTENDED , true ],
+            [Zugferd::ZUGFERD_BASIC, true],
+            [Zugferd::ZUGFERD_CONFORT, true],
+            [Zugferd::ZUGFERD_EXTENDED, true],
+            [FacturX::XRECHNUNG, false],
+        ];
+    }
+
+    
+    /**
+     * @dataProvider profilesProvider
+     */
+    public function testInvoiceXml($profile, $isPdf): void
+    {
+        $invoice = new Invoice('123', new \Datetime('2023-11-07'), null ,  CurrencyCode::EURO , $profile);
 
         $invoice->setSeller(
             '12344',
             '0002',
-            'Seller',
+            'Seller'
+        );
+        $invoice->setSellerContact(
             'Contact Seller',
             $departmentName = null,
             '+2129999999999',
             'seller@email.com'
         );
 
-        $invoice->setSellerTaxRegistration('!!!!!!', 'VAT') ;
-
+        $invoice->setSellerTaxRegistration('FR1231344', 'VA') ;
+        
         $invoice->setSellerAddress(
             '1 rue de la paie',
             '90000',
@@ -35,7 +62,6 @@ class InvoiceTest extends TestCase
             '12344',
             'buyer'
         );
-
         $invoice->setBuyerAddress(
             '2 rue de la paie',
             '90000',
@@ -46,8 +72,10 @@ class InvoiceTest extends TestCase
         $invoice->setPrice(100, 20);
 
         // Item 1
-        //$invoice->addItem('service a la demande', '750', 10, 0, 'DAY', 'xxxx') ;
+        $invoice->addItem('service a la demande', 750, 10, 0, 'DAY', 'xxxx') ;
 
+        // add payment
+        $invoice->addPaymentMean('58','MA2120300000000202051' , 'Youniwemi');
 
         $xml = $invoice->getXml();
         self::assertNotEmpty($xml);
@@ -57,25 +85,28 @@ class InvoiceTest extends TestCase
         $result = $invoice->validate($xml);
         self::assertNull($result, $result ? $result."\nIN\n".$xml : '');
 
-        // This will for a more thorough validation
-        $pdfFile = file_get_contents(__DIR__.'/examples/basic.pdf');
-        $result = $invoice->getPdf($pdfFile);
+        if ($isPdf){
+            // This will for a more thorough validation
+            $pdfFile = file_get_contents(__DIR__.'/examples/basic.pdf');
+            $result = $invoice->getPdf($pdfFile);
+    
+            // Check xml again
+            $facturX = new PdfWriter();
+            try {
+                $xml = $facturX->getFacturxXmlFromPdf($result);
+                $this->assertTrue(true);
+            } catch (\Exception $e) {
+                $this->fail('Error extractiong xml '. $e->getMessage());
+            }
 
-        // Check xml again
-        $facturX = new Facturx();
-        try {
-            $xml = $facturX->getFacturxXmlFromPdf($result);
-            $this->assertTrue(true);
-        } catch (\Exception $e) {
-            $this->fail('Error extractiong xml '. $e->getMessage());
         }
-
-        /* In progress, schematron validation library seems of..
+        
         // A complete validation using schematron
         $result = $invoice->validate($xml, true);
-        $this->assertEmpty($result, $result ? implode("\n", $result) ."\nIN\n".$xml : '');
-        */
+        $this->assertEmpty($result, $result ? print_r($result,true) ."\n".$xml : '');
+       
 
     }
+
 
 }
