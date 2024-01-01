@@ -5,10 +5,39 @@ namespace DigitalInvoice;
 // Types curtesy of tiime
 // Do we really need to put them in seperate files?
 
+/**
+ * Helper trait to allow exporting the enum values as an array
+ */
+trait EnumToArray
+{
+    /**
+     * Returns enum values as a clean array.
+     */
+    public static function valueArray(): array
+    {
+        foreach (self::cases() as $enum) {
+            $values[$enum->value] = str_replace( '_' , ' ', $enum->name);
+        }
 
+        return $values;
+    }
+}
+
+/**
+ * Helper Types class to access type enum values.
+ * Can be used to generate select boxes easily.
+ */
+class Types {
+
+	public static function getInternationalCodes(){
+		return InternationalCodeDesignator::valueArray();
+	}
+}
 
 enum PaymentMeansCode: string
 {
+    use EnumToArray;
+    
     case INSTRUMENT_NOT_DEFINED = "1";
     case AUTOMATED_CLEARING_HOUSE_CREDIT = "2";
     case AUTOMATED_CLEARING_HOUSE_DEBIT = "3";
@@ -2262,6 +2291,8 @@ enum UnitOfMeasurement: string
 
 enum CurrencyCode: string
 {
+    use EnumToArray;
+
     case UAE_DIRHAM = "AED";
     case AFGHANI = "AFN";
     case LEK = "ALL";
@@ -2447,6 +2478,8 @@ enum CurrencyCode: string
 
 enum InvoiceTypeCode: string
 {
+    use EnumToArray;
+    
     // https://service.unece.org/trade/untdid/d16b/tred/tred1001.htm
     case DEBIT_NOTE_RELATED_TO_GOODS_OR_SERVICES = '80';
     case CREDIT_NOTE_RELATED_TO_GOODS_OR_SERVICES = '81';
@@ -2496,6 +2529,8 @@ enum InvoiceTypeCode: string
 
 enum VatCategory: string
 {
+    use EnumToArray;
+
     case VAT_REVERSE_CHARGE = "AE";
     case EXEMPT_FROM_TAX = "E";
     case FREE_EXPORT_ITEM_TAX_NOT_CHARGED = "G";
@@ -2511,12 +2546,16 @@ enum VatCategory: string
 
 enum TaxTypeCodeContent: string
 {
+    use EnumToArray;
+
     case VAT = "VAT";
 }
 
 
 enum InternationalCodeDesignator: string
 {
+    use EnumToArray;
+
     case SYSTEM_INFORMATION_ET_REPERTOIRE_DES_ENTREPRISE_ET_DES_ETABLISSEMENTS_SIRENE = "0002";
     case CODIFICATION_NUMERIQUE_DES_ETABLISSMENTS_FINANCIERS_EN_BELGIQUE = "0003";
     case NBS_OSI_NETWORK = "0004";
