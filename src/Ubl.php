@@ -12,7 +12,6 @@ use Einvoicing\Payments\Payment;
 use Einvoicing\Payments\Transfer;
 use Einvoicing\Presets\{Peppol, Nlcius, CiusRo, CiusIt, CiusEsFace, CiusAtGov, CiusAtNat};
 use Einvoicing\Writers\UblWriter;
-use SimpleXMLElement;
 
 class Ubl extends XmlGenerator {
 
@@ -26,8 +25,7 @@ class Ubl extends XmlGenerator {
 
     /** @var Invoice */
     public $invoice;
-    /** @var Delivery */
-    public $delivery;
+    public Delivery $delivery;
 
     public function validate(string $xml, $schematron)
     {
