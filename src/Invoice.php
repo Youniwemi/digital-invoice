@@ -19,6 +19,14 @@ class Invoice
     public const ZUGFERD_BASIC = Zugferd::ZUGFERD_BASIC;
     public const ZUGFERD_CONFORT = Zugferd::ZUGFERD_CONFORT;
     public const ZUGFERD_EXTENDED = Zugferd::ZUGFERD_EXTENDED;
+    public const UBL_PEPOOL = Ubl::PEPPOL;
+    public const UBL_NLCIUS = Ubl::NLCIUS;
+    public const UBL_CIUS_RO = Ubl::CIUS_RO;
+    public const UBL_CIUS_IT = Ubl::CIUS_IT;
+    public const UBL_CIUS_ES_FACE =  Ubl::CIUS_ES_FACE;
+    public const UBL_AT_GOV = Ubl::CIUS_AT_GOV;
+    public const UBL_AT_NAT = Ubl::CIUS_AT_NAT;
+
 
 
 

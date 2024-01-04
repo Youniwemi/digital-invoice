@@ -111,18 +111,18 @@ class Ubl extends XmlGenerator {
 
     public function addItem(string $name, float $price, float $taxRatePercent, float $quantity, UnitOfMeasurement $unit, ?string $globalID = null, ?string $globalIDCode = null): float
     {
-        $complexLine = new InvoiceLine();
-        $complexLine->setId($globalID);
-        $complexLine->setUnit($unit->value);
-        $complexLine->setName($name);
-        $complexLine->setPrice($price);
-        $complexLine->setQuantity($quantity);
-        $complexLine->setVatRate(self::decimalFormat($taxRatePercent));
+        $line = new InvoiceLine();
+        $line->setId($globalID);
+        $line->setUnit($unit->value);
+        $line->setName($name);
+        $line->setPrice($price);
+        $line->setQuantity($quantity);
+        $line->setVatRate(self::decimalFormat($taxRatePercent));
 
-        $this->invoice->addLine($complexLine);
-        $this->items[] = $complexLine;
+        $this->invoice->addLine($line);
+        $this->items[] = $line;
 
-        return $complexLine->getNetAmountBeforeAllowancesCharges();
+        return $line->getNetAmountBeforeAllowancesCharges();
     }
 
     public function addNote(string $content, ?string $subjectCode = null, ?string $contentCode = null)
