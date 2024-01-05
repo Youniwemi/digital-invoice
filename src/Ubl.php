@@ -53,7 +53,7 @@ class Ubl extends XmlGenerator {
     public function setSeller(string $id, InternationalCodeDesignator $idType, string $name, $tradingName = null)
     {
         $this->seller = new Party();
-        $this->seller->setCompanyId(new Identifier($idType->value, $id));
+        $this->seller->setCompanyId(new Identifier($id, $idType->value));
         $this->seller->setName($name);
         $this->seller->setTradingName($tradingName);
 
