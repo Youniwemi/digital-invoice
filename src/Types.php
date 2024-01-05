@@ -2486,20 +2486,33 @@ enum InvoiceTypeCode: string
     case METERED_SERVICES_INVOICE = '82';
     case CREDIT_NOTE_RELATED_TO_FINANCIAL_ADJUSTMENTS = '83';
     case DEBIT_NOTE_RELATED_TO_FINANCIAL_ADJUSTMENTS = '84';
+    // Used to specify that the message is a tax notification.
+    case TAX_NOTIFICATION = '102';
     case INVOICING_DATA_SHEET = '130';
     case DIRECT_PAYMENT_VALUATION = '202';
     case PROVISIONAL_PAYMENT_VALUATION = '203';
     case PAYMENT_VALUATION = '204';
     case INTERIM_APPLICATION_FOR_PAYMENT = '211';
+    // The final payment request of a series of payment requests submitted upon completion of all the work.
+    case FINAL_PAYMENT_REQUEST_BASED_ON_COMPLETION_OF_WORK = '218';
+    // A request for payment for completed units.
+    case PAYMENT_REQUEST_FOR_COMPLETED_UNITS = '219';
     case SELF_BILLED_CREDIT_NOTE = '261';
     case CONSOLIDATED_CREDIT_NOTE_GOODS_AND_SERVICES = '262';
     case PRICE_VARIATION_INVOICE = '295';
     case CREDIT_NOTE_FOR_PRICE_VARIATION = '296';
+    // Commercial transaction (invoice) will include a packing list.
+    case COMMERCIAL_INVOICE_WHICH_INCLUDES_A_PACKING_LIST = '331';
     case DELCREDERE_CREDIT_NOTE = '308';
     case PROFORMA_INVOICE = '325';
     case PARTIAL_INVOICE = '326';
     case COMMERCIAL_INVOICE = '380';
     case CREDIT_NOTE = '381';
+    /**
+     *  message in which a seller specifies the amount of commission, the percentage of the invoice amount, or
+     * some other basis for the calculation of the commission to which a sales agent is entitled.
+    */
+    case COMMISSION_NOTE = '382';
     case DEBIT_NOTE = '383';
     case CORRECTED_INVOICE = '384';
     case CONSOLIDATED_INVOICE = '385';
@@ -2518,11 +2531,18 @@ enum InvoiceTypeCode: string
     case REVERSAL_OF_CREDIT = '458';
     case SELF_BILLED_DEBIT_NOTE = '527';
     case FORWARDER_CREDIT_NOTE = '532';
+    // message reporting invoice discrepancies indentified by the forwarder.
+    case FORWARDER_INVOICE_DISCREPANCY_REPORT = '553';
     case INSURER_INVOICE = '575';
     case FORWARDER_INVOICE = '623';
     case PORT_CHARGES_DOCUMENTS = '633';
     case INVOICE_INFORMATION_FOR_ACCOUNTING_PURPOSES = '751';
     case FREIGHT_INVOICE = '780';
+    case CLAIM_NOTIFICATION = '817';
+    case CONSULAR_INVOICE = '870';
+    case PARTIAL_CONSTRUCTION_INVOICE = '875';
+    case PARTIAL_FINAL_CONSTRUCTION_INVOICE = '876';
+    case FINAL_CONSTRUCTION_INVOICE = '877';
     case CUSTOMS_INVOICE = '935';
 }
 
