@@ -88,7 +88,7 @@ class InvoiceTest extends TestCase
         if ($isPdf){
             // This will for a more thorough validation
             $pdfFile = file_get_contents(__DIR__.'/examples/basic.pdf');
-            $result = $invoice->getPdf($pdfFile);
+            $result = $invoice->getPdf($pdfFile, true);
     
             // Check xml again
             $facturX = new PdfWriter();

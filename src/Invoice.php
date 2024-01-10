@@ -2,9 +2,7 @@
 
 namespace DigitalInvoice;
 
-// Factur-X Xml Stuff
 
-use Easybill\ZUGFeRD211\Model\CrossIndustryInvoice;
 use Easybill\ZUGFeRD211\Model\DateTime;
 
 
@@ -23,7 +21,6 @@ class Invoice
 
 
     protected $profile;
-    protected CrossIndustryInvoice $invoice;
     protected $lines = [];
     protected $hasDelivery = false ;
     protected $totalBasis = null;
@@ -169,17 +166,42 @@ class Invoice
         $this->xmlGenerator->addNote( $content,  $subjectCode,  $contentCode);
     }
 
-    public function validate(string $xml, $schematron = false)
+    /**
+     * Validates the invoice, returns an array of validation errors
+     *
+     * @param string $xml
+     * @param bool $schematron
+     * @return mixed
+     */
+    public function validate(string $xml, bool $schematron = false): mixed
     {
         return $this->xmlGenerator->validate($xml, $schematron);
     }
 
 
-    public function getPdf($pdf)
+    /**
+     * Generates a pdf string to be saved
+     *
+     * @param string $pdf
+     * @param boolean $addFacturxLogo
+     * @return string
+     */
+    public function getPdf($pdf , $addFacturxLogo = false )
     {
+        if ( in_array( $this->profile, [static::ZUGFERD_BASIC, static::ZUGFERD_CONFORT, static::ZUGFERD_EXTENDED])  ){
+            // Ensure false, there is no logo for those profiles
+            $addFacturxLogo = false;
+        }
         $factureX = new PdfWriter();
         $factureX->setPdfMetaData( $this->invoiceInformations);
-        return $factureX->generateFacturxFromFiles($pdf, $this->getXml());
+        return $factureX->generateFacturxFromFiles(
+            $pdf,
+            $this->getXml(),
+            null,
+            true,
+            '',
+            [],
+            $addFacturxLogo );
     }
 
 }
