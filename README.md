@@ -1,6 +1,6 @@
 # Digital Invoice
 
-Digital Invoice offers an effortless and unified interface for generating E-Invoices across various formats. It serves as a simplified wrapper around key libraries such as `easybill/zugferd-php`, `josemmo/einvoicing` (in a near future), and `atgp/factur-x`. Our objective is to streamline the process of E-Invoice generation by bringing together the capabilities of these established libraries into one easy-to-use package. 
+Digital Invoice offers an effortless and unified interface for generating E-Invoices across various formats. It serves as a simplified wrapper around key libraries such as `easybill/zugferd-php`, `josemmo/einvoicing`, and `atgp/factur-x`. Our objective is to streamline the process of E-Invoice generation by bringing together the capabilities of these established libraries into one easy-to-use package.
 
 We extend our sincere appreciation to the developers of these libraries for their foundational contributions to the field.
 
@@ -8,18 +8,17 @@ We extend our sincere appreciation to the developers of these libraries for thei
 
 Digital Invoice supports a range of formats, catering to diverse invoicing needs:
 
-- **Factur-X PDF Invoice**: 
+- **Factur-X PDF Invoice**:
   - Profiles: `MINIMUM`, `BASIC_WL`, `BASIC`, `EN16931`, `EXTENDED`
 
-- **ZUGFeRD PDF Invoice**: 
+- **ZUGFeRD PDF Invoice**:
   - Profiles: `CONFORT`, `BASIC`, `EXTENDED`
 
-- **XRechnung XML Invoice**: 
+- **XRechnung XML Invoice**:
   - A widely-used German XML format
 
-### Upcoming Features:
-  - **UBL XML Invoices**: 
-    - We are actively working to include support for UBL format invoices.
+- **UBL XML Invoices**:
+    - Profiles: `Peppol`, `Nlcius`, `CiusRo`, `CiusIt`, `CiusEsFace`, `CiusAtNat`, `CiusAtGov`
 
 ## Getting Started
 
@@ -30,17 +29,17 @@ To integrate Digital Invoice into your PHP project:
 
 Digital Invoice enables you to generate E-Invoices in the following formats with ease:
 
-- **Factur-X PDF Invoice**: 
+- **Factur-X PDF Invoice**:
   - Profiles: `MINIMUM`, `BASIC_WL`, `BASIC`, `EN16931`, `EXTENDED`
-  
-- **ZUGFeRD PDF Invoice**: 
+
+- **ZUGFeRD PDF Invoice**:
   - Profiles: `CONFORT`, `BASIC`, `EXTENDED`
 
-- **XRechnung XML Invoice**: 
+- **XRechnung XML Invoice**:
   - A standard German XML format
 
-- **UBL XML Invoices**: 
-  - Conforming to the official UBL XML Schema Definition (coming soon)
+- **UBL XML Invoices**:
+    - Profiles: `Peppol`, `Nlcius`, `CiusRo`, `CiusIt`, `CiusEsFace`, `CiusAtNat`, `CiusAtGov`
 
 
 ## Development Status and Collaboration

@@ -55,7 +55,7 @@ class FacturX extends XmlGenerator {
     public const EN16931 = 'urn:cen.eu:en16931:2017';
     public const EXTENDED = 'urn:cen.eu:en16931:2017#conformant#urn:zugferd.de:2p1:extended';
     public const XRECHNUNG = 'urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_1.2';
-    
+
     public const LEVEL_MINIMUM = 0;
     public const LEVEL_BASIC_WL = 1;
     public const LEVEL_BASIC = 2;
@@ -118,14 +118,14 @@ class FacturX extends XmlGenerator {
 
         $this->seller->name = $name;
 
-       
+
     }
 
     public function setPayee(){
          // Pas de payeeTradeParty dans le minimum
          if ($this->getProfileLevel() > self::LEVEL_MINIMUM) {
             // The Payee name (BT-59) shall be provided in the Invoice, if the Payee (BG-10) is different from the Seller (BG-4).
-            
+
             $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->payeeTradeParty = $this->seller;
         }
     }
@@ -151,10 +151,10 @@ class FacturX extends XmlGenerator {
 
     public function addPaymentMean(PaymentMeansCode $typeCode , ?string $ibanId = null,?string $accountName = null, ?string $bicId = null){
         if($this->getProfileLevel() >= self::LEVEL_BASIC_WL ){
-            
+
             $mean = new TradeSettlementPaymentMeans();
             $mean->typeCode = $typeCode->value ;
-           
+
             // $mean->information = 'get info from type code??';
             $mean->payeePartyCreditorFinancialAccount = new CreditorFinancialAccount();
             $mean->payeePartyCreditorFinancialAccount->ibanId = Id::create($ibanId);
@@ -176,7 +176,7 @@ class FacturX extends XmlGenerator {
     }
 
 
-    
+
     public function setBuyerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null)
     {
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->buyerTradeParty->postalTradeAddress = $this->createAddress($postCode, $city, $countryCode, $lineOne, $lineTwo, $lineThree);
@@ -190,7 +190,7 @@ class FacturX extends XmlGenerator {
 
     public function setBuyer(string $buyerReference, string $name, string $id = null)
     {
-        
+
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->buyerReference = $buyerReference;
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->buyerTradeParty = $buyerTradeParty = new TradeParty();
         if ($this->getProfileLevel() > self::LEVEL_MINIMUM && $id) {
@@ -274,7 +274,7 @@ class FacturX extends XmlGenerator {
         $this->calculateTotals();
         return Builder::create()->transform($this->invoice);
     }
-    
+
 
 
     public function validate(string $xml, $schematron) {
@@ -313,7 +313,7 @@ class FacturX extends XmlGenerator {
         return (new Validator())->validateAgainstXsd($xml, $against);
     }
 
-    
+
     public function addItem(string $name, float $price, float $taxRatePercent, float  $quantity , UnitOfMeasurement $unit , ?string $globalID = null, string $globalIDCode = null) : float
     {
 
@@ -359,7 +359,7 @@ class FacturX extends XmlGenerator {
         }
 
         return $totalLineBasis;
-       
+
     }
 
     public function addNote(string $content, ?string $subjectCode = null, ?string $contentCode = null)
