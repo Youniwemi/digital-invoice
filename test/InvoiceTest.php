@@ -7,12 +7,11 @@ use DigitalInvoice\Zugferd;
 use DigitalInvoice\FacturX;
 use DigitalInvoice\PdfWriter;
 use DigitalInvoice\CurrencyCode;
-
+use DigitalInvoice\Ubl;
 use PHPUnit\Framework\TestCase;
 
 class InvoiceTest extends TestCase
 {
-    
     public function profilesProvider()
     {
         // PROFILE/Type , isPdf
@@ -26,10 +25,16 @@ class InvoiceTest extends TestCase
             [Zugferd::ZUGFERD_CONFORT, true],
             [Zugferd::ZUGFERD_EXTENDED, true],
             [FacturX::XRECHNUNG, false],
+            [Ubl::PEPPOL, false],
+            [Ubl::NLCIUS, false],
+            [Ubl::CIUS_RO, false],
+            [Ubl::CIUS_IT, false],
+            [Ubl::CIUS_ES_FACE, false],
+            [Ubl::CIUS_AT_GOV, false],
+            [Ubl::CIUS_AT_NAT, false]
         ];
     }
 
-    
     /**
      * @dataProvider profilesProvider
      */
@@ -50,7 +55,7 @@ class InvoiceTest extends TestCase
         );
 
         $invoice->setSellerTaxRegistration('FR1231344', 'VA') ;
-        
+
         $invoice->setSellerAddress(
             '1 rue de la paie',
             '90000',
@@ -89,7 +94,7 @@ class InvoiceTest extends TestCase
             // This will for a more thorough validation
             $pdfFile = file_get_contents(__DIR__.'/examples/basic.pdf');
             $result = $invoice->getPdf($pdfFile, true);
-    
+
             // Check xml again
             $facturX = new PdfWriter();
             try {
@@ -100,13 +105,9 @@ class InvoiceTest extends TestCase
             }
 
         }
-        
+
         // A complete validation using schematron
         $result = $invoice->validate($xml, true);
         $this->assertEmpty($result, $result ? print_r($result,true) ."\n".$xml : '');
-       
-
     }
-
-
 }

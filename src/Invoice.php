@@ -17,7 +17,15 @@ class Invoice
     public const ZUGFERD_BASIC = Zugferd::ZUGFERD_BASIC;
     public const ZUGFERD_CONFORT = Zugferd::ZUGFERD_CONFORT;
     public const ZUGFERD_EXTENDED = Zugferd::ZUGFERD_EXTENDED;
-    
+    public const UBL_PEPOOL = Ubl::PEPPOL;
+    public const UBL_NLCIUS = Ubl::NLCIUS;
+    public const UBL_CIUS_RO = Ubl::CIUS_RO;
+    public const UBL_CIUS_IT = Ubl::CIUS_IT;
+    public const UBL_CIUS_ES_FACE =  Ubl::CIUS_ES_FACE;
+    public const UBL_CIUS_AT_GOV = Ubl::CIUS_AT_GOV;
+    public const UBL_CIUS_AT_NAT = Ubl::CIUS_AT_NAT;
+
+
 
 
     protected $profile;
@@ -54,7 +62,10 @@ class Invoice
             }
         }
         $this->profile = $profile;
-        if ( in_array($profile , [FacturX::MINIMUM ,  FacturX::BASIC_WL,  FacturX::BASIC, FacturX::EN16931,  FacturX::EXTENDED, FacturX::XRECHNUNG] ) ){
+        if ( in_array($profile, [Ubl::PEPPOL, Ubl::NLCIUS, Ubl::CIUS_RO, Ubl::CIUS_IT, Ubl::CIUS_ES_FACE, Ubl::CIUS_AT_GOV, Ubl::CIUS_AT_NAT] ) ){
+            $this->xmlGenerator = new Ubl($profile, $currency);
+            $this->profile = (new $profile)->getSpecification();
+        } elseif ( in_array($profile , [FacturX::MINIMUM ,  FacturX::BASIC_WL,  FacturX::BASIC, FacturX::EN16931,  FacturX::EXTENDED, FacturX::XRECHNUNG] ) ){
             $this->xmlGenerator = new FacturX($profile, $currency);
         } else {
             $this->xmlGenerator = new Zugferd($profile , $currency);
@@ -64,7 +75,7 @@ class Invoice
         $this->invoiceInformations['date'] =  $issueDate->format('Y-m-d');
         $this->invoiceInformations['docTypeName'] =  $invoiceType->value;
         $this->xmlGenerator->initDocument( $invoiceId , $issueDate, $invoiceType, $deliveryDate);
-    
+
     }
 
     public function getProfileLevel()
@@ -93,16 +104,16 @@ class Invoice
     public function setBuyer(string $buyerReference, string $name, string $id = null)
     {
         $this->xmlGenerator->setBuyer( $buyerReference,  $name,  $id);
-        
+
     }
 
     public function createAddress(string $postCode, string $city, string $countryCode, string $lineOne, ?string $lineTwo = null, ?string $lineThree = null)
     {
-        
+
         return $this->xmlGenerator->createAddress( $postCode,  $city,  $countryCode,  $lineOne, $lineTwo, $lineThree);
     }
 
-    
+
     public function setBuyerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null)
     {
         $this->xmlGenerator->setBuyerAddress( $lineOne,  $postCode,  $city,  $countryCode,  $lineTwo,  $lineThree);
@@ -158,7 +169,7 @@ class Invoice
         }
 
         $this->xmlGenerator->addPaymentMean($typeCode, $ibanId , $accountName, $bicId);
-        
+
     }
 
     public function addNote(string $content, ?string $subjectCode = null, ?string $contentCode = null)
