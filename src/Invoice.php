@@ -215,4 +215,8 @@ class Invoice
             $addFacturxLogo );
     }
 
+    public function addEmbeddedAttachment( ?string $id, ?string $scheme, ?string $filename, ?string $contents, ?string $mimeCode, ?string $description ){
+        $this->xmlGenerator->addEmbeddedAttachment( $id,$scheme, $filename, $contents, $mimeCode,  $description  );
+    }
+
 }

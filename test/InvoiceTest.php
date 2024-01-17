@@ -24,21 +24,21 @@ class InvoiceTest extends TestCase
             [Zugferd::ZUGFERD_BASIC, true],
             [Zugferd::ZUGFERD_CONFORT, true],
             [Zugferd::ZUGFERD_EXTENDED, true],
-            [FacturX::XRECHNUNG, false],
-            [Ubl::PEPPOL, false],
-            [Ubl::NLCIUS, false],
-            [Ubl::CIUS_RO, false],
-            [Ubl::CIUS_IT, false],
-            [Ubl::CIUS_ES_FACE, false],
-            [Ubl::CIUS_AT_GOV, false],
-            [Ubl::CIUS_AT_NAT, false]
+            [FacturX::XRECHNUNG, false, false],
+            [Ubl::PEPPOL, false , true],
+            [Ubl::NLCIUS, false, true],
+            [Ubl::CIUS_RO, false, true],
+            [Ubl::CIUS_IT, false, true],
+            [Ubl::CIUS_ES_FACE, false, true],
+            [Ubl::CIUS_AT_GOV, false, true],
+            [Ubl::CIUS_AT_NAT, false, true]
         ];
     }
 
     /**
      * @dataProvider profilesProvider
      */
-    public function testInvoiceXml($profile, $isPdf): void
+    public function testInvoiceXml($profile, $isPdf, $embedPdf = false ): void
     {
         $invoice = new Invoice('123', new \Datetime('2023-11-07'), null ,  CurrencyCode::EURO , $profile);
 
@@ -81,6 +81,12 @@ class InvoiceTest extends TestCase
 
         // add payment
         $invoice->addPaymentMean('58','MA2120300000000202051' , 'Youniwemi');
+        
+        // Embedding pdf
+        if ($embedPdf){
+            $pdfFile = file_get_contents(__DIR__.'/examples/basic.pdf');
+            $invoice->addEmbeddedAttachment('123', null, 'basic', $pdfFile, 'application/pdf', 'The pdf invoice');
+        }
 
         $xml = $invoice->getXml();
         self::assertNotEmpty($xml);
@@ -103,7 +109,6 @@ class InvoiceTest extends TestCase
             } catch (\Exception $e) {
                 $this->fail('Error extractiong xml '. $e->getMessage());
             }
-
         }
 
         // A complete validation using schematron

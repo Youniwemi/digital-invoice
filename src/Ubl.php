@@ -3,6 +3,7 @@
 namespace DigitalInvoice;
 
 use DateTime;
+use Einvoicing\Attachment;
 use Einvoicing\Delivery;
 use Einvoicing\Exceptions\ValidationException;
 use Einvoicing\Identifier;
@@ -51,7 +52,7 @@ class Ubl extends XmlGenerator {
      * @return boolean
      */
     protected function euValidation(string $contents, string $type)  {
-
+        
         $ch = curl_init();
         curl_setopt_array($ch, [
             CURLOPT_URL => 'https://www.itb.ec.europa.eu/vitb/rest/invoice/api/validate',
@@ -188,5 +189,26 @@ class Ubl extends XmlGenerator {
         $transfer->setAccountName($accountName);
 
         $payment->addTransfer($transfer);
+    }
+
+    public function addEmbeddedAttachment( ?string $id, ?string $scheme, ?string $filename, ?string $contents, ?string $mimeCode, ?string $description ){
+        // not implemented
+        $embeddedAttachment = new Attachment();
+        if($id){
+            $embeddedAttachment->setId( new Identifier($id, $scheme) );
+        }
+        if($filename){
+            $embeddedAttachment->setFilename($filename );
+        }
+        if($contents){
+            $embeddedAttachment->setContents($contents );
+        }
+        if($mimeCode){
+            $embeddedAttachment->setMimeCode($mimeCode );
+        }
+        if($description){
+            $embeddedAttachment->setDescription($description );
+        }
+        $this->invoice->addAttachment($embeddedAttachment);
     }
 }

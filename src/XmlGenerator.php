@@ -19,6 +19,7 @@ interface XmlGeneratorInterface {
     public function addItem(string $name, float $price, float $taxRatePercent, float  $quantity, UnitOfMeasurement $unit, ?string $globalID = null, ?string $globalIDCode =null ): float;
     public function addNote(string $content, ?string $subjectCode = null, ?string $contentCode = null);
     public function addPaymentMean(PaymentMeansCode $typeCode , ?string $ibanId = null,?string $accountName = null, ?string $bicId = null);
+    public function addEmbeddedAttachment( ?string $id, ?string $scheme, ?string $filename, ?string $contents, ?string $mimeCode, ?string $description );
 }
 
 
@@ -75,6 +76,12 @@ abstract class XmlGenerator implements XmlGeneratorInterface {
         $this->taxLines[$rate][] = $totalLineBasis;
 
     }
+
+    public function addEmbeddedAttachment( ?string $id, ?string $scheme, ?string $filename, ?string $contents, ?string $mimeCode, ?string $description ){
+        // not implemented
+    }
+
+    
 
 
 

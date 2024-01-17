@@ -5,6 +5,7 @@ namespace DigitalInvoice;
 // Factur-X Xml Stuff
 use Easybill\ZUGFeRD211\Builder;
 use Easybill\ZUGFeRD211\Model\Amount;
+use Easybill\ZUGFeRD211\Model\BinaryObject;
 use Easybill\ZUGFeRD211\Model\CreditorFinancialAccount;
 use Easybill\ZUGFeRD211\Model\CreditorFinancialInstitution;
 use Easybill\ZUGFeRD211\Model\CrossIndustryInvoice;
@@ -25,6 +26,7 @@ use Easybill\ZUGFeRD211\Model\LegalOrganization;
 use Easybill\ZUGFeRD211\Model\Note;
 use Easybill\ZUGFeRD211\Model\Quantity;
 
+use Easybill\ZUGFeRD211\Model\ReferencedDocument;
 use Easybill\ZUGFeRD211\Model\SupplyChainEvent;
 use Easybill\ZUGFeRD211\Model\SupplyChainTradeLineItem;
 use Easybill\ZUGFeRD211\Model\SupplyChainTradeTransaction;
@@ -365,5 +367,21 @@ class FacturX extends XmlGenerator {
     public function addNote(string $content, ?string $subjectCode = null, ?string $contentCode = null)
     {
         $this->invoice->exchangedDocument->notes[] = Note::create($content, $subjectCode, $contentCode);
+    }
+
+    public function addEmbeddedAttachment( ?string $id, ?string $scheme, ?string $filename, ?string $contents, ?string $mimeCode, ?string $description ){
+        // The attachement is correctly added but schematron fails, need to 
+        // $attachment = ReferencedDocument::create($id);
+        // $attachment->name = $description;
+        // $binary = new BinaryObject();
+        // $binary->filename=$filename;
+        // $binary->mimeCode=$mimeCode;
+        // $binary->value=base64_encode($contents);
+        // $attachment->attachmentBinaryObject = $binary;
+
+        // switch($scheme) {
+        //     // TODO, depending on the type of documents it could be attached
+        //     default : $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->invoiceReferencedDocument = $attachment;
+        // }
     }
 }
