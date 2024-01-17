@@ -30,12 +30,57 @@ class Ubl extends XmlGenerator {
 
     public function validate(string $xml, $schematron)
     {
-        try {
-            $this->invoice->validate();
-        } catch(ValidationException $e) {
-            return [$e->getBusinessRuleId() => $e->getMessage()];
+        if ($schematron){
+            return $this->euValidation($xml ,'ubl');
+        } else {
+            try {
+                $this->invoice->validate();
+                return null;
+            } catch(ValidationException $e) {
+                return [$e->getBusinessRuleId() => $e->getMessage()];
+            }
         }
     }
+    
+    /**
+     * Validation against API
+     * Use public api https://www.itb.ec.europa.eu/invoice/api/validation , this function is copied from josemmo/einvoicing test file
+     * (schematron files use xslt2, incompatible with milo/schematron for now)
+     * @param string $contents
+     * @param string $type
+     * @return boolean
+     */
+    protected function euValidation(string $contents, string $type)  {
+
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => 'https://www.itb.ec.europa.eu/vitb/rest/invoice/api/validate',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POSTFIELDS => json_encode( [
+                'contentToValidate' => base64_encode($contents),
+                'embeddingMethod' => 'BASE64',
+                'validationType' => 'ubl'
+                ]) ,
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                'Accept: application/json'
+            ],
+            CURLOPT_POST => 1
+        ]);
+        $res = curl_exec($ch);
+        curl_close($ch);
+        unset($ch);
+
+        $report = json_decode($res, true);
+        if ($report['result'] === 'SUCCESS'){
+            return [];
+        } else {
+            $errors = isset($report['reports']['error']) ?  $report['reports']['error'] : $report['reports']['warning'];
+            return array_map( function($e){ return $e['description']." - ".$e['location'] ;} , $errors);
+        }
+       
+    }
+
 
     public function initDocument($invoiceId, DateTime $issueDateTime, $invoiceType, ?DateTime $deliveryDate = null)
     {
