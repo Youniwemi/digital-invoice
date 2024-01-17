@@ -48,11 +48,15 @@ Digital Invoice enables you to generate E-Invoices in the following formats with
 
 **Collaboration and Support**: We welcome collaboration and are eager to support specific use cases that enhance the utility of Digital Invoice. If you have unique invoicing needs or suggestions for improvements, we would be delighted to hear from you and work together to expand the capabilities of this package. Your contributions and feedback are invaluable in shaping a more versatile and robust tool.
 
+## Contributors
+
+@yassiNebeL : Adding support to UBL Format using josemmo/einvoicing
 
 ## Credits and Acknowledgements
 
 We are grateful to the following projects and teams for their contributions:
 
-- [ZUGFeRD PHP SDK (Factur-X, XRechnung)](https://github.com/easybill/zugferd-php) - For enabling the conversion of PHP objects to XML and vice versa.
+- [ZUGFeRD PHP SDK (Factur-X, XRechnung)](https://github.com/easybill/zugferd-php) - For enabling the generation of Factur-X, XRechnung and Zugferd.
+- [European Invoicing (eInvoicing)](https://github.com/josemmo/einvoicing) - For enabling the generation of UBL invoices.
 - [PHP Factur-X Library](https://github.com/atgp/factur-x) - Providing foundational tools for Factur-X invoicing.
 - [Tiime Software Team](https://github.com/Tiime-Software/EN-16931) - For their work on structured data types in E-Invoicing.
