@@ -1,8 +1,8 @@
 {
     "name": "youniwemi/digital-invoice",
     "type": "library",
-    "description": "Digital Invoice is an easy wrapper around easybill/zugferd-php and atgp/factur-x that will allow you generate Factur-x in a very easy way.",
-    "keywords": ["Factur-x" , "Digital Invoice" , "Invoice" , "E-Invoicing", "ZUGFeRD" ],
+    "description": "Digital Invoice is an easy wrapper around easybill/zugferd-php, josemmo/einvoicing and atgp/factur-x that will allow you generate Factur-x and UBL (Peppol, Cius...) invoices in a very easy way.",
+    "keywords": ["Factur-x" , "UBL" , "Peppol", "Cius", "Digital Invoice" , "Invoice" , "E-Invoicing", "ZUGFeRD" ],
     "license": "MIT",
     "authors": [
         {
