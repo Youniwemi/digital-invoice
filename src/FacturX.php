@@ -262,7 +262,10 @@ class FacturX extends XmlGenerator {
         $summation->grandTotalAmount[] = Amount::create(self::decimalFormat($grand));
         //$summation->totalPrepaidAmount = Amount::create('0.00');
         if ($this->getProfileLevel() > self::LEVEL_MINIMUM) {
-            $summation->lineTotalAmount = Amount::create(self::decimalFormat($grand));
+            $summation->lineTotalAmount = Amount::create(self::decimalFormat($totalBasis));
+            // [BR-CO-13]-Invoice total amount without VAT (BT-109) = Σ Invoice line net amount (BT-131) - Sum of allowances on document level (BT-107) + Sum of charges on document level (BT-108).
+            //$summation->chargeTotalAmount = Amount::create('0.00');
+            //$summation->allowanceTotalAmount = Amount::create('0.00');
         }
         $summation->duePayableAmount = Amount::create(self::decimalFormat($grand));
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->specifiedTradeSettlementHeaderMonetarySummation = $summation;
