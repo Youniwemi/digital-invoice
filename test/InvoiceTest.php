@@ -55,7 +55,7 @@ class InvoiceTest extends TestCase
         $this->assertStringContainsString('<cbc:PayableAmount currencyID="EUR">825</cbc:PayableAmount>', $xml);
     }
 
-    public function profilesProvider()
+    public static function profilesProvider()
     {
         // PROFILE/Type , isPdf
         return [
