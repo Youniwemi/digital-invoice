@@ -2,9 +2,7 @@
 
 namespace DigitalInvoice;
 
-
 use Easybill\ZUGFeRD211\Model\DateTime;
-
 
 class Invoice
 {
@@ -21,7 +19,7 @@ class Invoice
     public const UBL_NLCIUS = Ubl::NLCIUS;
     public const UBL_CIUS_RO = Ubl::CIUS_RO;
     public const UBL_CIUS_IT = Ubl::CIUS_IT;
-    public const UBL_CIUS_ES_FACE =  Ubl::CIUS_ES_FACE;
+    public const UBL_CIUS_ES_FACE = Ubl::CIUS_ES_FACE;
     public const UBL_CIUS_AT_GOV = Ubl::CIUS_AT_GOV;
     public const UBL_CIUS_AT_NAT = Ubl::CIUS_AT_NAT;
 
@@ -37,7 +35,7 @@ class Invoice
     public XmlGenerator $xmlGenerator;
 
 
-    protected $invoiceInformations=[];
+    protected $invoiceInformations = [];
 
     public function __construct(
         string $invoiceId,
@@ -47,14 +45,14 @@ class Invoice
         $profile = self::FACTURX_MINIMUM,
         string|InvoiceTypeCode $invoiceType = InvoiceTypeCode::COMMERCIAL_INVOICE
     ) {
-        if(is_string($currency)) {
+        if (is_string($currency)) {
             try {
                 $currency = CurrencyCode::from($currency);
             } catch (\ValueError $e) {
                 throw new \Exception("$currency is not a valid Currency");
             }
         }
-        if(is_string($invoiceType)) {
+        if (is_string($invoiceType)) {
             try {
                 $invoiceType = InvoiceTypeCode::from($invoiceType);
             } catch (\ValueError $e) {
@@ -62,20 +60,19 @@ class Invoice
             }
         }
         $this->profile = $profile;
-        if ( in_array($profile, [Ubl::PEPPOL, Ubl::NLCIUS, Ubl::CIUS_RO, Ubl::CIUS_IT, Ubl::CIUS_ES_FACE, Ubl::CIUS_AT_GOV, Ubl::CIUS_AT_NAT] ) ){
+        if (in_array($profile, [Ubl::PEPPOL, Ubl::NLCIUS, Ubl::CIUS_RO, Ubl::CIUS_IT, Ubl::CIUS_ES_FACE, Ubl::CIUS_AT_GOV, Ubl::CIUS_AT_NAT])) {
             $this->xmlGenerator = new Ubl($profile, $currency);
-            $this->profile = (new $profile)->getSpecification();
-        } elseif ( in_array($profile , [FacturX::MINIMUM ,  FacturX::BASIC_WL,  FacturX::BASIC, FacturX::EN16931,  FacturX::EXTENDED, FacturX::XRECHNUNG] ) ){
+            $this->profile = (new $profile())->getSpecification();
+        } elseif (in_array($profile, [FacturX::MINIMUM ,  FacturX::BASIC_WL,  FacturX::BASIC, FacturX::EN16931,  FacturX::EXTENDED, FacturX::XRECHNUNG])) {
             $this->xmlGenerator = new FacturX($profile, $currency);
         } else {
-            $this->xmlGenerator = new Zugferd($profile , $currency);
+            $this->xmlGenerator = new Zugferd($profile, $currency);
         }
-        $this->invoiceInformations['profile'] =  $profile;
-        $this->invoiceInformations['invoiceId'] =  $invoiceId;
-        $this->invoiceInformations['date'] =  $issueDate->format('Y-m-d');
-        $this->invoiceInformations['docTypeName'] =  $invoiceType->value;
-        $this->xmlGenerator->initDocument( $invoiceId , $issueDate, $invoiceType, $deliveryDate);
-
+        $this->invoiceInformations['profile'] = $profile;
+        $this->invoiceInformations['invoiceId'] = $invoiceId;
+        $this->invoiceInformations['date'] = $issueDate->format('Y-m-d');
+        $this->invoiceInformations['docTypeName'] = $invoiceType->value;
+        $this->xmlGenerator->initDocument($invoiceId, $issueDate, $invoiceType, $deliveryDate);
     }
 
     public function getProfileLevel()
@@ -83,12 +80,10 @@ class Invoice
         return $this->xmlGenerator->getProfileLevel();
     }
 
-
     public function setPrice(float $totalBasis, float $tax = 0)
     {
-        $this->xmlGenerator->setPrice( $totalBasis,  $tax );
+        $this->xmlGenerator->setPrice($totalBasis, $tax);
     }
-
 
     public function getXml()
     {
@@ -100,23 +95,20 @@ class Invoice
         return DateTime::create(102, $date->format('Ymd'));
     }
 
-
     public function setBuyer(string $buyerReference, string $name, string $id = null)
     {
-        $this->xmlGenerator->setBuyer( $buyerReference,  $name,  $id);
-
+        $this->xmlGenerator->setBuyer($buyerReference, $name, $id);
     }
 
     public function createAddress(string $postCode, string $city, string $countryCode, string $lineOne, ?string $lineTwo = null, ?string $lineThree = null)
     {
 
-        return $this->xmlGenerator->createAddress( $postCode,  $city,  $countryCode,  $lineOne, $lineTwo, $lineThree);
+        return $this->xmlGenerator->createAddress($postCode, $city, $countryCode, $lineOne, $lineTwo, $lineThree);
     }
-
 
     public function setBuyerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null)
     {
-        $this->xmlGenerator->setBuyerAddress( $lineOne,  $postCode,  $city,  $countryCode,  $lineTwo,  $lineThree);
+        $this->xmlGenerator->setBuyerAddress($lineOne, $postCode, $city, $countryCode, $lineTwo, $lineThree);
     }
 
     public function setSeller(string $id, string $idType, string $name, $tradingName = null)
@@ -127,13 +119,12 @@ class Invoice
             throw new \Exception("$idType is an Invalide InternationalCodeDesignator");
         }
         $this->invoiceInformations['seller'] = $name;
-        $this->xmlGenerator->setSeller( $id,  $idType,  $name, $tradingName);
-
+        $this->xmlGenerator->setSeller($id, $idType, $name, $tradingName);
     }
+
     public function setSellerContact(?string $personName = null, ?string $telephone = null, ?string $email = null, ?string $departmentName = null)
     {
-        $this->xmlGenerator->setSellerContact( $personName ,    $telephone,  $email, $departmentName );
-
+        $this->xmlGenerator->setSellerContact($personName, $telephone, $email, $departmentName);
     }
 
     public function setSellerTaxRegistration(string $id, string $schemeID)
@@ -143,7 +134,8 @@ class Invoice
 
     public function setSellerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null)
     {
-        $this->xmlGenerator->setSellerAddress( $lineOne,  $postCode,  $city, $countryCode, $lineTwo, $lineThree);
+        $this->xmlGenerator->setSellerAddress($lineOne, $postCode, $city, $countryCode, $lineTwo, $lineThree);
+
         return $this;
     }
 
@@ -155,12 +147,14 @@ class Invoice
             throw new \Exception("$unit is not a valide Unit of Unit Of Measurement");
         }
 
-        $totalLineBasis = $this->xmlGenerator->addItem( $name,  $price,  $taxRatePercent, $quantity,  $unit , $globalID ,  $globalIDCode);
-         // To be able to calc easily the invoice totals
-        $this->xmlGenerator->addTaxLine($taxRatePercent, $totalLineBasis);
+        $totalLineBasis = $this->xmlGenerator->addItem($name, $price, $taxRatePercent, $quantity, $unit, $globalID, $globalIDCode);
+        if ($totalLineBasis != 0) {
+            // To be able to calc easily the invoice totals
+            $this->xmlGenerator->addTaxLine($taxRatePercent, $totalLineBasis);
+        }
     }
 
-    public function addPaymentMean(string $typeCode, ?string $ibanId = null,?string $accountName = null, ?string $bicId = null)
+    public function addPaymentMean(string $typeCode, ?string $ibanId = null, ?string $accountName = null, ?string $bicId = null)
     {
         try {
             $typeCode = PaymentMeansCode::from($typeCode);
@@ -168,13 +162,17 @@ class Invoice
             throw new \Exception("$typeCode is not a valide Unit of Unit Of Measurement");
         }
 
-        $this->xmlGenerator->addPaymentMean($typeCode, $ibanId , $accountName, $bicId);
+        $this->xmlGenerator->addPaymentMean($typeCode, $ibanId, $accountName, $bicId);
+    }
 
+    public function setPaymentTerms(\DateTime $dueDate, ?string $description = null)
+    {
+        $this->xmlGenerator->setPaymentTerms($dueDate, $description);
     }
 
     public function addNote(string $content, ?string $subjectCode = null, ?string $contentCode = null)
     {
-        $this->xmlGenerator->addNote( $content,  $subjectCode,  $contentCode);
+        $this->xmlGenerator->addNote($content, $subjectCode, $contentCode);
     }
 
     /**
@@ -189,22 +187,23 @@ class Invoice
         return $this->xmlGenerator->validate($xml, $schematron);
     }
 
-
     /**
      * Generates a pdf string to be saved
      *
      * @param string $pdf
-     * @param boolean $addFacturxLogo
+     * @param bool $addFacturxLogo
+     * @param array $fpdiParams
      * @return string
      */
-    public function getPdf($pdf , $addFacturxLogo = false )
+    public function getPdf($pdf, $addFacturxLogo = false, $fpdiParams = [])
     {
-        if ( in_array( $this->profile, [static::ZUGFERD_BASIC, static::ZUGFERD_CONFORT, static::ZUGFERD_EXTENDED])  ){
+        if (in_array($this->profile, [static::ZUGFERD_BASIC, static::ZUGFERD_CONFORT, static::ZUGFERD_EXTENDED])) {
             // Ensure false, there is no logo for those profiles
             $addFacturxLogo = false;
         }
         $factureX = new PdfWriter();
-        $factureX->setPdfMetaData( $this->invoiceInformations);
+        $factureX->setPdfMetaData($this->invoiceInformations);
+
         return $factureX->generateFacturxFromFiles(
             $pdf,
             $this->getXml(),
@@ -212,11 +211,14 @@ class Invoice
             true,
             '',
             [],
-            $addFacturxLogo );
+            $addFacturxLogo,
+            'Data',
+            $fpdiParams
+        );
     }
 
-    public function addEmbeddedAttachment( ?string $id, ?string $scheme, ?string $filename, ?string $contents, ?string $mimeCode, ?string $description ){
-        $this->xmlGenerator->addEmbeddedAttachment( $id,$scheme, $filename, $contents, $mimeCode,  $description  );
+    public function addEmbeddedAttachment(?string $id, ?string $scheme, ?string $filename, ?string $contents, ?string $mimeCode, ?string $description)
+    {
+        $this->xmlGenerator->addEmbeddedAttachment($id, $scheme, $filename, $contents, $mimeCode, $description);
     }
-
 }

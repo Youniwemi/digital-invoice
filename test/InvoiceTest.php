@@ -74,16 +74,16 @@ class InvoiceTest extends TestCase
             [Ubl::CIUS_IT, false, true],
             [Ubl::CIUS_ES_FACE, false, true],
             [Ubl::CIUS_AT_GOV, false, true],
-            [Ubl::CIUS_AT_NAT, false, true]
+            [Ubl::CIUS_AT_NAT, false, true],
         ];
     }
 
     /**
      * @dataProvider profilesProvider
      */
-    public function testInvoiceXml($profile, $isPdf, $embedPdf = false ): void
+    public function testInvoiceXml($profile, $isPdf, $embedPdf = false): void
     {
-        $invoice = new Invoice('123', new \Datetime('2023-11-07'), null ,  CurrencyCode::EURO , $profile);
+        $invoice = new Invoice('123', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, $profile);
 
         $invoice->setSeller(
             '12344',
@@ -117,16 +117,23 @@ class InvoiceTest extends TestCase
             'FR'
         );
 
-        $invoice->setPrice(100, 20);
 
-        // Item 1
-        $invoice->addItem('service a la demande', 750, 10, 0, 'DAY', 'xxxx') ;
+        if (in_array($profile, [FacturX::MINIMUM ,FacturX::BASIC_WL ])) {
+            $invoice->setPrice(750, 20);
+        } else {
+            // Item 1
+            $invoice->addItem('service a la demande', 750, 20, 1, 'DAY', 'xxxx') ;
+        }
+
 
         // add payment
-        $invoice->addPaymentMean('58','MA2120300000000202051' , 'Youniwemi');
-        
+        $invoice->addPaymentMean('58', 'MA2120300000000202051', 'Youniwemi');
+
+        // set payment terms
+        $invoice->setPaymentTerms(new \Datetime('2023-12-07'), 'After A Month');
+
         // Embedding pdf
-        if ($embedPdf){
+        if ($embedPdf) {
             $pdfFile = file_get_contents(__DIR__.'/examples/basic.pdf');
             $invoice->addEmbeddedAttachment('123', null, 'basic', $pdfFile, 'application/pdf', 'The pdf invoice');
         }
@@ -139,13 +146,17 @@ class InvoiceTest extends TestCase
         $result = $invoice->validate($xml);
         self::assertNull($result, $result ? $result."\nIN\n".$xml : '');
 
-        if ($isPdf){
+        if ($isPdf) {
             // This will for a more thorough validation
             $pdfFile = file_get_contents(__DIR__.'/examples/basic.pdf');
-            $result = $invoice->getPdf($pdfFile, true);
-
+            $addLogo = in_array($profile, [FacturX::MINIMUM ,FacturX::BASIC_WL, FacturX::BASIC,  FacturX::EN16931, FacturX::EXTENDED]);
+            $result = $invoice->getPdf($pdfFile, $addLogo);
+            $profile = explode(":", $profile);
+            $short = array_pop($profile);
+            file_put_contents(__DIR__.'/examples/basic-'.$short.'.pdf', $result);
             // Check xml again
             $facturX = new PdfWriter();
+
             try {
                 $xml = $facturX->getFacturxXmlFromPdf($result);
                 $this->assertTrue(true);
@@ -156,6 +167,6 @@ class InvoiceTest extends TestCase
 
         // A complete validation using schematron
         $result = $invoice->validate($xml, true);
-        $this->assertEmpty($result, $result ? print_r($result,true) ."\n".$xml : '');
+        $this->assertEmpty($result, $result ? print_r($result, true) ."\n".$xml : '');
     }
 }

@@ -12,11 +12,17 @@ use Einvoicing\InvoiceLine;
 use Einvoicing\Party;
 use Einvoicing\Payments\Payment;
 use Einvoicing\Payments\Transfer;
-use Einvoicing\Presets\{Peppol, Nlcius, CiusRo, CiusIt, CiusEsFace, CiusAtGov, CiusAtNat};
+use Einvoicing\Presets\CiusAtGov;
+use Einvoicing\Presets\CiusAtNat;
+use Einvoicing\Presets\CiusEsFace;
+use Einvoicing\Presets\CiusIt;
+use Einvoicing\Presets\CiusRo;
+use Einvoicing\Presets\Nlcius;
+use Einvoicing\Presets\Peppol;
 use Einvoicing\Writers\UblWriter;
 
-class Ubl extends XmlGenerator {
-
+class Ubl extends XmlGenerator
+{
     public const CIUS_AT_NAT = CiusAtNat::class;
     public const CIUS_AT_GOV = CiusAtGov::class;
     public const CIUS_ES_FACE = CiusEsFace::class;
@@ -31,57 +37,60 @@ class Ubl extends XmlGenerator {
 
     public function validate(string $xml, $schematron)
     {
-        if ($schematron){
-            return $this->euValidation($xml ,'ubl');
+        if ($schematron) {
+            return $this->euValidation($xml, 'ubl');
         } else {
             try {
                 $this->invoice->validate();
+
                 return null;
-            } catch(ValidationException $e) {
+            } catch (ValidationException $e) {
                 return [$e->getBusinessRuleId() => $e->getMessage()];
             }
         }
     }
-    
+
     /**
      * Validation against API
      * Use public api https://www.itb.ec.europa.eu/invoice/api/validation , this function is copied from josemmo/einvoicing test file
      * (schematron files use xslt2, incompatible with milo/schematron for now)
      * @param string $contents
      * @param string $type
-     * @return boolean
+     * @return bool
      */
-    protected function euValidation(string $contents, string $type)  {
-        
+    protected function euValidation(string $contents, string $type)
+    {
+
         $ch = curl_init();
         curl_setopt_array($ch, [
             CURLOPT_URL => 'https://www.itb.ec.europa.eu/vitb/rest/invoice/api/validate',
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POSTFIELDS => json_encode( [
+            CURLOPT_POSTFIELDS => json_encode([
                 'contentToValidate' => base64_encode($contents),
                 'embeddingMethod' => 'BASE64',
-                'validationType' => 'ubl'
+                'validationType' => 'ubl',
                 ]) ,
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
-                'Accept: application/json'
+                'Accept: application/json',
             ],
-            CURLOPT_POST => 1
+            CURLOPT_POST => 1,
         ]);
         $res = curl_exec($ch);
         curl_close($ch);
         unset($ch);
 
         $report = json_decode($res, true);
-        if ($report['result'] === 'SUCCESS'){
+        if ($report['result'] === 'SUCCESS') {
             return [];
         } else {
-            $errors = isset($report['reports']['error']) ?  $report['reports']['error'] : $report['reports']['warning'];
-            return array_map( function($e){ return $e['description']." - ".$e['location'] ;} , $errors);
-        }
-       
-    }
+            $errors = isset($report['reports']['error']) ? $report['reports']['error'] : $report['reports']['warning'];
 
+            return array_map(function ($e) {
+                return $e['description']." - ".$e['location'] ;
+            }, $errors);
+        }
+    }
 
     public function initDocument($invoiceId, DateTime $issueDateTime, $invoiceType, ?DateTime $deliveryDate = null)
     {
@@ -99,6 +108,15 @@ class Ubl extends XmlGenerator {
             $this->delivery->setDate($deliveryDate);
         }
         $this->invoice->setDelivery($this->delivery);
+    }
+
+    public function setPaymentTerms(DateTime $dueDate, ?string $description = null)
+    {
+        $this->invoice->setDueDate($dueDate);
+        if ($description) {
+            $payment = $this->invoice->getPayment();
+            $payment->setTerms($description) ;
+        }
     }
 
     public function setSeller(string $id, InternationalCodeDesignator $idType, string $name, $tradingName = null)
@@ -191,23 +209,24 @@ class Ubl extends XmlGenerator {
         $payment->addTransfer($transfer);
     }
 
-    public function addEmbeddedAttachment( ?string $id, ?string $scheme, ?string $filename, ?string $contents, ?string $mimeCode, ?string $description ){
+    public function addEmbeddedAttachment(?string $id, ?string $scheme, ?string $filename, ?string $contents, ?string $mimeCode, ?string $description)
+    {
         // not implemented
         $embeddedAttachment = new Attachment();
-        if($id){
-            $embeddedAttachment->setId( new Identifier($id, $scheme) );
+        if ($id) {
+            $embeddedAttachment->setId(new Identifier($id, $scheme));
         }
-        if($filename){
-            $embeddedAttachment->setFilename($filename );
+        if ($filename) {
+            $embeddedAttachment->setFilename($filename);
         }
-        if($contents){
-            $embeddedAttachment->setContents($contents );
+        if ($contents) {
+            $embeddedAttachment->setContents($contents);
         }
-        if($mimeCode){
-            $embeddedAttachment->setMimeCode($mimeCode );
+        if ($mimeCode) {
+            $embeddedAttachment->setMimeCode($mimeCode);
         }
-        if($description){
-            $embeddedAttachment->setDescription($description );
+        if ($description) {
+            $embeddedAttachment->setDescription($description);
         }
         $this->invoice->addAttachment($embeddedAttachment);
     }

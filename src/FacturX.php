@@ -10,7 +10,6 @@ use Easybill\ZUGFeRD211\Model\CreditorFinancialAccount;
 use Easybill\ZUGFeRD211\Model\CreditorFinancialInstitution;
 use Easybill\ZUGFeRD211\Model\CrossIndustryInvoice;
 use Easybill\ZUGFeRD211\Model\DateTime;
-
 use Easybill\ZUGFeRD211\Model\DocumentContextParameter;
 use Easybill\ZUGFeRD211\Model\DocumentLineDocument;
 use Easybill\ZUGFeRD211\Model\ExchangedDocument;
@@ -19,23 +18,21 @@ use Easybill\ZUGFeRD211\Model\HeaderTradeAgreement;
 use Easybill\ZUGFeRD211\Model\HeaderTradeDelivery;
 use Easybill\ZUGFeRD211\Model\HeaderTradeSettlement;
 use Easybill\ZUGFeRD211\Model\Id;
+use Easybill\ZUGFeRD211\Model\LegalOrganization;
 use Easybill\ZUGFeRD211\Model\LineTradeAgreement;
 use Easybill\ZUGFeRD211\Model\LineTradeDelivery;
 use Easybill\ZUGFeRD211\Model\LineTradeSettlement;
-use Easybill\ZUGFeRD211\Model\LegalOrganization;
 use Easybill\ZUGFeRD211\Model\Note;
 use Easybill\ZUGFeRD211\Model\Quantity;
-
 use Easybill\ZUGFeRD211\Model\ReferencedDocument;
 use Easybill\ZUGFeRD211\Model\SupplyChainEvent;
 use Easybill\ZUGFeRD211\Model\SupplyChainTradeLineItem;
 use Easybill\ZUGFeRD211\Model\SupplyChainTradeTransaction;
 use Easybill\ZUGFeRD211\Model\TaxRegistration;
 use Easybill\ZUGFeRD211\Model\TradeAddress;
-
 use Easybill\ZUGFeRD211\Model\TradeContact;
-
 use Easybill\ZUGFeRD211\Model\TradeParty;
+use Easybill\ZUGFeRD211\Model\TradePaymentTerms;
 use Easybill\ZUGFeRD211\Model\TradePrice;
 use Easybill\ZUGFeRD211\Model\TradeProduct;
 use Easybill\ZUGFeRD211\Model\TradeSettlementHeaderMonetarySummation;
@@ -43,14 +40,11 @@ use Easybill\ZUGFeRD211\Model\TradeSettlementLineMonetarySummation;
 use Easybill\ZUGFeRD211\Model\TradeSettlementPaymentMeans;
 use Easybill\ZUGFeRD211\Model\TradeTax;
 use Easybill\ZUGFeRD211\Model\UniversalCommunication;
-
-
-
 use Easybill\ZUGFeRD211\Validator;
 use Milo\Schematron;
 
-
-class FacturX extends XmlGenerator {
+class FacturX extends XmlGenerator
+{
     public const MINIMUM = 'urn:factur-x.eu:1p0:minimum';
     public const BASIC_WL = 'urn:factur-x.eu:1p0:basicwl';
     public const BASIC = 'urn:cen.eu:en16931:2017#compliant#urn:factur-x.eu:1p0:basic';
@@ -65,22 +59,22 @@ class FacturX extends XmlGenerator {
 
     public const LEVELS = [
         FacturX::MINIMUM => self::LEVEL_MINIMUM ,
-        FacturX::BASIC_WL =>  self::LEVEL_BASIC_WL ,
+        FacturX::BASIC_WL => self::LEVEL_BASIC_WL ,
         // will define thos later
-        FacturX::BASIC =>  self::LEVEL_BASIC ,
-        FacturX::EN16931 =>  self::LEVEL_EN16931 ,
-        FacturX::EXTENDED =>  self::LEVEL_EN16931 ,
-        FacturX::XRECHNUNG =>  self::LEVEL_EN16931,
+        FacturX::BASIC => self::LEVEL_BASIC ,
+        FacturX::EN16931 => self::LEVEL_EN16931 ,
+        FacturX::EXTENDED => self::LEVEL_EN16931 ,
+        FacturX::XRECHNUNG => self::LEVEL_EN16931,
     ];
-
-
-
 
     protected static function convertDate(\DateTime $date)
     {
         return DateTime::create(102, $date->format('Ymd'));
     }
-    public function initDocument( $invoiceId , \DateTime $issueDateTime,  $invoiceType, ?\DateTime $deliveryDate=null  ){    $this->invoice = new CrossIndustryInvoice();
+
+    public function initDocument($invoiceId, \DateTime $issueDateTime, $invoiceType, ?\DateTime $deliveryDate = null)
+    {
+        $this->invoice = new CrossIndustryInvoice();
 
         $this->invoice->exchangedDocumentContext = new ExchangedDocumentContext();
         $this->invoice->exchangedDocumentContext->documentContextParameter = new DocumentContextParameter();
@@ -95,37 +89,46 @@ class FacturX extends XmlGenerator {
 
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement = new HeaderTradeAgreement();
 
-        //$this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->specifiedProcuringProject = ProcuringProject::create('1234', 'Projekt');
-
 
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeDelivery = new HeaderTradeDelivery();
 
         if ($deliveryDate) {
             $this->hasDelivery = true;
             $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeDelivery->chainEvent = new SupplyChainEvent();
-            $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeDelivery->chainEvent->date =  self::convertDate($deliveryDate);
+            $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeDelivery->chainEvent->date = self::convertDate($deliveryDate);
         }
 
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement = new HeaderTradeSettlement();
 
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->currency = $this->currency->value ;
+
         return $this->invoice;
     }
 
-    public function setSeller(string $id, InternationalCodeDesignator $idType, string $name, $tradingName = null )
+    public function setPaymentTerms(\DateTime $dueDate, ?string $description = null)
+    {
+        if ($this->getProfileLevel() >= self::LEVEL_BASIC_WL) {
+            $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->specifiedTradePaymentTerms[] = $paymentTerms = new TradePaymentTerms();
+            $paymentTerms->dueDate = self::convertDate($dueDate);
+            if ($this->getProfileLevel() > self::LEVEL_BASIC) {
+                $paymentTerms->description = $description;
+            }
+        }
+    }
+
+    public function setSeller(string $id, InternationalCodeDesignator $idType, string $name, $tradingName = null)
     {
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->sellerTradeParty = $this->seller = new TradeParty();
         //$sellerTradeParty->globalID[] = Id::create($id, $idType->value);
         $this->seller->legalOrganization = LegalOrganization::create($id, $idType->value, $tradingName);
 
         $this->seller->name = $name;
-
-
     }
 
-    public function setPayee(){
-         // Pas de payeeTradeParty dans le minimum
-         if ($this->getProfileLevel() > self::LEVEL_MINIMUM) {
+    public function setPayee()
+    {
+        // Pas de payeeTradeParty dans le minimum
+        if ($this->getProfileLevel() > self::LEVEL_MINIMUM) {
             // The Payee name (BT-59) shall be provided in the Invoice, if the Payee (BG-10) is different from the Seller (BG-4).
 
             $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->payeeTradeParty = $this->seller;
@@ -134,54 +137,54 @@ class FacturX extends XmlGenerator {
 
     public function setSellerContact(?string $personName = null, ?string $departmentName = null, ?string $telephone = null, ?string $email = null)
     {
-        if ($this->getProfileLevel() >= self::LEVEL_EN16931){
+        if ($this->getProfileLevel() >= self::LEVEL_EN16931) {
             $this->seller->definedTradeContact = new TradeContact();
             $this->seller->definedTradeContact->personName = $personName;
-            if ( $telephone){
+            if ($telephone) {
                 $this->seller->definedTradeContact->telephoneUniversalCommunication = new UniversalCommunication();
                 $this->seller->definedTradeContact->telephoneUniversalCommunication->completeNumber = $telephone;
             }
-            if ($email){
+            if ($email) {
                 $this->seller->definedTradeContact->emailURIUniversalCommunication = new UniversalCommunication();
                 $this->seller->definedTradeContact->emailURIUniversalCommunication->uriid = Id::create($email);
             }
-            if ( $departmentName){
+            if ($departmentName) {
                 $this->seller->definedTradeContact->departmentName = $departmentName;
             }
         }
     }
 
-    public function addPaymentMean(PaymentMeansCode $typeCode , ?string $ibanId = null,?string $accountName = null, ?string $bicId = null){
-        if($this->getProfileLevel() >= self::LEVEL_BASIC_WL ){
-
+    public function addPaymentMean(PaymentMeansCode $typeCode, ?string $ibanId = null, ?string $accountName = null, ?string $bicId = null)
+    {
+        if ($this->getProfileLevel() >= self::LEVEL_BASIC_WL) {
             $mean = new TradeSettlementPaymentMeans();
             $mean->typeCode = $typeCode->value ;
 
             // $mean->information = 'get info from type code??';
             $mean->payeePartyCreditorFinancialAccount = new CreditorFinancialAccount();
             $mean->payeePartyCreditorFinancialAccount->ibanId = Id::create($ibanId);
-            if ($this->getProfileLevel() > self::LEVEL_BASIC){
+            if ($this->getProfileLevel() > self::LEVEL_BASIC) {
                 $mean->payeePartyCreditorFinancialAccount->AccountName = $accountName;
             }
-            if ($bicId){
+            if ($bicId) {
                 $mean->payeeSpecifiedCreditorFinancialInstitution = new CreditorFinancialInstitution();
                 $mean->payeeSpecifiedCreditorFinancialInstitution->bicId = Id::create($bicId);
             }
-            $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->specifiedTradeSettlementPaymentMeans[]=$mean;
+            $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->specifiedTradeSettlementPaymentMeans[] = $mean;
         }
     }
 
     public function setSellerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null)
     {
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->sellerTradeParty->postalTradeAddress = $this->createAddress($postCode, $city, $countryCode, $lineOne, $lineTwo, $lineThree);
+
         return $this;
     }
-
-
 
     public function setBuyerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null)
     {
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->buyerTradeParty->postalTradeAddress = $this->createAddress($postCode, $city, $countryCode, $lineOne, $lineTwo, $lineThree);
+
         return $this;
     }
 
@@ -198,10 +201,11 @@ class FacturX extends XmlGenerator {
         if ($this->getProfileLevel() > self::LEVEL_MINIMUM && $id) {
             $buyerTradeParty->id = Id::create($id);
         }
-        $buyerTradeParty->name =  $name ;
+        $buyerTradeParty->name = $name ;
         if ($this->hasDelivery) {
             $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeDelivery->shipToTradeParty = $buyerTradeParty;
         }
+
         return $this;
     }
 
@@ -249,7 +253,7 @@ class FacturX extends XmlGenerator {
                 $tradeTax->rateApplicablePercent = self::decimalFormat($rate) ;
                 $tax += $calculated = $sum * $rate / 100;
                 $tradeTax->calculatedAmount = Amount::create(self::decimalFormat($calculated));
-                if ($this->getProfileLevel() >= self::LEVEL_BASIC_WL){
+                if ($this->getProfileLevel() >= self::LEVEL_BASIC_WL) {
                     $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->tradeTaxes[] = $tradeTax;
                 }
             }
@@ -257,9 +261,9 @@ class FacturX extends XmlGenerator {
             if (in_array($this->profile, [self::BASIC, self::EN16931, self::EXTENDED  ])) {
                 throw new \Exception('You need to set invoice items using setItem');
             }
-            if ($this->profile == self::MINIMUM || $this->profile ==  self::BASIC_WL) {
-                if(!isset($this->totalBasis)) {
-                    throw new \Exception('You should call setPrice to set taxBasisTotal and taxTotal');
+            if ($this->profile == self::MINIMUM || $this->profile == self::BASIC_WL) {
+                if (! isset($this->totalBasis)) {
+                    throw new \Exception('You should call tax to set totalBasis and taxTotal');
                 }
             }
             $totalBasis = $this->totalBasis ;
@@ -283,41 +287,50 @@ class FacturX extends XmlGenerator {
         }
         $summation->duePayableAmount = Amount::create(self::decimalFormat($grand));
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->specifiedTradeSettlementHeaderMonetarySummation = $summation;
-
     }
-
 
     public function getXml()
     {
         // calculate tradeTaxes
         $this->calculateTotals();
+
         return Builder::create()->transform($this->invoice);
     }
 
-
-
-    public function validate(string $xml, $schematron) {
+    public function validate(string $xml, $schematron)
+    {
         switch ($this->profile) {
-            case self::MINIMUM: $against =  Validator::SCHEMA_MINIMUM;
+            case self::MINIMUM:
+                $against = Validator::SCHEMA_MINIMUM;
+
                 break;
-            case self::BASIC: $against =  Validator::SCHEMA_BASIC;
+            case self::BASIC:
+                $against = Validator::SCHEMA_BASIC;
+
                 break;
-            case self::BASIC_WL: $against =  Validator::SCHEMA_BASIC_WL;
+            case self::BASIC_WL:
+                $against = Validator::SCHEMA_BASIC_WL;
+
                 break;
-            case self::EN16931: $against =  Validator::SCHEMA_EN16931;
+            case self::EN16931:
+                $against = Validator::SCHEMA_EN16931;
+
                 break;
             case self::EXTENDED:
-            case self::XRECHNUNG: $against =  Validator::SCHEMA_EXTENDED;
+            case self::XRECHNUNG:
+                $against = Validator::SCHEMA_EXTENDED;
+
                 break;
-            default: $against =  Validator::SCHEMA_MINIMUM;
+            default:
+                $against = Validator::SCHEMA_MINIMUM;
         }
         if ($schematron) {
             $against = str_replace([
                 '.xsd',
-                'FACTUR-X'
+                'FACTUR-X',
             ], [
                 '.sch',
-                'Schematron/FACTUR-X'
+                'Schematron/FACTUR-X',
             ], $against);
         }
 
@@ -327,15 +340,18 @@ class FacturX extends XmlGenerator {
             $schematron->load($against);
             $document = new \DOMDocument();
             $document->loadXml($xml);
+
             return @$schematron->validate($document, Schematron::RESULT_COMPLEX);
         }
+
         return (new Validator())->validateAgainstXsd($xml, $against);
     }
 
-
-    public function addItem(string $name, float $price, float $taxRatePercent, float  $quantity , UnitOfMeasurement $unit , ?string $globalID = null, string $globalIDCode = null) : float
+    public function addItem(string $name, float $price, float $taxRatePercent, float  $quantity, UnitOfMeasurement $unit, ?string $globalID = null, string $globalIDCode = null): float
     {
-
+        if ($this->getProfileLevel() < self::LEVEL_BASIC) {
+            return 0;
+        }
         $item = new SupplyChainTradeLineItem();
         $lineNumber = count($this->items) + 1;
 
@@ -352,7 +368,7 @@ class FacturX extends XmlGenerator {
 
         $item->tradeAgreement = new LineTradeAgreement();
 
-        if ($this->getProfileLevel() >= self::LEVEL_EN16931){
+        if ($this->getProfileLevel() >= self::LEVEL_EN16931) {
             $item->tradeAgreement->grossPrice = TradePrice::create(self::decimalFormat($price));
         }
         $item->tradeAgreement->netPrice = TradePrice::create(self::decimalFormat($price));
@@ -364,7 +380,7 @@ class FacturX extends XmlGenerator {
         $item->specifiedLineTradeSettlement->tradeTax[] = $itemtax = new TradeTax();
         $itemtax->typeCode = TaxTypeCodeContent::VAT->value;
         $itemtax->categoryCode = VatCategory::STANDARD->value ;
-        $itemtax->rateApplicablePercent =  self::decimalFormat($taxRatePercent);
+        $itemtax->rateApplicablePercent = self::decimalFormat($taxRatePercent);
 
 
         $totalLineBasis = $price * $quantity;
@@ -372,13 +388,12 @@ class FacturX extends XmlGenerator {
 
         $item->specifiedLineTradeSettlement->monetarySummation = TradeSettlementLineMonetarySummation::create(self::decimalFormat($totalLineBasis));
 
-        $this->items[] =  $item;
-        if ($this->getProfileLevel() >= self::LEVEL_BASIC){
+        $this->items[] = $item;
+        if ($this->getProfileLevel() >= self::LEVEL_BASIC) {
             $this->invoice->supplyChainTradeTransaction->lineItems[] = $item;
         }
 
         return $totalLineBasis;
-
     }
 
     public function addNote(string $content, ?string $subjectCode = null, ?string $contentCode = null)
@@ -386,8 +401,9 @@ class FacturX extends XmlGenerator {
         $this->invoice->exchangedDocument->notes[] = Note::create($content, $subjectCode, $contentCode);
     }
 
-    public function addEmbeddedAttachment( ?string $id, ?string $scheme, ?string $filename, ?string $contents, ?string $mimeCode, ?string $description ){
-        // The attachement is correctly added but schematron fails, need to 
+    public function addEmbeddedAttachment(?string $id, ?string $scheme, ?string $filename, ?string $contents, ?string $mimeCode, ?string $description)
+    {
+        // The attachement is correctly added but schematron fails, need to
         // $attachment = ReferencedDocument::create($id);
         // $attachment->name = $description;
         // $binary = new BinaryObject();

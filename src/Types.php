@@ -16,7 +16,7 @@ trait EnumToArray
     public static function valueArray(): array
     {
         foreach (self::cases() as $enum) {
-            $values[$enum->value] = str_replace( '_' , ' ', $enum->name);
+            $values[$enum->value] = str_replace('_', ' ', $enum->name);
         }
 
         return $values;
@@ -27,17 +27,18 @@ trait EnumToArray
  * Helper Types class to access type enum values.
  * Can be used to generate select boxes easily.
  */
-class Types {
-
-	public static function getInternationalCodes(){
-		return InternationalCodeDesignator::valueArray();
-	}
+class Types
+{
+    public static function getInternationalCodes()
+    {
+        return InternationalCodeDesignator::valueArray();
+    }
 }
 
 enum PaymentMeansCode: string
 {
     use EnumToArray;
-    
+
     case INSTRUMENT_NOT_DEFINED = "1";
     case AUTOMATED_CLEARING_HOUSE_CREDIT = "2";
     case AUTOMATED_CLEARING_HOUSE_DEBIT = "3";
@@ -2435,7 +2436,7 @@ enum CurrencyCode: string
     case SOMONI = "TJS";
     case TURKMENISTAN_NEW_MANAT = "TMT";
     case TUNISIAN_DINAR = "TND";
-    case PA_ANGA  = "TOP";
+    case PA_ANGA = "TOP";
     case TURKISH_LIRA = "TRY";
     case TRINIDAD_AND_TOBAGO_DOLLAR = "TTD";
     case NEW_TAIWAN_DOLLAR = "TWD";
@@ -2479,7 +2480,7 @@ enum CurrencyCode: string
 enum InvoiceTypeCode: string
 {
     use EnumToArray;
-    
+
     // https://service.unece.org/trade/untdid/d16b/tred/tred1001.htm
     case DEBIT_NOTE_RELATED_TO_GOODS_OR_SERVICES = '80';
     case CREDIT_NOTE_RELATED_TO_GOODS_OR_SERVICES = '81';
