@@ -209,23 +209,37 @@ class FacturX extends XmlGenerator {
     {
         $address = new TradeAddress();
         if ($this->getProfileLevel() > self::LEVEL_MINIMUM) {
-            $address->postcode =  $postCode;
+            $address->postcode = $postCode;
             $address->lineOne = $lineOne ;
             $address->city = $city;
             $address->lineTwo = $lineTwo ;
             $address->lineThree = $lineThree;
         }
         $address->countryCode = $countryCode;
+
         return $address;
     }
 
     protected function calculateTotals()
     {
+        if ($this->profile == self::BASIC_WL) {
+            // calculate Tax Lines if not provided
+            if (count($this->taxLines) == 0) {
+                if (! isset($this->totalBasis)) {
+                    throw new \Exception('You should call setPrice to set taxBasisTotal and taxTotal');
+                }
+                $this->addTaxLine($this->tax, $this->totalBasis);
+            }
+        }
 
-        if(count($this->taxLines)) {
+        if (count($this->taxLines)) {
             $totalBasis = 0;
             $tax = 0;
+            // We recalculate, so we reset.
+            $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->tradeTaxes = [];
             foreach ($this->taxLines as $rate => $items) {
+                // turn back rate to float
+                $rate = (float) $rate;
                 $sum = array_sum($items);
                 $tradeTax = new TradeTax();
                 $tradeTax->typeCode = TaxTypeCodeContent::VAT->value;

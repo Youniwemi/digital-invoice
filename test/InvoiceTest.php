@@ -2,16 +2,59 @@
 
 namespace DigitalInvoice\Tests;
 
-use DigitalInvoice\Invoice;
-use DigitalInvoice\Zugferd;
-use DigitalInvoice\FacturX;
-use DigitalInvoice\PdfWriter;
 use DigitalInvoice\CurrencyCode;
+use DigitalInvoice\FacturX;
+use DigitalInvoice\Invoice;
+use DigitalInvoice\PdfWriter;
 use DigitalInvoice\Ubl;
+use DigitalInvoice\Zugferd;
 use PHPUnit\Framework\TestCase;
 
 class InvoiceTest extends TestCase
 {
+    public function testFormatingDecimals()
+    {
+        $this->assertEquals(FacturX::decimalFormat(10), "10.00");
+        $this->assertEquals(FacturX::decimalFormat(9.5, 3), "9.500");
+        $this->assertEquals(FacturX::decimalFormat(9.999999999, 3), "10.000");
+        $this->assertEquals(FacturX::decimalFormat(9.999999999, 2), "10.00");
+    }
+
+    public function testFacturXCalculateTotals()
+    {
+        $invoice = new Invoice('123', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, FacturX::BASIC_WL);
+        // add some tax lines
+        $invoice->xmlGenerator->addTaxLine(20, 200);
+        $invoice->xmlGenerator->addTaxLine(9.5, 200);
+        $xml = $invoice->getXml();
+        $this->assertNotEmpty($xml);
+        //Ensure the total is correctly calculated
+        $this->assertEquals($invoice->xmlGenerator->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->specifiedTradeSettlementHeaderMonetarySummation->duePayableAmount->value, "459.00");
+    }
+
+    public function testFacturXCalculateTotalsWithFloatsShouldRound()
+    {
+        $invoice = new Invoice('123', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, FacturX::BASIC_WL);
+        // add some tax lines
+        $invoice->xmlGenerator->addTaxLine(20, 200);
+        // at this point, it would be considered as 10%
+        $invoice->xmlGenerator->addTaxLine(9.999, 200);
+        $xml = $invoice->getXml();
+        //Ensure the total is correctly calculated
+        $this->assertEquals($invoice->xmlGenerator->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->specifiedTradeSettlementHeaderMonetarySummation->duePayableAmount->value, "460.00");
+    }
+
+    public function testUblCalculateTotals()
+    {
+        $invoice = new Invoice('123', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, Ubl::PEPPOL);
+        // add some tax lines
+        $invoice->addItem('service a la demande', 750, 10, 1, 'DAY', 'xxxx') ;
+        $xml = $invoice->getXml();
+
+        $this->assertStringContainsString('<cbc:TaxInclusiveAmount currencyID="EUR">825</cbc:TaxInclusiveAmount>', $xml);
+        $this->assertStringContainsString('<cbc:PayableAmount currencyID="EUR">825</cbc:PayableAmount>', $xml);
+    }
+
     public function profilesProvider()
     {
         // PROFILE/Type , isPdf

@@ -48,15 +48,14 @@ abstract class XmlGenerator implements XmlGeneratorInterface {
 
     public function __construct($profile, $currency)
     {
-        $this->profile = $profile;   
+        $this->profile = $profile;
         $this->currency = $currency;
     }
 
     public function getProfileLevel()
     {
-        return isset (static::LEVELS[ $this->profile ]) ? static::LEVELS[ $this->profile ] : 0 ;
+        return isset(static::LEVELS[ $this->profile ]) ? static::LEVELS[ $this->profile ] : 0 ;
     }
-
 
     public function setPrice(float $totalBasis, float $tax = 0)
     {
@@ -64,26 +63,26 @@ abstract class XmlGenerator implements XmlGeneratorInterface {
         $this->tax = $tax;
     }
 
-    protected static function decimalFormat(float|int $number)
+    public static function decimalFormat(float|int $number, int $decimals = 2)
     {
-        return number_format($number, 2, '.', '');
+        return number_format($number, $decimals, '.', '');
     }
 
-    public function addTaxLine($rate , $totalLineBasis ){
-        if (!isset($this->taxLines[$rate])) {
+    public function addTaxLine(float|int|string $rate, $totalLineBasis)
+    {
+        if (! is_string($rate)) {
+            // convert to string to not loose precision
+            // for the tax rate, we use 4 digits
+            $rate = self::decimalFormat($rate, 4);
+        }
+        if (! isset($this->taxLines[$rate])) {
             $this->taxLines[$rate] = [];
         }
         $this->taxLines[$rate][] = $totalLineBasis;
-
     }
 
-    public function addEmbeddedAttachment( ?string $id, ?string $scheme, ?string $filename, ?string $contents, ?string $mimeCode, ?string $description ){
+    public function addEmbeddedAttachment(?string $id, ?string $scheme, ?string $filename, ?string $contents, ?string $mimeCode, ?string $description)
+    {
         // not implemented
     }
-
-    
-
-
-
-    
 }
