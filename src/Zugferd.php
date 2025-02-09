@@ -114,17 +114,22 @@ class Zugferd extends XmlGenerator
             $totalBasis = 0;
             $tax = 0;
             foreach ($this->taxLines as $rate => $items) {
-                $sum = array_sum($items);
-                $tradeTax = new TradeTax();
-                $tradeTax->setCode(TaxTypeCodeContent::VAT->value);
-                $tradeTax->setCategory(VatCategory::STANDARD->value);
-                $totalBasis += $sum;
-                $tradeTax->setBasisAmount($this->getAmount($sum));
-                $tradeTax->setPercent(self::decimalFormat($rate))  ;
-                $tax += $calculated = $sum * $rate / 100;
-                $tradeTax->setCalculatedAmount($this->getAmount($calculated));
+                // turn back rate to float
+                $rate = (float) $rate;
+                // and skip tax 0
+                if ($rate > 0) {
+                    $sum = array_sum($items);
+                    $tradeTax = new TradeTax();
+                    $tradeTax->setCode(TaxTypeCodeContent::VAT->value);
+                    $tradeTax->setCategory(VatCategory::STANDARD->value);
+                    $totalBasis += $sum;
+                    $tradeTax->setBasisAmount($this->getAmount($sum));
+                    $tradeTax->setPercent(self::decimalFormat($rate))  ;
+                    $tax += $calculated = $sum * $rate / 100;
+                    $tradeTax->setCalculatedAmount($this->getAmount($calculated));
 
-                $this->settlement->addTradeTax($tradeTax);
+                    $this->settlement->addTradeTax($tradeTax);
+                }
             }
         } else {
             if (! isset($this->totalBasis)) {

@@ -244,22 +244,25 @@ class FacturX extends XmlGenerator
             foreach ($this->taxLines as $rate => $items) {
                 // turn back rate to float
                 $rate = (float) $rate;
-                $sum = array_sum($items);
-                $tradeTax = new TradeTax();
-                $tradeTax->typeCode = TaxTypeCodeContent::VAT->value;
-                $tradeTax->categoryCode = VatCategory::STANDARD->value;
-                $totalBasis += $sum;
-                $tradeTax->basisAmount = Amount::create(self::decimalFormat($sum));
-                $tradeTax->rateApplicablePercent = self::decimalFormat($rate) ;
-                $tax += $calculated = $sum * $rate / 100;
-                $tradeTax->calculatedAmount = Amount::create(self::decimalFormat($calculated));
-                if ($this->getProfileLevel() >= self::LEVEL_BASIC_WL) {
-                    $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->tradeTaxes[] = $tradeTax;
+                // and skip tax 0
+                if ($rate > 0) {
+                    $sum = array_sum($items);
+                    $tradeTax = new TradeTax();
+                    $tradeTax->typeCode = TaxTypeCodeContent::VAT->value;
+                    $tradeTax->categoryCode = VatCategory::STANDARD->value;
+                    $totalBasis += $sum;
+                    $tradeTax->basisAmount = Amount::create(self::decimalFormat($sum));
+                    $tradeTax->rateApplicablePercent = self::decimalFormat($rate) ;
+                    $tax += $calculated = $sum * $rate / 100;
+                    $tradeTax->calculatedAmount = Amount::create(self::decimalFormat($calculated));
+                    if ($this->getProfileLevel() >= self::LEVEL_BASIC_WL) {
+                        $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->tradeTaxes[] = $tradeTax;
+                    }
                 }
             }
         } else {
             if (in_array($this->profile, [self::BASIC, self::EN16931, self::EXTENDED  ])) {
-                throw new \Exception('You need to set invoice items using setItem');
+                throw new \Exception('You need to set invoice items using addItem');
             }
             if ($this->profile == self::MINIMUM || $this->profile == self::BASIC_WL) {
                 if (! isset($this->totalBasis)) {
@@ -285,7 +288,10 @@ class FacturX extends XmlGenerator
             //$summation->chargeTotalAmount = Amount::create('0.00');
             //$summation->allowanceTotalAmount = Amount::create('0.00');
         }
+
         $summation->duePayableAmount = Amount::create(self::decimalFormat($grand));
+
+
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->specifiedTradeSettlementHeaderMonetarySummation = $summation;
     }
 

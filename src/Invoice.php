@@ -148,10 +148,8 @@ class Invoice
         }
 
         $totalLineBasis = $this->xmlGenerator->addItem($name, $price, $taxRatePercent, $quantity, $unit, $globalID, $globalIDCode);
-        if ($totalLineBasis != 0) {
-            // To be able to calc easily the invoice totals
-            $this->xmlGenerator->addTaxLine($taxRatePercent, $totalLineBasis);
-        }
+        // To be able to calc easily the invoice totals
+        $this->xmlGenerator->addTaxLine($taxRatePercent, $totalLineBasis);
     }
 
     public function addPaymentMean(string $typeCode, ?string $ibanId = null, ?string $accountName = null, ?string $bicId = null)
