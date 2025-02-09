@@ -244,16 +244,16 @@ class FacturX extends XmlGenerator
             foreach ($this->taxLines as $rate => $items) {
                 // turn back rate to float
                 $rate = (float) $rate;
+                $sum = array_sum($items);
+                $totalBasis += $sum;
+                $tax += $calculated = $sum * $rate / 100;
                 // and skip tax 0
                 if ($rate > 0) {
-                    $sum = array_sum($items);
                     $tradeTax = new TradeTax();
                     $tradeTax->typeCode = TaxTypeCodeContent::VAT->value;
                     $tradeTax->categoryCode = VatCategory::STANDARD->value;
-                    $totalBasis += $sum;
                     $tradeTax->basisAmount = Amount::create(self::decimalFormat($sum));
                     $tradeTax->rateApplicablePercent = self::decimalFormat($rate) ;
-                    $tax += $calculated = $sum * $rate / 100;
                     $tradeTax->calculatedAmount = Amount::create(self::decimalFormat($calculated));
                     if ($this->getProfileLevel() >= self::LEVEL_BASIC_WL) {
                         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->tradeTaxes[] = $tradeTax;
@@ -355,9 +355,7 @@ class FacturX extends XmlGenerator
 
     public function addItem(string $name, float $price, float $taxRatePercent, float  $quantity, UnitOfMeasurement $unit, ?string $globalID = null, string $globalIDCode = null): float
     {
-        if ($this->getProfileLevel() < self::LEVEL_BASIC) {
-            return 0;
-        }
+
         $item = new SupplyChainTradeLineItem();
         $lineNumber = count($this->items) + 1;
 

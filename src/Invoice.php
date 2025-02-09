@@ -157,7 +157,7 @@ class Invoice
         try {
             $typeCode = PaymentMeansCode::from($typeCode);
         } catch (\ValueError $e) {
-            throw new \Exception("$typeCode is not a valide Unit of Unit Of Measurement");
+            throw new \Exception("$typeCode is not a valid PaymentMeans Code");
         }
 
         $this->xmlGenerator->addPaymentMean($typeCode, $ibanId, $accountName, $bicId);

@@ -34,7 +34,19 @@ class InvoiceTest extends TestCase
 
     public function testFacturXCalculateTotalsWithFloatsShouldRound()
     {
-        $invoice = new Invoice('123', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, FacturX::BASIC_WL);
+        $invoice = new Invoice('123', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, FacturX::BASIC);
+        // add some tax lines
+        $invoice->xmlGenerator->addTaxLine(20, 200);
+        // at this point, it would be considered as 10%
+        $invoice->xmlGenerator->addTaxLine(9.999, 200);
+        $xml = $invoice->getXml();
+        //Ensure the total is correctly calculated
+        $this->assertEquals($invoice->xmlGenerator->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->specifiedTradeSettlementHeaderMonetarySummation->duePayableAmount->value, "460.00");
+    }
+
+    public function testFacturXCalculateTotalsInMinimum()
+    {
+        $invoice = new Invoice('123', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, FacturX::MINIMUM);
         // add some tax lines
         $invoice->xmlGenerator->addTaxLine(20, 200);
         // at this point, it would be considered as 10%
