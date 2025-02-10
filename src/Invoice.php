@@ -24,6 +24,12 @@ class Invoice
     public const UBL_CIUS_AT_NAT = Ubl::CIUS_AT_NAT;
 
 
+    public const EXEMPT_FROM_TAX = VatCategory::EXEMPT_FROM_TAX;
+    public const SERVICE_OUTSIDE_SCOPE_OF_TAX = VatCategory::SERVICE_OUTSIDE_SCOPE_OF_TAX;
+    public const FREE_EXPORT_ITEM_TAX_NOT_CHARGED = VatCategory::FREE_EXPORT_ITEM_TAX_NOT_CHARGED; 
+    public const STANDARD_TAX = VatCategory::STANDARD;
+
+
 
 
     protected $profile;
@@ -36,6 +42,9 @@ class Invoice
 
 
     protected $invoiceInformations = [];
+
+    protected $noTaxCategory = VatCategory::SERVICE_OUTSIDE_SCOPE_OF_TAX;
+    protected $noTaxReason =  null;  
 
     public function __construct(
         string $invoiceId,
@@ -73,6 +82,11 @@ class Invoice
         $this->invoiceInformations['date'] = $issueDate->format('Y-m-d');
         $this->invoiceInformations['docTypeName'] = $invoiceType->value;
         $this->xmlGenerator->initDocument($invoiceId, $issueDate, $invoiceType, $deliveryDate);
+    }
+
+    public function setTaxExemption(VatCategory $vatCategory, ?string $reason = null)
+    {
+        $this->xmlGenerator->setTaxExemption($vatCategory, $reason);
     }
 
     public function getProfileLevel()
@@ -121,6 +135,8 @@ class Invoice
         $this->invoiceInformations['seller'] = $name;
         $this->xmlGenerator->setSeller($id, $idType, $name, $tradingName);
     }
+
+
 
     public function setSellerContact(?string $personName = null, ?string $telephone = null, ?string $email = null, ?string $departmentName = null)
     {
@@ -218,5 +234,9 @@ class Invoice
     public function addEmbeddedAttachment(?string $id, ?string $scheme, ?string $filename, ?string $contents, ?string $mimeCode, ?string $description)
     {
         $this->xmlGenerator->addEmbeddedAttachment($id, $scheme, $filename, $contents, $mimeCode, $description);
+    }
+
+    public function isUbl(){
+        return in_array($this->profile, [self::UBL_NLCIUS, self::UBL_PEPOOL, self::UBL_CIUS_IT, self::UBL_CIUS_RO, self::UBL_CIUS_AT_GOV, self::UBL_CIUS_AT_NAT, self::UBL_CIUS_ES_FACE]);
     }
 }

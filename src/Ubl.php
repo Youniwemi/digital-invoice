@@ -185,6 +185,10 @@ class Ubl extends XmlGenerator
         $line->setPrice($price);
         $line->setQuantity($quantity);
         $line->setVatRate(self::decimalFormat($taxRatePercent));
+        if ($taxRatePercent==0 && $this->noTaxCategory){
+            $line->setVatCategory($this->noTaxCategory->value);
+            $line->setVatExemptionReason($this->noTaxReason);
+        }
 
         $this->invoice->addLine($line);
         $this->items[] = $line;

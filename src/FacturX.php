@@ -67,6 +67,9 @@ class FacturX extends XmlGenerator
         FacturX::XRECHNUNG => self::LEVEL_EN16931,
     ];
 
+    //protected $noTaxCategory = VatCategory::FREE_EXPORT_ITEM_TAX_NOT_CHARGED;
+    //protected $noTaxCategory = VatCategory::EXEMPT_FROM_TAX;
+
     protected static function convertDate(\DateTime $date)
     {
         return DateTime::create(102, $date->format('Ymd'));
@@ -248,17 +251,25 @@ class FacturX extends XmlGenerator
                 $totalBasis += $sum;
                 $tax += $calculated = $sum * $rate / 100;
                 // and skip tax 0
-                if ($rate > 0) {
-                    $tradeTax = new TradeTax();
-                    $tradeTax->typeCode = TaxTypeCodeContent::VAT->value;
-                    $tradeTax->categoryCode = VatCategory::STANDARD->value;
-                    $tradeTax->basisAmount = Amount::create(self::decimalFormat($sum));
-                    $tradeTax->rateApplicablePercent = self::decimalFormat($rate) ;
-                    $tradeTax->calculatedAmount = Amount::create(self::decimalFormat($calculated));
-                    if ($this->getProfileLevel() >= self::LEVEL_BASIC_WL) {
-                        $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->tradeTaxes[] = $tradeTax;
+            
+                $tradeTax = new TradeTax();
+                $tradeTax->typeCode = TaxTypeCodeContent::VAT->value;
+                if ($rate==0){
+                    if ($this->noTaxCategory){
+                        $tradeTax->categoryCode = $this->noTaxCategory->value;
+                        $tradeTax->exemptionReason = $this->noTaxReason;
                     }
+                } else {
+                    $tradeTax->categoryCode = VatCategory::STANDARD->value;
                 }
+                
+                $tradeTax->basisAmount = Amount::create(self::decimalFormat($sum));
+                $tradeTax->rateApplicablePercent = self::decimalFormat($rate) ;
+                $tradeTax->calculatedAmount = Amount::create(self::decimalFormat($calculated));
+                if ($this->getProfileLevel() >= self::LEVEL_BASIC_WL) {
+                    $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->tradeTaxes[] = $tradeTax;
+                }
+                
             }
         } else {
             if (in_array($this->profile, [self::BASIC, self::EN16931, self::EXTENDED  ])) {
@@ -383,8 +394,17 @@ class FacturX extends XmlGenerator
         $item->specifiedLineTradeSettlement = new LineTradeSettlement();
         $item->specifiedLineTradeSettlement->tradeTax[] = $itemtax = new TradeTax();
         $itemtax->typeCode = TaxTypeCodeContent::VAT->value;
-        $itemtax->categoryCode = VatCategory::STANDARD->value ;
-        $itemtax->rateApplicablePercent = self::decimalFormat($taxRatePercent);
+        if ($taxRatePercent==0){
+            if ($this->noTaxCategory){
+                $itemtax->categoryCode = $this->noTaxCategory->value ;
+                $itemtax->rateApplicablePercent = self::decimalFormat($taxRatePercent);
+            }
+        } else {
+            $itemtax->categoryCode = VatCategory::STANDARD->value ;
+            $itemtax->rateApplicablePercent = self::decimalFormat($taxRatePercent);
+        }
+        
+        
 
 
         $totalLineBasis = $price * $quantity;

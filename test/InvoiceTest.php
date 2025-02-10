@@ -54,6 +54,7 @@ class InvoiceTest extends TestCase
         $xml = $invoice->getXml();
         //Ensure the total is correctly calculated
         $this->assertEquals($invoice->xmlGenerator->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->specifiedTradeSettlementHeaderMonetarySummation->duePayableAmount->value, "460.00");
+
     }
 
     public function testUblCalculateTotals()
@@ -71,16 +72,20 @@ class InvoiceTest extends TestCase
     {
         // PROFILE/Type , isPdf
         return [
-            [FacturX::MINIMUM , true ] ,
-            [FacturX::BASIC_WL , true ],
-            [FacturX::BASIC , true ],
-            [FacturX::EN16931 , true ],
-            [FacturX::EXTENDED , true ],
-            [Zugferd::ZUGFERD_BASIC, true],
-            [Zugferd::ZUGFERD_CONFORT, true],
-            [Zugferd::ZUGFERD_EXTENDED, true],
+            [FacturX::MINIMUM , true , false ] ,
+            [FacturX::BASIC_WL , true, false ],
+            //[FacturX::BASIC_WL , true, false , 0 ],
+            [FacturX::BASIC , true, false  ],
+            [FacturX::BASIC , true, false , 0 ],
+            [FacturX::EN16931 , true, false ],
+            [FacturX::EXTENDED , true , false],
+            [Zugferd::ZUGFERD_BASIC, true, false],
+            [Zugferd::ZUGFERD_CONFORT, true, false],
+            [Zugferd::ZUGFERD_EXTENDED, true, false],
+            [Zugferd::ZUGFERD_EXTENDED, true, false, 0],
             [FacturX::XRECHNUNG, false, false],
             [Ubl::PEPPOL, false , true],
+            //[Ubl::PEPPOL, false , true, 0],
             [Ubl::NLCIUS, false, true],
             [Ubl::CIUS_RO, false, true],
             [Ubl::CIUS_IT, false, true],
@@ -93,8 +98,9 @@ class InvoiceTest extends TestCase
     /**
      * @dataProvider profilesProvider
      */
-    public function testInvoiceXml($profile, $isPdf, $embedPdf = false): void
+    public function testInvoiceXml($profile, $isPdf, $embedPdf = false, $tax = 20): void
     {
+        
         $invoice = new Invoice('123', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, $profile);
 
         $invoice->setSeller(
@@ -108,8 +114,12 @@ class InvoiceTest extends TestCase
             '+2129999999999',
             'seller@email.com'
         );
-
         $invoice->setSellerTaxRegistration('FR1231344', 'VA') ;
+        if ($tax == 0){
+            $invoice->setTaxExemption(Invoice::EXEMPT_FROM_TAX, 'Assujeti') ;
+        }
+        
+        
 
         $invoice->setSellerAddress(
             '1 rue de la paie',
@@ -131,10 +141,10 @@ class InvoiceTest extends TestCase
 
 
         if (in_array($profile, [FacturX::MINIMUM ,FacturX::BASIC_WL ])) {
-            $invoice->setPrice(750, 20);
+            $invoice->setPrice(750,  $tax);
         } else {
             // Item 1
-            $invoice->addItem('service a la demande', 750, 20, 1, 'DAY', 'xxxx') ;
+            $invoice->addItem('service a la demande', 750, $tax, 1, 'DAY', 'xxxx') ;
         }
 
 
