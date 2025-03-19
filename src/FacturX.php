@@ -254,8 +254,8 @@ class FacturX extends XmlGenerator
             
                 $tradeTax = new TradeTax();
                 $tradeTax->typeCode = TaxTypeCodeContent::VAT->value;
-                if ($rate==0){
-                    if ($this->noTaxCategory){
+                if ($rate==0) {
+                    if ($this->noTaxCategory) {
                         $tradeTax->categoryCode = $this->noTaxCategory->value;
                         $tradeTax->exemptionReason = $this->noTaxReason;
                     }
@@ -269,7 +269,6 @@ class FacturX extends XmlGenerator
                 if ($this->getProfileLevel() >= self::LEVEL_BASIC_WL) {
                     $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->tradeTaxes[] = $tradeTax;
                 }
-                
             }
         } else {
             if (in_array($this->profile, [self::BASIC, self::EN16931, self::EXTENDED  ])) {
@@ -394,8 +393,8 @@ class FacturX extends XmlGenerator
         $item->specifiedLineTradeSettlement = new LineTradeSettlement();
         $item->specifiedLineTradeSettlement->tradeTax[] = $itemtax = new TradeTax();
         $itemtax->typeCode = TaxTypeCodeContent::VAT->value;
-        if ($taxRatePercent==0){
-            if ($this->noTaxCategory){
+        if ($taxRatePercent==0) {
+            if ($this->noTaxCategory) {
                 $itemtax->categoryCode = $this->noTaxCategory->value ;
                 $itemtax->rateApplicablePercent = self::decimalFormat($taxRatePercent);
             }
@@ -422,7 +421,9 @@ class FacturX extends XmlGenerator
 
     public function addNote(string $content, ?string $subjectCode = null, ?string $contentCode = null)
     {
-        $this->invoice->exchangedDocument->notes[] = Note::create($content, $subjectCode, $contentCode);
+        if ($this->getProfileLevel() > self::LEVEL_MINIMUM) {
+            $this->invoice->exchangedDocument->notes[] = Note::create($content, $subjectCode, $contentCode);
+        }
     }
 
     public function addEmbeddedAttachment(?string $id, ?string $scheme, ?string $filename, ?string $contents, ?string $mimeCode, ?string $description)

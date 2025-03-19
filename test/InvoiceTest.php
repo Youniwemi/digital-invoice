@@ -54,7 +54,6 @@ class InvoiceTest extends TestCase
         $xml = $invoice->getXml();
         //Ensure the total is correctly calculated
         $this->assertEquals($invoice->xmlGenerator->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->specifiedTradeSettlementHeaderMonetarySummation->duePayableAmount->value, "460.00");
-
     }
 
     public function testUblCalculateTotals()
@@ -103,6 +102,9 @@ class InvoiceTest extends TestCase
         
         $invoice = new Invoice('123', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, $profile);
 
+        
+        $invoice->addNote("My Document note");
+
         $invoice->setSeller(
             '12344',
             '0002',
@@ -115,7 +117,7 @@ class InvoiceTest extends TestCase
             'seller@email.com'
         );
         $invoice->setSellerTaxRegistration('FR1231344', 'VA') ;
-        if ($tax == 0){
+        if ($tax == 0) {
             $invoice->setTaxExemption(Invoice::EXEMPT_FROM_TAX, 'Assujeti') ;
         }
         
@@ -141,7 +143,7 @@ class InvoiceTest extends TestCase
 
 
         if (in_array($profile, [FacturX::MINIMUM ,FacturX::BASIC_WL ])) {
-            $invoice->setPrice(750,  $tax);
+            $invoice->setPrice(750, $tax);
         } else {
             // Item 1
             $invoice->addItem('service a la demande', 750, $tax, 1, 'DAY', 'xxxx') ;
