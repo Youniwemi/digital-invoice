@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "80c9109cba5f2457579f5630e9137898",
+    "content-hash": "cb6ba0c70803f4460a7c4c0c7d24fa15",
     "packages": [
         {
             "name": "atgp/factur-x",
@@ -499,16 +499,16 @@
         },
         {
             "name": "josemmo/einvoicing",
-            "version": "v0.2.7",
+            "version": "v0.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/josemmo/einvoicing.git",
-                "reference": "fb318980fafda05da66385221d590f610945ee28"
+                "reference": "251ea544b1efb40be056b4451b4142650467b822"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/josemmo/einvoicing/zipball/fb318980fafda05da66385221d590f610945ee28",
-                "reference": "fb318980fafda05da66385221d590f610945ee28",
+                "url": "https://api.github.com/repos/josemmo/einvoicing/zipball/251ea544b1efb40be056b4451b4142650467b822",
+                "reference": "251ea544b1efb40be056b4451b4142650467b822",
                 "shasum": ""
             },
             "require": {
@@ -518,7 +518,7 @@
             "require-dev": {
                 "ext-openssl": "*",
                 "phan/phan": "*",
-                "phpdocumentor/reflection": "^3.0|^5.1",
+                "phpdocumentor/reflection": "^3.0|^5.2|^6.1",
                 "symfony/phpunit-bridge": "*"
             },
             "type": "library",
@@ -549,9 +549,9 @@
             ],
             "support": {
                 "issues": "https://github.com/josemmo/einvoicing/issues",
-                "source": "https://github.com/josemmo/einvoicing/tree/v0.2.7"
+                "source": "https://github.com/josemmo/einvoicing/tree/v0.3.0"
             },
-            "time": "2023-10-03T18:14:45+00:00"
+            "time": "2025-02-24T09:18:18+00:00"
         },
         {
             "name": "josemmo/uxml",

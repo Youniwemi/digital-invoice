@@ -100,7 +100,7 @@ class Ubl extends XmlGenerator
         $this->invoice->setType($invoiceType->value);
 
         $payment = new Payment();
-        $this->invoice->setPayment($payment);
+        $this->invoice->addPayment($payment);
 
         $this->delivery = new Delivery();
         if (isset($deliveryDate)) {
@@ -114,8 +114,11 @@ class Ubl extends XmlGenerator
     {
         $this->invoice->setDueDate($dueDate);
         if ($description) {
-            $payment = $this->invoice->getPayment();
-            $payment->setTerms($description) ;
+            // $payments = $this->invoice->getPayments();
+            // if ($payments) {
+            //     $payments[0]->setTerms($description) ;
+            // }
+            $this->invoice->setPaymentTerms($description);
         }
     }
 
@@ -127,6 +130,11 @@ class Ubl extends XmlGenerator
         $this->seller->setTradingName($tradingName);
 
         $this->invoice->setSeller($this->seller);
+    }
+
+    public function addSellerIdentifier(InternationalCodeDesignator $idType, string $identifier)
+    {
+        $this->seller->addIdentifier(new Identifier($identifier, $idType->value));
     }
 
     public function setSellerContact(?string $personName = null, ?string $telephone = null, ?string $email = null, ?string $departmentName = null)
@@ -185,7 +193,7 @@ class Ubl extends XmlGenerator
         $line->setPrice($price);
         $line->setQuantity($quantity);
         $line->setVatRate(self::decimalFormat($taxRatePercent));
-        if ($taxRatePercent==0 && $this->noTaxCategory){
+        if ($taxRatePercent==0 && $this->noTaxCategory) {
             $line->setVatCategory($this->noTaxCategory->value);
             $line->setVatExemptionReason($this->noTaxReason);
         }
@@ -203,8 +211,12 @@ class Ubl extends XmlGenerator
 
     public function addPaymentMean(PaymentMeansCode $typeCode, ?string $ibanId = null, ?string $accountName = null, ?string $bicId = null)
     {
-        $payment = $this->invoice->getPayment();
+        $payments = $this->invoice->getPayments();
+        if ($payments[0]) {
+            $payment = $payments[0];
+        }
         $payment->setMeansCode($typeCode->value);
+       
 
         $transfer = new Transfer();
         $transfer->setAccountId($ibanId);

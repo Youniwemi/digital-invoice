@@ -14,7 +14,7 @@
         "easybill/zugferd-php": "dev-master",
         "atgp/factur-x": "^1.0",
         "milo/schematron": "dev-master",
-        "josemmo/einvoicing": "^0.2.7",
+        "josemmo/einvoicing": "^0.3.0",
         "jms/serializer": "3.28.0",
         "jms/metadata": "2.8.0"
     },
