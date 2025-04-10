@@ -10,7 +10,7 @@ interface XmlGeneratorInterface
 
     public function initDocument($invoiceId, \DateTime $issueDateTime, $invoiceType, ?\DateTime $deliveryDate = null);
 
-    public function setTaxExemption( VatCategory $catCategory, ?string $exemptReason = null );
+    public function setTaxExemption(VatCategory $catCategory, ?string $exemptReason = null);
 
     public function setSeller(string $id, InternationalCodeDesignator $idType, string $name, $tradingName = null);
 
@@ -37,6 +37,8 @@ interface XmlGeneratorInterface
     public function addEmbeddedAttachment(?string $id, ?string $scheme, ?string $filename, ?string $contents, ?string $mimeCode, ?string $description);
 
     public function setPaymentTerms(\DateTime $dueDate, ?string $description = null);
+
+    public function addSellerIdentifier(InternationalCodeDesignator $idType, string $identifier);
 }
 
 
@@ -65,7 +67,7 @@ abstract class XmlGenerator implements XmlGeneratorInterface
     protected \Countable|array $items = [];
 
     protected $noTaxCategory = null;
-    protected $noTaxReason =  null;  
+    protected $noTaxReason =  null;
 
 
     public function __construct($profile, $currency)
@@ -83,6 +85,14 @@ abstract class XmlGenerator implements XmlGeneratorInterface
     {
         $this->totalBasis = $totalBasis;
         $this->tax = $tax;
+    }
+
+    protected function calculateTaxRate(float $totalBasis, float $tax = 0)
+    {
+        if ($totalBasis==0) {
+            return 0;
+        }
+        return ($tax/$totalBasis)*100;
     }
 
     public static function decimalFormat(float|int $number, int $decimals = 2)
@@ -108,7 +118,8 @@ abstract class XmlGenerator implements XmlGeneratorInterface
         // not implemented
     }
 
-    public function setTaxExemption( VatCategory $catCategory, ?string $noTaxReason = null ){
+    public function setTaxExemption(VatCategory $catCategory, ?string $noTaxReason = null)
+    {
         $this->noTaxCategory = $catCategory;
         $this->noTaxReason = $noTaxReason;
     }

@@ -56,6 +56,17 @@ class InvoiceTest extends TestCase
         $this->assertEquals($invoice->xmlGenerator->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->specifiedTradeSettlementHeaderMonetarySummation->duePayableAmount->value, "460.00");
     }
 
+    public function testFacturXCalculateVATRate()
+    {
+        $invoice = new Invoice('123', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, FacturX::BASIC_WL);
+        // add some tax lines
+        $invoice->setPrice(1100, 220);
+        $xml = $invoice->getXml();
+        //Ensure the total is correctly calculated
+        $this->assertEquals($invoice->xmlGenerator->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->specifiedTradeSettlementHeaderMonetarySummation->duePayableAmount->value, "1320.00");
+    }
+
+
     public function testUblCalculateTotals()
     {
         $invoice = new Invoice('123', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, Ubl::PEPPOL);
@@ -65,6 +76,29 @@ class InvoiceTest extends TestCase
 
         $this->assertStringContainsString('<cbc:TaxInclusiveAmount currencyID="EUR">825</cbc:TaxInclusiveAmount>', $xml);
         $this->assertStringContainsString('<cbc:PayableAmount currencyID="EUR">825</cbc:PayableAmount>', $xml);
+    }
+
+    public function testUblMalaysiaCodes()
+    {
+        $invoice = new Invoice('123', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, Ubl::PEPPOL);
+        // add some tax lines
+        $invoice->addItem('service a la demande', 750, 10, 1, 'DAY', 'xxxx') ;
+
+        $invoice->setSeller(
+            '123456789012',
+            'BRN',
+            'Seller'
+        );
+
+        $invoice->addSellerIdentifier(
+            '12344QWE',
+            'TIN'
+        );
+
+        $xml = $invoice->getXml();
+
+        $this->assertStringContainsString('<cbc:CompanyID schemeID="BRN">123456789012</cbc:CompanyID>', $xml);
+        $this->assertStringContainsString('<cbc:ID schemeID="TIN">12344QWE</cbc:ID>', $xml);
     }
 
     public static function profilesProvider()
@@ -97,7 +131,7 @@ class InvoiceTest extends TestCase
     /**
      * @dataProvider profilesProvider
      */
-    public function testInvoiceXml($profile, $isPdf, $embedPdf = false, $tax = 20): void
+    public function testInvoiceXml($profile, $isPdf, $embedPdf = false, $taxRate = 20): void
     {
         
         $invoice = new Invoice('123', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, $profile);
@@ -117,7 +151,7 @@ class InvoiceTest extends TestCase
             'seller@email.com'
         );
         $invoice->setSellerTaxRegistration('FR1231344', 'VA') ;
-        if ($tax == 0) {
+        if ($taxRate == 0) {
             $invoice->setTaxExemption(Invoice::EXEMPT_FROM_TAX, 'Assujeti') ;
         }
         
@@ -143,10 +177,11 @@ class InvoiceTest extends TestCase
 
 
         if (in_array($profile, [FacturX::MINIMUM ,FacturX::BASIC_WL ])) {
-            $invoice->setPrice(750, $tax);
+            $taxAmount = ( 750 * $taxRate ) / 100;
+            $invoice->setPrice(750, $taxAmount);
         } else {
             // Item 1
-            $invoice->addItem('service a la demande', 750, $tax, 1, 'DAY', 'xxxx') ;
+            $invoice->addItem('service a la demande', 750, $taxRate, 1, 'DAY', 'xxxx') ;
         }
 
 
@@ -163,6 +198,7 @@ class InvoiceTest extends TestCase
         }
 
         $xml = $invoice->getXml();
+
         self::assertNotEmpty($xml);
 
 

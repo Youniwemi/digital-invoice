@@ -165,6 +165,11 @@ class Zugferd extends XmlGenerator
         $this->agreement->setSeller($this->seller);
     }
 
+    public function addSellerIdentifier(InternationalCodeDesignator $idType, string $identifier)
+    {
+        $this->seller->setGlobalId(new Schema($idType->value, $identifier));
+    }
+
     public function setSellerContact(?string $personName = null, ?string $telephone = null, ?string $email = null, ?string $departmentName = null)
     {
         $this->seller->definedTradeContact = new TradeContact(

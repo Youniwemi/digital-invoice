@@ -122,10 +122,15 @@ class FacturX extends XmlGenerator
     public function setSeller(string $id, InternationalCodeDesignator $idType, string $name, $tradingName = null)
     {
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->sellerTradeParty = $this->seller = new TradeParty();
-        //$sellerTradeParty->globalID[] = Id::create($id, $idType->value);
+        
         $this->seller->legalOrganization = LegalOrganization::create($id, $idType->value, $tradingName);
 
         $this->seller->name = $name;
+    }
+
+    public function addSellerIdentifier(InternationalCodeDesignator $idType, string $identifier)
+    {
+        $this->seller->globalID[] = Id::create($id, $idType->value);
     }
 
     public function setPayee()
@@ -235,7 +240,8 @@ class FacturX extends XmlGenerator
                 if (! isset($this->totalBasis)) {
                     throw new \Exception('You should call setPrice to set taxBasisTotal and taxTotal');
                 }
-                $this->addTaxLine($this->tax, $this->totalBasis);
+                $rate = $this->calculateTaxRate($this->totalBasis, $this->tax);
+                $this->addTaxLine($rate, $this->totalBasis);
             }
         }
 
