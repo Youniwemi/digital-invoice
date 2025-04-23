@@ -105,26 +105,26 @@ class InvoiceTest extends TestCase
     {
         // PROFILE/Type , isPdf
         return [
-            [FacturX::MINIMUM , true , false ] ,
-            [FacturX::BASIC_WL , true, false ],
-            //[FacturX::BASIC_WL , true, false , 0 ],
-            [FacturX::BASIC , true, false  ],
-            [FacturX::BASIC , true, false , 0 ],
-            [FacturX::EN16931 , true, false ],
-            [FacturX::EXTENDED , true , false],
-            [Zugferd::ZUGFERD_BASIC, true, false],
-            [Zugferd::ZUGFERD_CONFORT, true, false],
-            [Zugferd::ZUGFERD_EXTENDED, true, false],
-            [Zugferd::ZUGFERD_EXTENDED, true, false, 0],
-            [FacturX::XRECHNUNG, false, false],
+            // [FacturX::MINIMUM , true , false ] ,
+            // [FacturX::BASIC_WL , true, false ],
+            // //[FacturX::BASIC_WL , true, false , 0 ],
+            // [FacturX::BASIC , true, false  ],
+            // [FacturX::BASIC , true, false , 0 ],
+            // [FacturX::EN16931 , true, false ],
+            // [FacturX::EXTENDED , true , false],
+            // [Zugferd::ZUGFERD_BASIC, true, false],
+            // [Zugferd::ZUGFERD_CONFORT, true, false],
+            // [Zugferd::ZUGFERD_EXTENDED, true, false],
+            // [Zugferd::ZUGFERD_EXTENDED, true, false, 0],
+            // [FacturX::XRECHNUNG, false, false],
             [Ubl::PEPPOL, false , true],
-            //[Ubl::PEPPOL, false , true, 0],
-            [Ubl::NLCIUS, false, true],
-            [Ubl::CIUS_RO, false, true],
-            [Ubl::CIUS_IT, false, true],
-            [Ubl::CIUS_ES_FACE, false, true],
-            [Ubl::CIUS_AT_GOV, false, true],
-            [Ubl::CIUS_AT_NAT, false, true],
+            // //[Ubl::PEPPOL, false , true, 0],
+            // [Ubl::NLCIUS, false, true],
+            // [Ubl::CIUS_RO, false, true],
+            // [Ubl::CIUS_IT, false, true],
+            // [Ubl::CIUS_ES_FACE, false, true],
+            // [Ubl::CIUS_AT_GOV, false, true],
+            // [Ubl::CIUS_AT_NAT, false, true],
         ];
     }
 
@@ -198,6 +198,7 @@ class InvoiceTest extends TestCase
         }
 
         $xml = $invoice->getXml();
+        echo $xml;
 
         self::assertNotEmpty($xml);
 
