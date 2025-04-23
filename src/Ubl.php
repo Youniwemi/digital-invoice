@@ -154,7 +154,7 @@ class Ubl extends XmlGenerator
 
     public function setSellerTaxRegistration(string $id, string $schemeID)
     {
-        $this->seller->setTaxRegistrationId(new Identifier($id));
+        $this->seller->setTaxRegistrationId(new Identifier($id, $schemeID));
     }
 
     public function setBuyer(string $buyerReference, string $name, ?string $id = null)
