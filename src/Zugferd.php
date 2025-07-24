@@ -211,6 +211,13 @@ class Zugferd extends XmlGenerator
         }
     }
 
+    public function setBuyerIdentifier( string $identifier, ?InternationalCodeDesignator $idType=null, IdentificationType $type = IdentificationType::OTHER )
+    {
+        $this->buyer->setGlobalId(new Schema($idType->value, $identifier));
+
+        return $this;
+    }
+
     public function getXml()
     {
         $this->calculateTotals();

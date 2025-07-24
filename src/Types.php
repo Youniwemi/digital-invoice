@@ -2989,3 +2989,13 @@ enum InternationalCodeDesignator: string
     
 
 }
+
+
+enum IdentificationType: string
+{
+    case TAX = 'Tax';
+    case VAT = 'Vat';
+    case LEGAL = 'Legal';
+    case ELECTRONIC = 'Electronic';
+    case OTHER = 'Other';
+}

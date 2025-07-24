@@ -105,26 +105,27 @@ class InvoiceTest extends TestCase
     {
         // PROFILE/Type , isPdf
         return [
-            // [FacturX::MINIMUM , true , false ] ,
-            // [FacturX::BASIC_WL , true, false ],
-            // //[FacturX::BASIC_WL , true, false , 0 ],
-            // [FacturX::BASIC , true, false  ],
-            // [FacturX::BASIC , true, false , 0 ],
-            // [FacturX::EN16931 , true, false ],
-            // [FacturX::EXTENDED , true , false],
-            // [Zugferd::ZUGFERD_BASIC, true, false],
-            // [Zugferd::ZUGFERD_CONFORT, true, false],
-            // [Zugferd::ZUGFERD_EXTENDED, true, false],
-            // [Zugferd::ZUGFERD_EXTENDED, true, false, 0],
-            // [FacturX::XRECHNUNG, false, false],
+            [FacturX::MINIMUM , true , false ] ,
+            [FacturX::BASIC_WL , true, false ],
+            //[FacturX::BASIC_WL , true, false , 0 ],
+            [FacturX::BASIC , true, false  ],
+            [FacturX::BASIC , true, false , 0 ],
+            [FacturX::EN16931 , true, false ],
+            [FacturX::EXTENDED , true , false],
+            [Zugferd::ZUGFERD_BASIC, true, false],
+            [Zugferd::ZUGFERD_CONFORT, true, false],
+            [Zugferd::ZUGFERD_EXTENDED, true, false],
+            [Zugferd::ZUGFERD_EXTENDED, true, false, 0],
+            [FacturX::XRECHNUNG, false, false],
             [Ubl::PEPPOL, false , true],
             // //[Ubl::PEPPOL, false , true, 0],
-            // [Ubl::NLCIUS, false, true],
-            // [Ubl::CIUS_RO, false, true],
-            // [Ubl::CIUS_IT, false, true],
-            // [Ubl::CIUS_ES_FACE, false, true],
-            // [Ubl::CIUS_AT_GOV, false, true],
-            // [Ubl::CIUS_AT_NAT, false, true],
+            [Ubl::NLCIUS, false, true],
+            [Ubl::CIUS_RO, false, true],
+            [Ubl::CIUS_IT, false, true],
+            [Ubl::CIUS_ES_FACE, false, true],
+            [Ubl::CIUS_AT_GOV, false, true],
+            [Ubl::CIUS_AT_NAT, false, true],
+            [Ubl::MALAYSIA, false, false],
         ];
     }
 
@@ -133,15 +134,24 @@ class InvoiceTest extends TestCase
      */
     public function testInvoiceXml($profile, $isPdf, $embedPdf = false, $taxRate = 20): void
     {
-        
-        $invoice = new Invoice('123', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, $profile);
+        if ($profile===Ubl::MALAYSIA){
+            $identificationDesignator = 'TIN';
+            $currency =  CurrencyCode::MALAYSIAN_RINGGIT;
+            $validate = false;
+        } else {
+            $identificationDesignator = '0002';
+            $currency =  CurrencyCode::EURO;
+            $validate = true;
+        }
+        $invoice = new Invoice('123', new \Datetime('2023-11-07'), null, $currency , $profile);
 
         
         $invoice->addNote("My Document note");
 
+
         $invoice->setSeller(
             '12344',
-            '0002',
+            $identificationDesignator,
             'Seller'
         );
         $invoice->setSellerContact(
@@ -165,9 +175,16 @@ class InvoiceTest extends TestCase
         );
 
         $invoice->setBuyer(
-            '12344',
+            '',
             'buyer'
         );
+
+        $invoice->setBuyerIdentifier(
+            '12344',
+            $identificationDesignator, 
+        );
+
+
         $invoice->setBuyerAddress(
             '2 rue de la paie',
             '90000',
@@ -198,8 +215,6 @@ class InvoiceTest extends TestCase
         }
 
         $xml = $invoice->getXml();
-        echo $xml;
-
         self::assertNotEmpty($xml);
 
 
@@ -227,7 +242,7 @@ class InvoiceTest extends TestCase
         }
 
         // A complete validation using schematron
-        $result = $invoice->validate($xml, true);
+        $result = $invoice->validate($xml, $validate);
         $this->assertEmpty($result, $result ? print_r($result, true) ."\n".$xml : '');
     }
 }

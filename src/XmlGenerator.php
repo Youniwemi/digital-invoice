@@ -39,6 +39,8 @@ interface XmlGeneratorInterface
     public function setPaymentTerms(\DateTime $dueDate, ?string $description = null);
 
     public function addSellerIdentifier(InternationalCodeDesignator $idType, string $identifier);
+
+    public function setBuyerIdentifier( string $identifier, ?InternationalCodeDesignator $idType=null, IdentificationType $type = IdentificationType::OTHER );
 }
 
 

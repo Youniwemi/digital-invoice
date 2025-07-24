@@ -18,14 +18,27 @@ Digital Invoice supports a range of formats, catering to diverse invoicing needs
   - A widely-used German XML format
 
 - **UBL XML Invoices**:
-    - Profiles: `Peppol`, `Nlcius`, `CiusRo`, `CiusIt`, `CiusEsFace`, `CiusAtNat`, `CiusAtGov`
+    - Profiles: `Peppol`, `Nlcius`, `CiusRo`, `CiusIt`, `CiusEsFace`, `CiusAtNat`, `CiusAtGov`, `Malaysia`
+
+## Installation
+
+```bash
+composer require youniwemi/digital-invoice
+```
 
 ## Getting Started
 
 To integrate Digital Invoice into your PHP project:
 
-1. Add Digital Invoice to your project. For installation details, refer to the accompanying documentation.
-2. Explore our test cases for examples and usage guidelines.
+1. Install via Composer (see Installation section above)
+2. Explore our test cases for examples and usage guidelines
+
+## Key Features
+
+- **Enhanced Buyer Identification**: Support for multiple identification types (TAX, VAT, LEGAL, ELECTRONIC)
+- **Multi-Currency Support**: Including Malaysian Ringgit (MYR) for Malaysia UBL invoices
+- **Comprehensive Format Coverage**: Support for all major European e-invoicing standards plus Malaysia
+- **Unified API**: Single interface for all supported formats
 
 Digital Invoice enables you to generate E-Invoices in the following formats with ease:
 
@@ -39,7 +52,7 @@ Digital Invoice enables you to generate E-Invoices in the following formats with
   - A standard German XML format
 
 - **UBL XML Invoices**:
-    - Profiles: `Peppol`, `Nlcius`, `CiusRo`, `CiusIt`, `CiusEsFace`, `CiusAtNat`, `CiusAtGov`
+    - Profiles: `Peppol`, `Nlcius`, `CiusRo`, `CiusIt`, `CiusEsFace`, `CiusAtNat`, `CiusAtGov`, `Malaysia`
 
 
 ## Development Status and Collaboration

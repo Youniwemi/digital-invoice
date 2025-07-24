@@ -189,6 +189,15 @@ class FacturX extends XmlGenerator
         return $this;
     }
 
+    public function setBuyerIdentifier( string $identifier, ?InternationalCodeDesignator $idType=null, IdentificationType $type = IdentificationType::OTHER )
+    {
+        if ($this->getProfileLevel() > self::LEVEL_MINIMUM ) {
+            $id = Id::create($identifier);
+            $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->buyerTradeParty->id = $id ;
+        }
+
+        return $this;
+    }
     public function setBuyerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null)
     {
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->buyerTradeParty->postalTradeAddress = $this->createAddress($postCode, $city, $countryCode, $lineOne, $lineTwo, $lineThree);
