@@ -170,9 +170,9 @@ class Zugferd extends XmlGenerator
         $this->seller->setGlobalId(new Schema($idType->value, $identifier));
     }
 
-    public function setSellerContact(?string $personName = null, ?string $telephone = null, ?string $email = null, ?string $departmentName = null)
+    protected function createContact(?string $personName = null, ?string $telephone = null, ?string $email = null, ?string $departmentName = null): TradeContact
     {
-        $this->seller->definedTradeContact = new TradeContact(
+        return new TradeContact(
             $personName,
             $departmentName,
             $telephone ? new UniversalCommunication($telephone) : null,
@@ -181,7 +181,19 @@ class Zugferd extends XmlGenerator
         );
     }
 
-    public function setSellerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null)
+    public function setSellerContact(?string $personName = null, ?string $telephone = null, ?string $email = null, ?string $departmentName = null)
+    {
+        $this->seller->definedTradeContact = $this->createContact($personName, $telephone, $email, $departmentName);
+    }
+
+    public function setBuyerContact(?string $personName = null, ?string $telephone = null, ?string $email = null, ?string $departmentName = null)
+    {
+        if ($this->buyer) {
+            $this->buyer->definedTradeContact = $this->createContact($personName, $telephone, $email, $departmentName);
+        }
+    }
+
+    public function setSellerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null, ?string $stateCode = null)
     {
         $this->seller->setAddress($this->createAddress($postCode, $city, $countryCode, $lineOne, $lineTwo, $lineThree));
     }
@@ -242,12 +254,12 @@ class Zugferd extends XmlGenerator
         return $address;
     }
 
-    public function setBuyerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null)
+    public function setBuyerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null, ?string $stateCode = null)
     {
         $this->buyer->setAddress($this->createAddress($postCode, $city, $countryCode, $lineOne, $lineTwo, $lineThree));
     }
 
-    public function addItem(string $name, float $price, float $taxRatePercent, float  $quantity, UnitOfMeasurement $unit, ?string $globalID = null, string $globalIDCode = null): float
+    public function addItem(string $name, float $price, float $taxRatePercent, float  $quantity, UnitOfMeasurement $unit, ?string $globalID = null, string $globalIDCode = null, ?string $description = null): array
     {
         $lineNumber = count($this->items) + 1;
         $tradeAgreement = new SpecifiedTradeAgreement();
@@ -272,6 +284,9 @@ class Zugferd extends XmlGenerator
             ->setMonetarySummation(new SpecifiedTradeMonetarySummation($totalPrice));
 
         $product = new Product($globalID, $name);
+        if ($description !== null) {
+            $product->setDescription($description);
+        }
 
         $lineItem = new LineItem();
         $lineItem
@@ -282,7 +297,7 @@ class Zugferd extends XmlGenerator
             ->setLineDocument(new LineDocument($lineNumber));
         $this->trade->addLineItem($lineItem);
 
-        return $totalPrice;
+        return [$lineItem, $totalPrice];
     }
 
     public function addNote(string $content, ?string $subjectCode = null, ?string $contentCode = null)

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cb6ba0c70803f4460a7c4c0c7d24fa15",
+    "content-hash": "5dbb10b902cef32c236c5baf54054f23",
     "packages": [
         {
             "name": "atgp/factur-x",
@@ -499,17 +499,11 @@
         },
         {
             "name": "josemmo/einvoicing",
-            "version": "v0.3.0",
+            "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/josemmo/einvoicing.git",
-                "reference": "251ea544b1efb40be056b4451b4142650467b822"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/josemmo/einvoicing/zipball/251ea544b1efb40be056b4451b4142650467b822",
-                "reference": "251ea544b1efb40be056b4451b4142650467b822",
-                "shasum": ""
+                "url": "https://github.com/Youniwemi/einvoicing",
+                "reference": "bd824c82968714c1effba02673575357ee30569a"
             },
             "require": {
                 "josemmo/uxml": "^0.1.4",
@@ -521,13 +515,18 @@
                 "phpdocumentor/reflection": "^3.0|^5.2|^6.1",
                 "symfony/phpunit-bridge": "*"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
                     "Einvoicing\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Tests\\": "tests/"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -547,11 +546,7 @@
                 "peppol",
                 "ubl"
             ],
-            "support": {
-                "issues": "https://github.com/josemmo/einvoicing/issues",
-                "source": "https://github.com/josemmo/einvoicing/tree/v0.3.0"
-            },
-            "time": "2025-02-24T09:18:18+00:00"
+            "time": "2025-08-07T01:00:18+00:00"
         },
         {
             "name": "josemmo/uxml",
@@ -2668,12 +2663,13 @@
         }
     ],
     "aliases": [],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "stability-flags": {
         "easybill/zugferd-php": 20,
+        "josemmo/einvoicing": 20,
         "milo/schematron": 20
     },
-    "prefer-stable": false,
+    "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {},
     "platform-dev": {},

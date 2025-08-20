@@ -2903,6 +2903,9 @@ enum InternationalCodeDesignator: string
     #[Label("Malaysia - Business Registration Number (BRN/SSM)")]
     case BRN_SSM_MALAYSIA = "BRN";
     
+    #[Label("Malaysia - NRIC")]
+    case NRIC_MALAYSIA = "NRIC";
+    
     // === MONACO ===
     #[Label("Monaco - Registre du Commerce et de l'Industrie (RCI)")]
     case REGISTRE_DU_COMMERCE_ET_DE_L_INDUSTRIE_RCI_MONACO = "0206";
@@ -2999,3 +3002,4 @@ enum IdentificationType: string
     case ELECTRONIC = 'Electronic';
     case OTHER = 'Other';
 }
+

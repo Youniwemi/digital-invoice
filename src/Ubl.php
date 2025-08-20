@@ -147,12 +147,15 @@ class Ubl extends XmlGenerator
         $this->seller->setContactEmail($email);
     }
 
-    public function setSellerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null)
+    public function setSellerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null, ?string $stateCode = null)
     {
         $this->seller->setAddress([$lineOne, $lineTwo, $lineThree]);
         $this->seller->setCity($city);
         $this->seller->setCountry($countryCode);
         $this->seller->setPostalCode($postCode);
+        if ($stateCode) {
+            $this->seller->setSubdivision($stateCode);
+        }
     }
 
     public function setSellerTaxRegistration(string $id, string $schemeID)
@@ -205,20 +208,33 @@ class Ubl extends XmlGenerator
         return $writer->export($this->invoice);
     }
 
-    public function setBuyerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null)
+    public function setBuyerContact(?string $personName = null, ?string $telephone = null, ?string $email = null, ?string $departmentName = null)
+    {
+        $this->buyer->setContactName($personName);
+        $this->buyer->setContactPhone($telephone);
+        $this->buyer->setContactEmail($email);
+    }
+
+    public function setBuyerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null, ?string $stateCode = null)
     {
         $this->buyer->setAddress([$lineOne, $lineTwo, $lineThree]);
         $this->buyer->setCity($city);
         $this->buyer->setCountry($countryCode);
         $this->buyer->setPostalCode($postCode);
+        if ($stateCode) {
+            $this->buyer->setSubdivision($stateCode);
+        }
     }
 
-    public function addItem(string $name, float $price, float $taxRatePercent, float $quantity, UnitOfMeasurement $unit, ?string $globalID = null, ?string $globalIDCode = null): float
+    public function addItem(string $name, float $price, float $taxRatePercent, float $quantity, UnitOfMeasurement $unit, ?string $globalID = null, ?string $globalIDCode = null, ?string $description = null): array
     {
         $line = new InvoiceLine();
         $line->setId($globalID);
         $line->setUnit($unit->value);
         $line->setName($name);
+        if ($description !== null) {
+            $line->setDescription($description);
+        }
         $line->setPrice($price);
         $line->setQuantity($quantity);
         $line->setVatRate(self::decimalFormat($taxRatePercent));
@@ -230,7 +246,7 @@ class Ubl extends XmlGenerator
         $this->invoice->addLine($line);
         $this->items[] = $line;
 
-        return $line->getNetAmountBeforeAllowancesCharges();
+        return [$line, $line->getNetAmountBeforeAllowancesCharges()];
     }
 
     public function addNote(string $content, ?string $subjectCode = null, ?string $contentCode = null)
@@ -274,5 +290,20 @@ class Ubl extends XmlGenerator
             $embeddedAttachment->setDescription($description);
         }
         $this->invoice->addAttachment($embeddedAttachment);
+    }
+
+    public function addItemClassification($item, string $code, string $scheme = 'CLASS')
+    {
+        if ($item instanceof InvoiceLine) {
+            $item->addClassificationIdentifier(new Identifier($code, $scheme));
+        }
+    }
+
+    public function setSellerIndustryClassification(string $code, string $name)
+    {
+        if ($this->seller) {
+            $this->seller->setIndustryClassificationCode($code);
+            $this->seller->setIndustryClassificationName($name);
+        }
     }
 }

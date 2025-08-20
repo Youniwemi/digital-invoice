@@ -143,21 +143,41 @@ class FacturX extends XmlGenerator
         }
     }
 
+    protected function createContact(?string $personName = null, ?string $telephone = null, ?string $email = null, ?string $departmentName = null): TradeContact
+    {
+        $contact = new TradeContact();
+        $contact->personName = $personName;
+        
+        if ($telephone) {
+            $contact->telephoneUniversalCommunication = new UniversalCommunication();
+            $contact->telephoneUniversalCommunication->completeNumber = $telephone;
+        }
+        
+        if ($email) {
+            $contact->emailURIUniversalCommunication = new UniversalCommunication();
+            $contact->emailURIUniversalCommunication->uriid = Id::create($email);
+        }
+        
+        if ($departmentName) {
+            $contact->departmentName = $departmentName;
+        }
+        
+        return $contact;
+    }
+
     public function setSellerContact(?string $personName = null, ?string $departmentName = null, ?string $telephone = null, ?string $email = null)
     {
         if ($this->getProfileLevel() >= self::LEVEL_EN16931) {
-            $this->seller->definedTradeContact = new TradeContact();
-            $this->seller->definedTradeContact->personName = $personName;
-            if ($telephone) {
-                $this->seller->definedTradeContact->telephoneUniversalCommunication = new UniversalCommunication();
-                $this->seller->definedTradeContact->telephoneUniversalCommunication->completeNumber = $telephone;
-            }
-            if ($email) {
-                $this->seller->definedTradeContact->emailURIUniversalCommunication = new UniversalCommunication();
-                $this->seller->definedTradeContact->emailURIUniversalCommunication->uriid = Id::create($email);
-            }
-            if ($departmentName) {
-                $this->seller->definedTradeContact->departmentName = $departmentName;
+            $this->seller->definedTradeContact = $this->createContact($personName, $telephone, $email, $departmentName);
+        }
+    }
+
+    public function setBuyerContact(?string $personName = null, ?string $telephone = null, ?string $email = null, ?string $departmentName = null)
+    {
+        if ($this->getProfileLevel() >= self::LEVEL_EN16931) {
+            $buyer = $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->buyerTradeParty;
+            if ($buyer) {
+                $buyer->definedTradeContact = $this->createContact($personName, $telephone, $email, $departmentName);
             }
         }
     }
@@ -182,7 +202,7 @@ class FacturX extends XmlGenerator
         }
     }
 
-    public function setSellerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null)
+    public function setSellerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null, ?string $stateCode = null)
     {
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->sellerTradeParty->postalTradeAddress = $this->createAddress($postCode, $city, $countryCode, $lineOne, $lineTwo, $lineThree);
 
@@ -198,7 +218,7 @@ class FacturX extends XmlGenerator
 
         return $this;
     }
-    public function setBuyerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null)
+    public function setBuyerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null, ?string $stateCode = null)
     {
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->buyerTradeParty->postalTradeAddress = $this->createAddress($postCode, $city, $countryCode, $lineOne, $lineTwo, $lineThree);
 
@@ -378,7 +398,7 @@ class FacturX extends XmlGenerator
         return (new Validator())->validateAgainstXsd($xml, $against);
     }
 
-    public function addItem(string $name, float $price, float $taxRatePercent, float  $quantity, UnitOfMeasurement $unit, ?string $globalID = null, string $globalIDCode = null): float
+    public function addItem(string $name, float $price, float $taxRatePercent, float  $quantity, UnitOfMeasurement $unit, ?string $globalID = null, string $globalIDCode = null, ?string $description = null): array
     {
 
         $item = new SupplyChainTradeLineItem();
@@ -388,6 +408,9 @@ class FacturX extends XmlGenerator
 
         $item->specifiedTradeProduct = new TradeProduct();
         $item->specifiedTradeProduct->name = $name;
+        if ($description !== null) {
+            $item->specifiedTradeProduct->description = $description;
+        }
         // if ($sellerAssignedID) {
         //     $item->specifiedTradeProduct->sellerAssignedID = $sellerAssignedID;
         // }
@@ -431,7 +454,7 @@ class FacturX extends XmlGenerator
             $this->invoice->supplyChainTradeTransaction->lineItems[] = $item;
         }
 
-        return $totalLineBasis;
+        return [$item, $totalLineBasis];
     }
 
     public function addNote(string $content, ?string $subjectCode = null, ?string $contentCode = null)

@@ -5,6 +5,8 @@ namespace DigitalInvoice\Tests;
 use DigitalInvoice\CurrencyCode;
 use DigitalInvoice\FacturX;
 use DigitalInvoice\Invoice;
+use DigitalInvoice\InvoiceTypeCode;
+use DigitalInvoice\IdentificationType;
 use DigitalInvoice\PdfWriter;
 use DigitalInvoice\Ubl;
 use DigitalInvoice\Zugferd;
@@ -135,7 +137,7 @@ class InvoiceTest extends TestCase
     public function testInvoiceXml($profile, $isPdf, $embedPdf = false, $taxRate = 20): void
     {
         if ($profile===Ubl::MALAYSIA){
-            $identificationDesignator = 'TIN';
+            $identificationDesignator = 'BRN';  // Use BRN as primary identifier for Malaysia
             $currency =  CurrencyCode::MALAYSIAN_RINGGIT;
             $validate = false;
         } else {
@@ -154,9 +156,13 @@ class InvoiceTest extends TestCase
             $identificationDesignator,
             'Seller'
         );
+        
+        // Add TIN for Malaysian invoices (required by validation rules)
+        if ($profile === Ubl::MALAYSIA) {
+            $invoice->addSellerIdentifier('MY123456789', 'TIN');
+        }
         $invoice->setSellerContact(
             'Contact Seller',
-            $departmentName = null,
             '+2129999999999',
             'seller@email.com'
         );
@@ -167,12 +173,24 @@ class InvoiceTest extends TestCase
         
         
 
-        $invoice->setSellerAddress(
-            '1 rue de la paie',
-            '90000',
-            'Paris',
-            'FR'
-        );
+        if ($profile === Ubl::MALAYSIA) {
+            $invoice->setSellerAddress(
+                'Lot 1, Jalan Test',
+                '50480',
+                'Kuala Lumpur',
+                'MYS',
+                null,
+                null,
+                '14'  // State code for Kuala Lumpur
+            );
+        } else {
+            $invoice->setSellerAddress(
+                '1 rue de la paie',
+                '90000',
+                'Paris',
+                'FR'
+            );
+        }
 
         $invoice->setBuyer(
             '',
@@ -183,22 +201,51 @@ class InvoiceTest extends TestCase
             '12344',
             $identificationDesignator, 
         );
+        
+        // Add TIN for Malaysian invoices (required by validation rules)
+        if ($profile === Ubl::MALAYSIA) {
+            $invoice->setBuyerIdentifier('MY987654321', 'TIN');
+        }
+        
+        // Add buyer contact for Malaysian invoices (required by validation rules)
+        if ($profile === Ubl::MALAYSIA) {
+            $invoice->setBuyerContact(
+                'Buyer Contact',
+                '+60123456789',
+                'buyer@example.com'
+            );
+        }
 
-
-        $invoice->setBuyerAddress(
-            '2 rue de la paie',
-            '90000',
-            'Paris',
-            'FR'
-        );
+        if ($profile === Ubl::MALAYSIA) {
+            $invoice->setBuyerAddress(
+                'Lot 2, Jalan Buyer',
+                '50480',
+                'Kuala Lumpur',
+                'MYS',
+                null,
+                null,
+                '14'  // State code for Kuala Lumpur
+            );
+        } else {
+            $invoice->setBuyerAddress(
+                '2 rue de la paie',
+                '90000',
+                'Paris',
+                'FR'
+            );
+        }
 
 
         if (in_array($profile, [FacturX::MINIMUM ,FacturX::BASIC_WL ])) {
             $taxAmount = ( 750 * $taxRate ) / 100;
             $invoice->setPrice(750, $taxAmount);
         } else {
-            // Item 1
-            $invoice->addItem('service a la demande', 750, $taxRate, 1, 'DAY', 'xxxx') ;
+            // Item 1 - add description for Malaysian invoices
+            if ($profile === Ubl::MALAYSIA) {
+                $invoice->addItem('service a la demande', 750, $taxRate, 1, 'DAY', 'xxxx', '0160', 'Professional consulting services on demand');
+            } else {
+                $invoice->addItem('service a la demande', 750, $taxRate, 1, 'DAY', 'xxxx');
+            }
         }
 
 
@@ -220,7 +267,7 @@ class InvoiceTest extends TestCase
 
         // An easy xml validation
         $result = $invoice->validate($xml);
-        self::assertNull($result, $result ? $result."\nIN\n".$xml : '');
+        self::assertNull($result, $result ? (is_array($result) ? print_r($result, true) : $result)."\nIN\n".$xml : '');
 
         if ($isPdf) {
             // This will for a more thorough validation
@@ -244,5 +291,143 @@ class InvoiceTest extends TestCase
         // A complete validation using schematron
         $result = $invoice->validate($xml, $validate);
         $this->assertEmpty($result, $result ? print_r($result, true) ."\n".$xml : '');
+    }
+
+    public function testMalaysiaValidation()
+    {
+        // Test creating a complete Malaysian invoice following the existing pattern
+        $profile = Ubl::MALAYSIA;
+        $identificationDesignator = 'TIN';
+        $currency = CurrencyCode::MALAYSIAN_RINGGIT;
+        
+        // Use yesterday's date with a specific time to avoid "too old" validation errors
+        $yesterday = new \DateTime('yesterday 15:30:00');
+        $invoice = new Invoice('INV-MY-001', $yesterday, null, $currency, $profile);
+        
+        $invoice->addNote("Malaysian e-invoice test with all required fields");
+
+        // Set seller with Malaysian 'NRIC',
+
+        $invoice->setSeller(
+            '850125105019',  
+            'NRIC',
+            'AMS Setia Jaya Sdn. Bhd.'
+        );
+        
+        // Add TIN for seller
+        $invoice->addSellerIdentifier('IG21136626090', 'TIN');
+        $invoice->addSellerIdentifier('850125105019', 'NRIC');
+        
+        // Set MSIC code for seller industry classification
+        $invoice->setSellerIndustryClassification('26201', 'Manufacture of computers');
+        
+        $invoice->setSellerContact(
+            'Ahmad Hassan',
+            '+60123456789', 
+            'general.ams@supplier.com'
+        );
+        
+        $invoice->setSellerAddress(
+            'Lot 66, Bangunan Merdeka, Persiaran Jaya',
+            '50480',
+            'Kuala Lumpur',
+            'MYS',
+            null,
+            null,
+            '14'  // State code for Kuala Lumpur
+        );
+
+        // Set buyer with Malaysian BRN  
+        $invoice->setBuyer(
+            '202301234567',  // Valid Malaysian BRN format: YYYYMMXXXXXX
+            'Hebat Group'
+        );
+        
+        // Add TIN for buyer - valid Malaysian TIN format
+        $invoice->setBuyerIdentifier('C12345678901', 'TIN', IdentificationType::OTHER->value);
+
+        $invoice->setBuyerIdentifier('201901234567', 'BRN', IdentificationType::OTHER->value);
+
+        $invoice->setBuyerContact(
+            'Fatimah Ali',
+            '+60987654321',
+            'buyer@hebatgroup.com'
+        );
+
+        $invoice->setBuyerAddress(
+            'Lot 66, Bangunan Merdeka, Persiaran Jaya',
+            '50480',
+            'Kuala Lumpur', 
+            'MYS',
+            null,
+            null,
+            '14'  // State code for Kuala Lumpur
+        );
+
+        // Add invoice line item with description and classification
+        $item = $invoice->addItem('Laptop Peripherals', 1436.50, 0, 1, 'C62', '1234', '0160', 'High-quality laptop peripherals including mouse, keyboard, and USB hub');
+        
+        // Add Malaysian commodity classification 
+        $invoice->addItemClassification($item, '001', 'CLASS');
+        
+        // Set tax exemption
+        $invoice->setTaxExemption(Invoice::EXEMPT_FROM_TAX, 'Exempt New Means of Transport');
+
+        // Add payment method
+        $invoice->addPaymentMean('58', '1234567890123', 'Bank Transfer');
+
+        // Set payment terms (30 days from invoice date)
+        $dueDate = clone $yesterday;
+        $dueDate->add(new \DateInterval('P30D'));
+        $invoice->setPaymentTerms($dueDate, 'Payment method is cash');
+
+        // Generate and validate XML
+        $xml = $invoice->getXml();
+        $this->assertNotEmpty($xml);
+        
+        // Check that Malaysian-specific elements are present
+        $this->assertStringContainsString('MYR', $xml);
+        $this->assertStringContainsString('AMS Setia Jaya Sdn. Bhd.', $xml);
+        $this->assertStringContainsString('Hebat Group', $xml);
+        $this->assertStringContainsString('IG21136626090', $xml); // Supplier TIN
+        $this->assertStringContainsString('C12345678901', $xml); // Buyer TIN  
+        $this->assertStringContainsString('850125105019', $xml); // Supplier NRIC
+        $this->assertStringContainsString('202301234567', $xml); // Buyer BRN
+        $this->assertStringContainsString('Laptop Peripherals', $xml);
+        $this->assertStringContainsString('Kuala Lumpur', $xml);
+        $this->assertStringContainsString('+60987654321', $xml); // Buyer phone
+        $this->assertStringContainsString('buyer@hebatgroup.com', $xml); // Buyer email
+        
+        // Basic XML validation including Malaysian preset validation rules
+        $result = $invoice->validate($xml);
+        if ($result) {
+            $resultStr = is_array($result) ? print_r($result, true) : $result;
+            $this->fail("Validation failed: " . $resultStr . "\nGenerated XML:\n" . $xml);
+        }
+        
+        // Test that we can parse key Malaysian UBL elements
+        $dom = new \DOMDocument();
+        $dom->loadXML($xml);
+        
+        $xpath = new \DOMXPath($dom);
+        $xpath->registerNamespace('ubl', 'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2');
+        $xpath->registerNamespace('cac', 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2');
+        $xpath->registerNamespace('cbc', 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2');
+        
+        // Verify mandatory Malaysian fields are present in XML structure
+        $supplierName = $xpath->query('/ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cac:PartyLegalEntity/cbc:RegistrationName');
+        $this->assertEquals(1, $supplierName->length, 'Supplier name should be present');
+        
+        $currency = $xpath->query('/ubl:Invoice/cbc:DocumentCurrencyCode');
+        $this->assertEquals(1, $currency->length, 'Currency should be present');
+        $this->assertEquals('MYR', $currency->item(0)->textContent);
+        
+        $invoiceLines = $xpath->query('/ubl:Invoice/cac:InvoiceLine');
+        $this->assertGreaterThan(0, $invoiceLines->length, 'At least one invoice line should be present');
+        
+        // Save the generated XML to examples directory for reference
+        $xmlFilePath = __DIR__ . '/examples/malaysian-ubl-invoice.xml';
+        file_put_contents($xmlFilePath, $xml);
+        
     }
 }

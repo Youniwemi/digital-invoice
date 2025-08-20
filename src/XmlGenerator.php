@@ -16,19 +16,21 @@ interface XmlGeneratorInterface
 
     public function setSellerContact(?string $personName = null, ?string $telephone = null, ?string $email = null, ?string $departmentName = null);
 
-    public function setSellerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null);
+    public function setSellerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null, ?string $stateCode = null);
 
     public function setSellerTaxRegistration(string $id, string $schemeID);
 
     public function setBuyer(string $buyerReference, string $name, string $id = null);
 
+    public function setBuyerContact(?string $personName = null, ?string $telephone = null, ?string $email = null, ?string $departmentName = null);
+
     public function createAddress(string $postCode, string $city, string $countryCode, string $lineOne, ?string $lineTwo = null, ?string $lineThree = null);
 
     public function getXml();
 
-    public function setBuyerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null);
+    public function setBuyerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null, ?string $stateCode = null);
 
-    public function addItem(string $name, float $price, float $taxRatePercent, float  $quantity, UnitOfMeasurement $unit, ?string $globalID = null, ?string $globalIDCode = null): float;
+    public function addItem(string $name, float $price, float $taxRatePercent, float  $quantity, UnitOfMeasurement $unit, ?string $globalID = null, ?string $globalIDCode = null, ?string $description = null): array;
 
     public function addNote(string $content, ?string $subjectCode = null, ?string $contentCode = null);
 
@@ -41,6 +43,8 @@ interface XmlGeneratorInterface
     public function addSellerIdentifier(InternationalCodeDesignator $idType, string $identifier);
 
     public function setBuyerIdentifier( string $identifier, ?InternationalCodeDesignator $idType=null, IdentificationType $type = IdentificationType::OTHER );
+
+    public function addItemClassification($item, string $code, string $scheme = 'CLASS');
 }
 
 
@@ -124,5 +128,15 @@ abstract class XmlGenerator implements XmlGeneratorInterface
     {
         $this->noTaxCategory = $catCategory;
         $this->noTaxReason = $noTaxReason;
+    }
+
+    public function addItemClassification($item, string $code, string $scheme = 'CLASS')
+    {
+        // Default implementation - override in specific generators if needed
+    }
+
+    public function setSellerIndustryClassification(string $code, string $name)
+    {
+        // Default implementation - override in specific generators if needed
     }
 }
