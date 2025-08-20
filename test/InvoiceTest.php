@@ -430,4 +430,21 @@ class InvoiceTest extends TestCase
         file_put_contents($xmlFilePath, $xml);
         
     }
+
+    public function testMalaysiaCodeArrays()
+    {
+        // Test MSIC codes
+        $msicCodes = \DigitalInvoice\Presets\Malaysia::getMsicCodes();
+        $this->assertIsArray($msicCodes);
+        $this->assertArrayHasKey('00000', $msicCodes);
+        $this->assertEquals('NOT APPLICABLE', $msicCodes['00000']);
+        
+        // Test Item Classification codes
+        $classificationCodes = \DigitalInvoice\Presets\Malaysia::getItemClassificationCodes();
+        $this->assertIsArray($classificationCodes);
+        $this->assertArrayHasKey('001', $classificationCodes);
+        $this->assertEquals('Breastfeeding equipment ', $classificationCodes['001']);
+        $this->assertArrayHasKey('022', $classificationCodes);
+        $this->assertEquals('Others', $classificationCodes['022']);
+    }
 }

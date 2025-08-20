@@ -783,6 +783,25 @@ class Malaysia extends AbstractPreset {
     }
 
     /**
+     * Load codes from JSON file (same format as EnumToArray::valueArray)
+     * @param string $filename JSON filename in Presets directory
+     * @return array Array in format [code => description]
+     */
+    private static function loadCodesFromJson(string $filename): array
+    {
+        $jsonFile = __DIR__ . '/' . $filename;
+        if (file_exists($jsonFile)) {
+            $jsonData = json_decode(file_get_contents($jsonFile), true);
+            $codes = [];
+            foreach ($jsonData as $item) {
+                $codes[$item['Code']] = $item['Description'];
+            }
+            return $codes;
+        }
+        return [];
+    }
+
+    /**
      * Get MSIC codes array (same format as EnumToArray::valueArray)
      * @return array Array in format [code => description]
      */
@@ -790,16 +809,20 @@ class Malaysia extends AbstractPreset {
     {
         static $codes = null;
         if ($codes === null) {
-            $jsonFile = __DIR__ . '/Malaysia_MSIC.json';
-            if (file_exists($jsonFile)) {
-                $jsonData = json_decode(file_get_contents($jsonFile), true);
-                $codes = [];
-                foreach ($jsonData as $item) {
-                    $codes[$item['Code']] = $item['Description'];
-                }
-            } else {
-                $codes = [];
-            }
+            $codes = self::loadCodesFromJson('Malaysia_MSIC.json');
+        }
+        return $codes;
+    }
+
+    /**
+     * Get Item Classification codes array (same format as EnumToArray::valueArray)
+     * @return array Array in format [code => description]
+     */
+    public static function getItemClassificationCodes(): array
+    {
+        static $codes = null;
+        if ($codes === null) {
+            $codes = self::loadCodesFromJson('Malaysia_Classification_Codes.json');
         }
         return $codes;
     }
