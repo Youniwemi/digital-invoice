@@ -1,6 +1,6 @@
 <?php
 namespace DigitalInvoice\Presets;
-
+require_once dirname(__DIR__) . '/Types.php';
 use Einvoicing\Invoice;
 use Einvoicing\Presets\AbstractPreset;
 use DigitalInvoice\EnumToArray;
@@ -581,6 +581,22 @@ class Malaysia extends AbstractPreset {
         }
     }
 
+    /**
+     * Helper method to convert street name elements to AddressLine format
+     */
+    private function convertToAddressLine(\DOMDocument $dom, \DOMElement $parentNode, string $addressValue, \DOMElement $insertBefore = null): void
+    {
+        $addressLineElement = $dom->createElement('cac:AddressLine');
+        $lineElement = $dom->createElement('cbc:Line', $addressValue);
+        $addressLineElement->appendChild($lineElement);
+        
+        if ($insertBefore) {
+            $parentNode->insertBefore($addressLineElement, $insertBefore);
+        } else {
+            $parentNode->appendChild($addressLineElement);
+        }
+    }
+
     public function finalizeXml(\UXML\UXML $xml, \Einvoicing\Invoice $invoice, \Einvoicing\Writers\AbstractWriter $writer): void {
         $dom = $xml->element()->ownerDocument;
         
@@ -606,35 +622,24 @@ class Malaysia extends AbstractPreset {
         foreach ($postalAddresses as $postalAddress) {
             $parentNode = $postalAddress->element();
             
-            // Convert StreetName to AddressLine and insert after PostalZone/CountrySubentityCode
+            // Find where to insert AddressLine elements (after CountrySubentityCode, before Country)
+            $countryElement = $postalAddress->get('.//cac:Country');
+            $insertBefore = $countryElement ? $countryElement->element() : null;
+            
+            // Convert StreetName to AddressLine
             $streetNameElement = $postalAddress->get('.//cbc:StreetName');
             if ($streetNameElement) {
                 $streetNode = $streetNameElement->element();
-                $addressValue = $streetNode->textContent;
-                
-                // Find where to insert AddressLine elements (after CountrySubentityCode, before Country)
-                $countryElement = $postalAddress->get('.//cac:Country');
-                $insertBefore = $countryElement ? $countryElement->element() : null;
-                
-                // Split address by comma and create multiple AddressLine elements  
-                $addressParts = array_map('trim', explode(',', $addressValue));
-                
-                foreach ($addressParts as $part) {
-                    if (!empty($part)) {
-                        $addressLineElement = $dom->createElement('cac:AddressLine');
-                        $lineElement = $dom->createElement('cbc:Line', $part);
-                        $addressLineElement->appendChild($lineElement);
-                        
-                        if ($insertBefore) {
-                            $parentNode->insertBefore($addressLineElement, $insertBefore);
-                        } else {
-                            $parentNode->appendChild($addressLineElement);
-                        }
-                    }
-                }
-                
-                // Remove the original StreetName element
+                $this->convertToAddressLine($dom, $parentNode, $streetNode->textContent, $insertBefore);
                 $parentNode->removeChild($streetNode);
+            }
+            
+            // Convert AdditionalStreetName to AddressLine (after StreetName)
+            $additionalStreetNameElement = $postalAddress->get('.//cbc:AdditionalStreetName');
+            if ($additionalStreetNameElement) {
+                $additionalStreetNode = $additionalStreetNameElement->element();
+                $this->convertToAddressLine($dom, $parentNode, $additionalStreetNode->textContent, $insertBefore);
+                $parentNode->removeChild($additionalStreetNode);
             }
             
             // Fix CountrySubentity to CountrySubentityCode

@@ -332,7 +332,7 @@ class InvoiceTest extends TestCase
             '50480',
             'Kuala Lumpur',
             'MYS',
-            null,
+            'Jalan Ampang',  // Additional street name
             null,
             '14'  // State code for Kuala Lumpur
         );
@@ -359,7 +359,7 @@ class InvoiceTest extends TestCase
             '50480',
             'Kuala Lumpur', 
             'MYS',
-            null,
+            'Jalan Bukit Bintang',  // Additional street name
             null,
             '14'  // State code for Kuala Lumpur
         );
@@ -397,6 +397,8 @@ class InvoiceTest extends TestCase
         $this->assertStringContainsString('Kuala Lumpur', $xml);
         $this->assertStringContainsString('+60987654321', $xml); // Buyer phone
         $this->assertStringContainsString('buyer@hebatgroup.com', $xml); // Buyer email
+        $this->assertStringContainsString('Jalan Ampang', $xml); // Seller additional street name
+        $this->assertStringContainsString('Jalan Bukit Bintang', $xml); // Buyer additional street name
         
         // Basic XML validation including Malaysian preset validation rules
         $result = $invoice->validate($xml);
@@ -425,6 +427,40 @@ class InvoiceTest extends TestCase
         $invoiceLines = $xpath->query('/ubl:Invoice/cac:InvoiceLine');
         $this->assertGreaterThan(0, $invoiceLines->length, 'At least one invoice line should be present');
         
+        // Verify AddressLine elements are created for both StreetName and AdditionalStreetName
+        $sellerAddressLines = $xpath->query('/ubl:Invoice/cac:AccountingSupplierParty/cac:Party/cac:PostalAddress/cac:AddressLine/cbc:Line');
+        $this->assertGreaterThan(0, $sellerAddressLines->length, 'Seller should have AddressLine elements');
+        
+        $buyerAddressLines = $xpath->query('/ubl:Invoice/cac:AccountingCustomerParty/cac:Party/cac:PostalAddress/cac:AddressLine/cbc:Line');
+        $this->assertGreaterThan(0, $buyerAddressLines->length, 'Buyer should have AddressLine elements');
+        
+        // Verify specific AddressLine content
+        $foundSellerStreet = false;
+        $foundSellerAdditional = false;
+        foreach ($sellerAddressLines as $line) {
+            if (strpos($line->textContent, 'Lot 66, Bangunan Merdeka') !== false) {
+                $foundSellerStreet = true;
+            }
+            if (strpos($line->textContent, 'Jalan Ampang') !== false) {
+                $foundSellerAdditional = true;
+            }
+        }
+        $this->assertTrue($foundSellerStreet, 'Seller StreetName should be converted to AddressLine');
+        $this->assertTrue($foundSellerAdditional, 'Seller AdditionalStreetName should be converted to AddressLine');
+        
+        $foundBuyerStreet = false;
+        $foundBuyerAdditional = false;
+        foreach ($buyerAddressLines as $line) {
+            if (strpos($line->textContent, 'Lot 66, Bangunan Merdeka') !== false) {
+                $foundBuyerStreet = true;
+            }
+            if (strpos($line->textContent, 'Jalan Bukit Bintang') !== false) {
+                $foundBuyerAdditional = true;
+            }
+        }
+        $this->assertTrue($foundBuyerStreet, 'Buyer StreetName should be converted to AddressLine');
+        $this->assertTrue($foundBuyerAdditional, 'Buyer AdditionalStreetName should be converted to AddressLine');
+        
         // Save the generated XML to examples directory for reference
         $xmlFilePath = __DIR__ . '/examples/malaysian-ubl-invoice.xml';
         file_put_contents($xmlFilePath, $xml);
@@ -438,6 +474,7 @@ class InvoiceTest extends TestCase
         $this->assertIsArray($msicCodes);
         $this->assertArrayHasKey('00000', $msicCodes);
         $this->assertEquals('NOT APPLICABLE', $msicCodes['00000']);
+        $this->assertEquals('Rice milling', $msicCodes["10611"]);
         
         // Test Item Classification codes
         $classificationCodes = \DigitalInvoice\Presets\Malaysia::getItemClassificationCodes();
