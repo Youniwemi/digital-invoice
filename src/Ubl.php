@@ -79,14 +79,26 @@ class Ubl extends XmlGenerator
             CURLOPT_POST => 1,
         ]);
         $res = curl_exec($ch);
+        $curlError = curl_error($ch);
         curl_close($ch);
         unset($ch);
 
+        if ($res === false || empty($res)) {
+            return ['Validation API error' => 'Unable to connect to validation service: ' . ($curlError ?: 'Empty response')];
+        }
+
         $report = json_decode($res, true);
-        if ($report['result'] === 'SUCCESS') {
+        if (!$report) {
+            return ['Validation API error' => 'Invalid response from validation service'];
+        }
+
+        if (isset($report['result']) && $report['result'] === 'SUCCESS') {
             return [];
         } else {
-            $errors = isset($report['reports']['error']) ? $report['reports']['error'] : $report['reports']['warning'];
+            if (!isset($report['reports'])) {
+                return ['Validation API error' => 'Unexpected response format from validation service'];
+            }
+            $errors = isset($report['reports']['error']) ? $report['reports']['error'] : ($report['reports']['warning'] ?? []);
 
             return array_map(function ($e) {
                 return $e['description']." - ".$e['location'] ;
