@@ -15,13 +15,20 @@ $zatca->clearInvoice($xml, $uuid, $hash);
 $pdp->sendFlowToPlateforme($facturx, $siret);
 ```
 
-You get **one unified interface**:
+You get **one unified API** - just like Invoice generation:
 
 ```php
-// ✅ With abstraction - same API for all countries
-$submitter = SubmitterFactory::create('IT'); // or 'FR', 'SA', 'MY', etc.
-$submitter->authenticate($credentials);
+// ✅ Same as creating invoices - one class, different parameters
+$invoice = new Invoice(..., profile: Invoice::FACTURX_BASIC);
+$invoice = new Invoice(..., profile: Invoice::UBL_PEPPOL);
+
+// Same pattern for submission - one class, different countries
+$submitter = new Submitter('FR', 'superpdp');
+$submitter = new Submitter('SA');
 $result = $submitter->submit($invoice);
+
+// Or even simpler - submit directly from Invoice
+$result = $invoice->submit('FR', 'superpdp', $credentials);
 ```
 
 ## Supported Countries
@@ -88,56 +95,87 @@ Sender → Access Point → Peppol Network → Access Point → Recipient
 
 ## Quick Start
 
-### Step 1: Install Dependencies
+### Three Ways to Submit (Choose What You Prefer)
 
-```bash
-composer require guzzlehttp/guzzle
-composer install
-```
-
-### Step 2: Create Invoice (as usual)
+#### 1. Simplest: Direct from Invoice (Recommended)
 
 ```php
 use DigitalInvoice\Invoice;
 
+// Create invoice (as usual)
 $invoice = new Invoice(
     invoiceId: 'INV-2025-001',
     issueDate: new DateTime('2025-01-15'),
     currency: 'EUR',
-    profile: Invoice::UBL_PEPOOL
+    profile: Invoice::UBL_PEPPOL
 );
 
-// Configure invoice as normal
+// Configure invoice
 $invoice->setSeller('12345678901234', '0002', 'My Company');
 $invoice->setBuyer('98765432109876', 'Customer Name');
-// ... add items, etc.
-```
+$invoice->addItem('Consulting', 1000.00, 20.0, 10, 'HUR');
+$invoice->setPrice(10000.00, 2000.00);
 
-### Step 3: Submit to Tax Authority
-
-```php
-use DigitalInvoice\Submission\SubmitterFactory;
-
-// Create submitter for France
-$submitter = SubmitterFactory::create('FR', [
-    'environment' => 'sandbox',
-    'pdp_provider' => 'basware',
-]);
-
-// Authenticate
-$submitter->authenticate([
-    'api_key' => 'your_api_key_here',
-]);
-
-// Submit
-$result = $submitter->submit($invoice);
+// Submit in ONE line - just like $invoice->getXml() or $invoice->getPdf()
+$result = $invoice->submit('FR', 'superpdp', [
+    'client_id' => 'xxx',
+    'client_secret' => 'yyy',
+], 'sandbox');
 
 if ($result->success) {
     echo "✓ Submitted! ID: {$result->governmentId}";
-} else {
-    echo "✗ Failed: {$result->error}";
 }
 ```
+
+#### 2. Using Submitter Class (Reusable)
+
+```php
+use DigitalInvoice\Submission\Submitter;
+
+// One class for all countries (like Invoice class)
+$submitter = new Submitter('FR', 'superpdp', 'sandbox');
+
+$submitter->authenticate([
+    'client_id' => 'xxx',
+    'client_secret' => 'yyy',
+]);
+
+// Submit multiple invoices with same submitter
+$result = $submitter->submit($invoice);
+```
+
+#### 3. Using Constants (Type-Safe)
+
+```php
+use DigitalInvoice\Submission\Submitter;
+
+// Type-safe constants (like Invoice::FACTURX_BASIC)
+$submitter = new Submitter(Submitter::FRANCE_SUPERPDP);
+$submitter->authenticate($credentials);
+$result = $submitter->submit($invoice);
+
+// Available constants:
+// - Submitter::FRANCE_SUPERPDP
+// - Submitter::FRANCE_BASWARE
+// - Submitter::FRANCE_TRADESHIFT
+// - Submitter::SAUDI_ZATCA
+```
+
+### Why This API?
+
+**Same pattern as Invoice generation:**
+
+```php
+// Creating invoices - one class, different profiles
+$invoice = new Invoice(..., profile: Invoice::FACTURX_BASIC);
+$invoice = new Invoice(..., profile: Invoice::UBL_PEPPOL);
+
+// Submitting invoices - one class, different countries
+$submitter = new Submitter('FR', 'superpdp');
+$submitter = new Submitter('SA');
+```
+
+**One class to learn, works everywhere!**
 
 ---
 
@@ -146,18 +184,20 @@ if ($result->success) {
 ### France (PDP)
 
 ```php
-$submitter = SubmitterFactory::create('FR', [
-    'environment' => 'production',
-    'pdp_provider' => 'basware', // or 'tradeshift', 'pagero'
-]);
+use DigitalInvoice\Submission\Submitter;
+
+// One class for all French PDPs
+$submitter = new Submitter('FR', 'superpdp', 'production');
+// Or: new Submitter('FR', 'basware')
+// Or: new Submitter('FR', 'tradeshift')
+// Same class, different provider!
 
 $submitter->authenticate([
-    'api_key' => 'your_pdp_api_key',
+    'client_id' => 'xxx',        // For SuperPDP (OAuth2)
+    'client_secret' => 'yyy',
+    // OR
+    // 'api_key' => 'xxx',       // For other PDPs
 ]);
-
-// Optional: Query Annuaire directory
-$recipientInfo = $submitter->queryAnnuaire('12345678901234'); // SIRET
-echo "Recipient PDP: " . $recipientInfo['pdp_name'];
 
 // Submit invoice
 $result = $submitter->submit($invoice);
@@ -165,6 +205,9 @@ $result = $submitter->submit($invoice);
 // Check status later
 $status = $submitter->getStatus($result->referenceId);
 echo "Status: {$status->status}";
+
+// Or submit directly from Invoice
+$result = $invoice->submit('FR', 'superpdp', $credentials);
 ```
 
 **France-Specific Notes**:
@@ -178,9 +221,10 @@ echo "Status: {$status->status}";
 ### Saudi Arabia (ZATCA)
 
 ```php
-$submitter = SubmitterFactory::create('SA', [
-    'environment' => 'sandbox',
-]);
+use DigitalInvoice\Submission\Submitter;
+
+// Same Submitter class, different country
+$submitter = new Submitter('SA', null, 'sandbox');
 
 $submitter->authenticate([
     'certificate' => '/path/to/zatca_cert.pem',
@@ -197,6 +241,9 @@ if ($result->success) {
     // Save cleared invoice with stamp
     file_put_contents('cleared.xml', $result->signedXml);
 }
+
+// Or submit directly from Invoice
+$result = $invoice->submit('SA', null, $credentials, 'sandbox');
 ```
 
 **ZATCA-Specific Notes**:
@@ -261,42 +308,62 @@ try {
 ### Multi-Country Support
 
 ```php
-$invoices = [
-    ['invoice' => $frenchInvoice, 'country' => 'FR', 'config' => [...]],
-    ['invoice' => $saudiInvoice, 'country' => 'SA', 'config' => [...]],
+use DigitalInvoice\Submission\Submitter;
+
+// Same API works for ALL countries!
+$configurations = [
+    ['country' => 'FR', 'provider' => 'superpdp', 'invoice' => $frenchInvoice, 'creds' => [...]],
+    ['country' => 'SA', 'provider' => null, 'invoice' => $saudiInvoice, 'creds' => [...]],
 ];
 
-foreach ($invoices as $item) {
+foreach ($configurations as $config) {
     try {
-        $submitter = SubmitterFactory::create($item['country'], $item['config']);
-        $submitter->authenticate($item['config']);
+        // Same constructor for all countries
+        $submitter = new Submitter($config['country'], $config['provider'], 'production');
+        $submitter->authenticate($config['creds']);
 
-        $result = $submitter->submit($item['invoice']);
+        // Same submit() method for all countries
+        $result = $submitter->submit($config['invoice']);
 
-        echo "{$item['country']}: " . ($result->success ? '✓' : '✗') . "\n";
+        echo "{$config['country']}: " . ($result->success ? '✓' : '✗') . "\n";
     } catch (\Exception $e) {
-        echo "{$item['country']}: Error - {$e->getMessage()}\n";
+        echo "{$config['country']}: Error - {$e->getMessage()}\n";
     }
+}
+
+// Or even simpler - loop and submit directly
+foreach ($configurations as $config) {
+    $result = $config['invoice']->submit(
+        $config['country'],
+        $config['provider'],
+        $config['creds']
+    );
+    echo "{$config['country']}: " . ($result->success ? '✓' : '✗') . "\n";
 }
 ```
 
 ### Check Supported Countries
 
 ```php
+use DigitalInvoice\Submission\Submitter;
+
 // Check if supported
-if (SubmitterFactory::isSupported('IT')) {
+if (Submitter::isSupported('IT')) {
     echo "Italy is supported!";
 }
 
 // Get all supported
-$countries = SubmitterFactory::getSupportedCountries();
+$countries = Submitter::getSupportedCountries();
 foreach ($countries as $code => $info) {
     echo "{$code} - {$info['name']} ({$info['model']})\n";
 }
 
-// Get required config for a country
-$required = SubmitterFactory::getRequiredConfig('FR');
-// Returns: ['pdp_provider', 'api_key']
+// Get required credentials for a country/provider
+$required = Submitter::getRequiredCredentials('FR', 'superpdp');
+// Returns: ['client_id', 'client_secret']
+
+$required = Submitter::getRequiredCredentials('SA');
+// Returns: ['certificate', 'private_key', 'secret']
 ```
 
 ---
