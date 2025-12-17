@@ -290,24 +290,26 @@ class Invoice
      *
      * Unified submission API - submit to any country with same method call.
      *
-     * @param string $countryOrProfile Country code ('FR', 'SA') or profile (Submitter::FRANCE_SUPERPDP)
-     * @param string|null $provider Provider name for countries with multiple options ('superpdp', 'basware', etc.)
+     * @param string $provider Provider identifier:
+     *                        - French PDPs: 'superpdp', 'basware', 'tradeshift', 'pagero'
+     *                        - Centralized: 'SA' (Saudi), 'IT' (Italy), 'MY' (Malaysia)
+     *                        Or use constants: Submitter::SUPERPDP, Submitter::SAUDI_ZATCA
      * @param array $credentials Authentication credentials (API key, OAuth2, certificates, etc.)
      * @param string $environment 'sandbox' or 'production'
      * @return \DigitalInvoice\Submission\Result\SubmissionResult
      *
      * Examples:
-     *   $result = $invoice->submit('FR', 'superpdp', ['client_id' => 'xxx', 'client_secret' => 'yyy']);
-     *   $result = $invoice->submit('SA', null, ['certificate' => '/path/cert.pem', ...]);
-     *   $result = $invoice->submit('FR', 'basware', ['api_key' => 'xxx'], 'sandbox');
+     *   $result = $invoice->submit('superpdp', ['client_id' => 'xxx', 'client_secret' => 'yyy']);
+     *   $result = $invoice->submit('SA', ['certificate' => '/path/cert.pem', ...]);
+     *   $result = $invoice->submit('basware', ['api_key' => 'xxx'], 'sandbox');
+     *   $result = $invoice->submit(Submitter::SUPERPDP, $credentials);
      */
     public function submit(
-        string $countryOrProfile,
-        ?string $provider = null,
+        string $provider,
         array $credentials = [],
         string $environment = 'production'
     ): \DigitalInvoice\Submission\Result\SubmissionResult {
-        $submitter = new \DigitalInvoice\Submission\Submitter($countryOrProfile, $provider, $environment);
+        $submitter = new \DigitalInvoice\Submission\Submitter($provider, $environment);
 
         if (!empty($credentials)) {
             $submitter->authenticate($credentials);
@@ -320,20 +322,22 @@ class Invoice
      * Get invoice status from tax authority/platform
      *
      * @param string $referenceId Reference ID from previous submit()
-     * @param string $countryOrProfile Country code or profile
-     * @param string|null $provider Provider name
+     * @param string $provider Provider identifier (same as used in submit())
      * @param array $credentials Authentication credentials
      * @param string $environment 'sandbox' or 'production'
      * @return \DigitalInvoice\Submission\Result\InvoiceStatus
+     *
+     * Examples:
+     *   $status = $invoice->getSubmissionStatus($refId, 'superpdp', $credentials);
+     *   $status = $invoice->getSubmissionStatus($refId, 'SA', $credentials);
      */
     public function getSubmissionStatus(
         string $referenceId,
-        string $countryOrProfile,
-        ?string $provider = null,
+        string $provider,
         array $credentials = [],
         string $environment = 'production'
     ): \DigitalInvoice\Submission\Result\InvoiceStatus {
-        $submitter = new \DigitalInvoice\Submission\Submitter($countryOrProfile, $provider, $environment);
+        $submitter = new \DigitalInvoice\Submission\Submitter($provider, $environment);
 
         if (!empty($credentials)) {
             $submitter->authenticate($credentials);

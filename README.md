@@ -51,7 +51,7 @@ $pdf = $invoice->getPdf($existingPdf);
 
 // 4. Submit to tax authority (NEW!)
 // Same unified API - just like creating invoices
-$result = $invoice->submit('FR', 'superpdp', [
+$result = $invoice->submit('superpdp', [  // Provider identifier
     'client_id' => 'xxx',
     'client_secret' => 'yyy',
 ]);
@@ -63,9 +63,9 @@ if ($result->success) {
 
 **One API for everything:**
 - **Invoice generation**: `new Invoice(..., profile: Invoice::FACTURX_BASIC)`
-- **Invoice submission**: `$invoice->submit('FR', 'superpdp', $credentials)`
+- **Invoice submission**: `$invoice->submit('superpdp', $credentials)`
 
-Same pattern, different parameters. Easy!
+Same pattern, just specify the provider. Easy!
 
 ## Getting Started
 
@@ -119,28 +119,31 @@ Digital Invoice now supports **direct submission to tax authorities and e-invoic
 
 ```php
 // 1. Simplest: Direct from Invoice (Recommended)
-$result = $invoice->submit('FR', 'superpdp', $credentials);
+$result = $invoice->submit('superpdp', $credentials);
 
 // 2. Using Submitter class (Reusable)
-$submitter = new Submitter('FR', 'superpdp');
+$submitter = new Submitter('superpdp');
 $submitter->authenticate($credentials);
 $result = $submitter->submit($invoice);
 
 // 3. Using constants (Type-safe)
-$submitter = new Submitter(Submitter::FRANCE_SUPERPDP);
+$submitter = new Submitter(Submitter::SUPERPDP);
 $result = $submitter->submit($invoice);
 ```
 
-**Same class, different countries:**
+**Same class, different providers:**
 
 ```php
-// France
-$submitter = new Submitter('FR', 'superpdp');
+// France SuperPDP
+$submitter = new Submitter('superpdp');
+
+// France Basware
+$submitter = new Submitter('basware');
 
 // Saudi Arabia
-$submitter = new Submitter('SA');
+$submitter = new Submitter('sa');  // or Submitter::SAUDI_ZATCA
 
-// Same API for all countries!
+// Same API for all providers!
 ```
 
 ### Why This Matters

@@ -9,15 +9,15 @@ use DigitalInvoice\Submission\Submitter;
  * Unified API Example - Same pattern as Invoice generation
  *
  * Just like Invoice class provides one API for all formats:
- *   $invoice = new Invoice(..., profile: Invoice::UBL_PEPOOL);
+ *   $invoice = new Invoice(..., profile: Invoice::UBL_PEPPOL);
  *   $invoice = new Invoice(..., profile: Invoice::FACTURX_BASIC);
  *
- * Submitter provides one API for all countries:
- *   $submitter = new Submitter('FR', 'superpdp');
- *   $submitter = new Submitter('SA');
+ * Submitter provides one API for all providers:
+ *   $submitter = new Submitter('superpdp');  // France SuperPDP
+ *   $submitter = new Submitter('SA');        // Saudi Arabia
  *
  * OR even simpler - submit directly from Invoice:
- *   $result = $invoice->submit('FR', 'superpdp', $credentials);
+ *   $result = $invoice->submit('superpdp', $credentials);
  */
 
 echo "=== Unified API Example ===\n\n";
@@ -30,7 +30,7 @@ $invoice = new Invoice(
     invoiceId: 'UNIFIED-001',
     issueDate: new DateTime('2025-01-15'),
     currency: 'EUR',
-    profile: Invoice::UBL_PEPOOL  // One class, different profiles
+    profile: Invoice::UBL_PEPPOL  // One class, different profiles
 );
 
 // Configure invoice
@@ -45,7 +45,7 @@ $invoice->setBuyerIdentifier('98765432109876', '0002', 'Legal');
 $invoice->addItem('Consulting Services', 1000.00, 20.0, 10, 'HUR');
 $invoice->setPrice(10000.00, 2000.00);
 
-echo "✓ Invoice created with profile: UBL_PEPOOL\n\n";
+echo "✓ Invoice created with profile: UBL_PEPPOL\n\n";
 
 // =============================================================================
 // APPROACH 1: Direct submission from Invoice (Simplest!)
@@ -56,9 +56,9 @@ echo "Just like \$invoice->getXml() or \$invoice->getPdf()\n\n";
 
 try {
     // Submit directly from invoice - ONE LINE!
+    // Provider can be: 'superpdp', 'basware', 'SA', 'IT', etc.
     $result = $invoice->submit(
-        'FR',                    // Country
-        'superpdp',              // Provider
+        'superpdp',              // Provider identifier
         [                        // Credentials
             'client_id' => getenv('SUPERPDP_CLIENT_ID') ?: 'demo_client',
             'client_secret' => getenv('SUPERPDP_CLIENT_SECRET') ?: 'demo_secret',
@@ -78,172 +78,223 @@ try {
 }
 
 // =============================================================================
-// APPROACH 2: Using Submitter class (Reusable)
+// APPROACH 2: Using Submitter class (Reusable for multiple invoices)
 // =============================================================================
 
-echo "=== Approach 2: Using Submitter Class ===\n";
-echo "One Submitter class for all countries (like Invoice class)\n\n";
+echo "=== Approach 2: Using Submitter Class (Reusable) ===\n";
+echo "One class for all providers - just like Invoice class\n\n";
 
-// France - SuperPDP
-echo "France (SuperPDP):\n";
-$submitterFR = new Submitter('FR', 'superpdp', 'sandbox');
-$submitterFR->authenticate([
-    'client_id' => 'xxx',
-    'client_secret' => 'yyy',
-]);
-echo "  Created: Submitter('FR', 'superpdp')\n";
-echo "  Country: {$submitterFR->getCountryCode()}\n";
-echo "  Provider: {$submitterFR->getProvider()}\n";
-echo "  Model: {$submitterFR->getSubmissionModel()}\n\n";
+try {
+    // Create submitter - ONE class for ALL providers
+    $submitter = new Submitter('superpdp', 'sandbox');
 
-// France - Basware (same class, different provider!)
-echo "France (Basware):\n";
-$submitterBasware = new Submitter('FR', 'basware', 'sandbox');
-$submitterBasware->authenticate(['api_key' => 'xxx']);
-echo "  Created: Submitter('FR', 'basware')\n";
-echo "  Country: {$submitterBasware->getCountryCode()}\n";
-echo "  Provider: {$submitterBasware->getProvider()}\n\n";
+    // Authenticate once
+    $submitter->authenticate([
+        'client_id' => getenv('SUPERPDP_CLIENT_ID') ?: 'demo_client',
+        'client_secret' => getenv('SUPERPDP_CLIENT_SECRET') ?: 'demo_secret',
+    ]);
 
-// Saudi Arabia (same class, different country!)
-echo "Saudi Arabia (ZATCA):\n";
-$submitterSA = new Submitter('SA', null, 'sandbox');
-$submitterSA->authenticate([
-    'certificate' => '/path/cert.pem',
-    'private_key' => '/path/key.pem',
-    'secret' => 'xxx',
-]);
-echo "  Created: Submitter('SA')\n";
-echo "  Country: {$submitterSA->getCountryCode()}\n";
-echo "  Requires clearance: " . ($submitterSA->requiresClearance() ? 'Yes' : 'No') . "\n\n";
+    // Submit multiple invoices with same submitter
+    $result = $submitter->submit($invoice);
+
+    if ($result->success) {
+        echo "✓ Invoice submitted via Submitter class!\n";
+        echo "  Provider: {$submitter->getProvider()}\n";
+        echo "  Country: {$submitter->getCountryCode()}\n";
+        echo "  ID: {$result->governmentId}\n\n";
+    }
+
+} catch (\Exception $e) {
+    echo "Note: Demo credentials don't work (expected)\n";
+    echo "Error: {$e->getMessage()}\n\n";
+}
 
 // =============================================================================
-// APPROACH 3: Using Constants (Type-safe)
+// APPROACH 3: Using Constants (Type-safe, IDE-friendly)
 // =============================================================================
 
-echo "=== Approach 3: Using Constants ===\n";
-echo "Type-safe profiles (like Invoice::FACTURX_BASIC)\n\n";
+echo "=== Approach 3: Using Constants (Type-Safe) ===\n";
+echo "Constants like Invoice::FACTURX_BASIC\n\n";
 
-$submitter = new Submitter(Submitter::FRANCE_SUPERPDP);
-echo "✓ Created: new Submitter(Submitter::FRANCE_SUPERPDP)\n";
-echo "  Equivalent to: new Submitter('FR', 'superpdp')\n\n";
+try {
+    // Use constants for type-safety and autocomplete
+    $submitter = new Submitter(Submitter::SUPERPDP, 'sandbox');
 
-// Available constants:
-echo "Available constants:\n";
-echo "  - Submitter::FRANCE_SUPERPDP\n";
-echo "  - Submitter::FRANCE_BASWARE\n";
-echo "  - Submitter::FRANCE_TRADESHIFT\n";
-echo "  - Submitter::FRANCE_PAGERO\n";
-echo "  - Submitter::SAUDI_ZATCA\n";
-echo "  (More added as countries are implemented)\n\n";
+    $submitter->authenticate([
+        'client_id' => getenv('SUPERPDP_CLIENT_ID') ?: 'demo_client',
+        'client_secret' => getenv('SUPERPDP_CLIENT_SECRET') ?: 'demo_secret',
+    ]);
+
+    $result = $submitter->submit($invoice);
+
+    if ($result->success) {
+        echo "✓ Invoice submitted using constant!\n";
+        echo "  Constant used: Submitter::SUPERPDP\n";
+        echo "  ID: {$result->governmentId}\n\n";
+    }
+
+} catch (\Exception $e) {
+    echo "Note: Demo credentials don't work (expected)\n";
+    echo "Error: {$e->getMessage()}\n\n";
+}
 
 // =============================================================================
-// APPROACH 4: Multi-Country Loop (Same API!)
+// MULTI-COUNTRY EXAMPLE: Same API for all providers
 // =============================================================================
 
-echo "=== Approach 4: Multi-Country Loop ===\n";
-echo "Same API works for ALL countries\n\n";
+echo "=== Multi-Country Example: Same API Works Everywhere ===\n\n";
 
 $configurations = [
-    ['country' => 'FR', 'provider' => 'superpdp', 'name' => 'France (SuperPDP)'],
-    ['country' => 'FR', 'provider' => 'basware', 'name' => 'France (Basware)'],
-    ['country' => 'SA', 'provider' => null, 'name' => 'Saudi Arabia (ZATCA)'],
+    [
+        'name' => 'France SuperPDP',
+        'provider' => 'superpdp',  // or Submitter::SUPERPDP
+        'credentials' => [
+            'client_id' => 'xxx',
+            'client_secret' => 'yyy',
+        ],
+    ],
+    [
+        'name' => 'France Basware',
+        'provider' => 'basware',   // or Submitter::BASWARE
+        'credentials' => [
+            'api_key' => 'xxx',
+        ],
+    ],
+    [
+        'name' => 'Saudi Arabia',
+        'provider' => 'sa',        // or Submitter::SAUDI_ZATCA
+        'credentials' => [
+            'certificate' => '/path/to/cert.pem',
+            'private_key' => '/path/to/key.pem',
+            'secret' => 'otp_secret',
+        ],
+    ],
 ];
 
 foreach ($configurations as $config) {
-    try {
-        $submitter = new Submitter($config['country'], $config['provider'], 'sandbox');
-        echo "✓ {$config['name']}\n";
-        echo "  - Same constructor signature\n";
-        echo "  - Same authenticate() method\n";
-        echo "  - Same submit() method\n";
-        echo "  - Same getStatus() method\n";
+    echo "Provider: {$config['name']}\n";
+    echo "  Using: new Submitter('{$config['provider']}')\n";
 
+    try {
+        // Same constructor for ALL providers!
+        $submitter = new Submitter($config['provider'], 'sandbox');
+        $submitter->authenticate($config['credentials']);
+
+        // Same submit() method for ALL providers!
         // $result = $submitter->submit($invoice);
-        // ALL use identical API!
+
+        echo "  ✓ Initialized successfully\n";
+        echo "  Country: {$submitter->getCountryCode()}\n";
+        echo "  Model: {$submitter->getSubmissionModel()}\n\n";
 
     } catch (\Exception $e) {
-        echo "✗ {$config['name']}: {$e->getMessage()}\n";
+        echo "  ✗ Error: {$e->getMessage()}\n\n";
     }
-    echo "\n";
 }
 
 // =============================================================================
-// COMPARISON: Old Way vs New Way
+// PROVIDER DISCOVERY (for WooCommerce plugins, etc.)
 // =============================================================================
 
-echo "=== API Comparison ===\n\n";
+echo "=== Provider Discovery (for WooCommerce plugins) ===\n\n";
 
-echo "OLD WAY (Different classes):\n";
-echo "❌ \$superpdp = new SuperPdpSubmitter();\n";
-echo "❌ \$basware = new FrancePdpSubmitter('basware');\n";
-echo "❌ \$zatca = new SaudiZatcaSubmitter();\n";
-echo "   Different classes to learn!\n\n";
+// Get all available providers
+$providers = Submitter::getAvailableProviders();
 
-echo "NEW WAY (One class, like Invoice):\n";
-echo "✅ \$submitter = new Submitter('FR', 'superpdp');\n";
-echo "✅ \$submitter = new Submitter('FR', 'basware');\n";
-echo "✅ \$submitter = new Submitter('SA');\n";
-echo "   One class to learn!\n\n";
+echo "All Available Providers:\n";
+foreach ($providers as $key => $info) {
+    if (isset($info['status']) && $info['status'] === 'coming_soon') {
+        continue; // Skip coming soon
+    }
 
-echo "EVEN SIMPLER (Direct from Invoice):\n";
-echo "✅ \$result = \$invoice->submit('FR', 'superpdp', \$creds);\n";
-echo "✅ \$result = \$invoice->submit('SA', null, \$creds);\n";
-echo "   Just like \$invoice->getXml() or \$invoice->getPdf()!\n\n";
-
-// =============================================================================
-// HELPER METHODS
-// =============================================================================
-
-echo "=== Helper Methods ===\n\n";
-
-// Check if supported
-echo "Check support:\n";
-echo "  Submitter::isSupported('FR'): " . (Submitter::isSupported('FR') ? 'true' : 'false') . "\n";
-echo "  Submitter::isSupported('IT'): " . (Submitter::isSupported('IT') ? 'true' : 'false') . "\n\n";
-
-// Get required credentials
-echo "Get required credentials:\n";
-$required = Submitter::getRequiredCredentials('FR', 'superpdp');
-echo "  FR + superpdp: " . implode(', ', $required) . "\n";
-
-$required = Submitter::getRequiredCredentials('SA');
-echo "  SA: " . implode(', ', $required) . "\n\n";
-
-// List all supported
-echo "Supported countries:\n";
-$countries = Submitter::getSupportedCountries();
-foreach ($countries as $code => $info) {
-    echo "  {$code} - {$info['name']} ({$info['model']})\n";
+    $free = $info['free_tier'] ? ' [FREE]' : '';
+    echo "  - {$key}: {$info['name']} ({$info['country_name']}){$free}\n";
 }
+echo "\n";
 
-echo "\n=== Complete ===\n";
+// Get providers by country (for grouped dropdowns)
+$byCountry = Submitter::getProvidersByCountry();
+
+echo "Providers by Country:\n";
+foreach ($byCountry as $countryCode => $data) {
+    echo "  {$data['country_name']} ({$countryCode}):\n";
+    foreach ($data['providers'] as $provKey => $provInfo) {
+        echo "    - {$provKey}: {$provInfo['name']}\n";
+    }
+}
+echo "\n";
+
+// Get required credentials for a provider
+$requiredCreds = Submitter::getRequiredCredentials('superpdp');
+echo "Required credentials for SuperPDP: " . implode(', ', $requiredCreds) . "\n";
+
+$requiredCreds = Submitter::getRequiredCredentials('sa');
+echo "Required credentials for Saudi ZATCA: " . implode(', ', $requiredCreds) . "\n\n";
+
+// =============================================================================
+// COMPARISON: Old way vs New way
+// =============================================================================
+
+echo "=== Comparison: Before & After ===\n\n";
+
+echo "❌ OLD WAY (if we had kept the complex design):\n";
+echo "   \$francePdp = new FrancePdpSubmitter('superpdp', 'sandbox');\n";
+echo "   \$superpdp = new SuperPdpSubmitter('sandbox');\n";
+echo "   \$zatca = new SaudiZatcaSubmitter('sandbox');\n";
+echo "   // Different classes to learn!\n\n";
+
+echo "✅ NEW WAY (unified):\n";
+echo "   \$submitter = new Submitter('superpdp', 'sandbox');\n";
+echo "   \$submitter = new Submitter('basware', 'sandbox');\n";
+echo "   \$submitter = new Submitter('sa', 'sandbox');\n";
+echo "   // ONE class for everything!\n\n";
+
+echo "Just like Invoice generation:\n";
+echo "   \$invoice = new Invoice(..., profile: Invoice::FACTURX_BASIC);\n";
+echo "   \$invoice = new Invoice(..., profile: Invoice::UBL_PEPPOL);\n";
+echo "   // ONE class for all formats!\n\n";
+
+// =============================================================================
+// AVAILABLE CONSTANTS
+// =============================================================================
+
+echo "=== Available Constants ===\n\n";
+
+echo "French PDPs:\n";
+echo "  - Submitter::SUPERPDP      = '" . Submitter::SUPERPDP . "'\n";
+echo "  - Submitter::BASWARE       = '" . Submitter::BASWARE . "'\n";
+echo "  - Submitter::TRADESHIFT    = '" . Submitter::TRADESHIFT . "'\n";
+echo "  - Submitter::PAGERO        = '" . Submitter::PAGERO . "'\n\n";
+
+echo "Centralized Systems:\n";
+echo "  - Submitter::SAUDI_ZATCA   = '" . Submitter::SAUDI_ZATCA . "'\n";
+echo "  - Submitter::ITALY_SDI     = '" . Submitter::ITALY_SDI . "' (coming soon)\n";
+echo "  - Submitter::MALAYSIA_MYINVOIS = '" . Submitter::MALAYSIA_MYINVOIS . "' (coming soon)\n\n";
 
 // =============================================================================
 // SUMMARY
 // =============================================================================
 
-echo "\n";
-echo "╔════════════════════════════════════════════════════════════════╗\n";
-echo "║              UNIFIED API - KEY BENEFITS                        ║\n";
-echo "╠════════════════════════════════════════════════════════════════╣\n";
-echo "║                                                                ║\n";
-echo "║  1. ONE CLASS to learn (Submitter)                            ║\n";
-echo "║     Just like Invoice has one class for all formats           ║\n";
-echo "║                                                                ║\n";
-echo "║  2. CONSISTENT API across all countries                       ║\n";
-echo "║     new Submitter('FR', 'superpdp')                           ║\n";
-echo "║     new Submitter('SA')                                       ║\n";
-echo "║     new Submitter('IT')                                       ║\n";
-echo "║                                                                ║\n";
-echo "║  3. DIRECT submission from Invoice                            ║\n";
-echo "║     \$invoice->submit('FR', 'superpdp', \$creds)               ║\n";
-echo "║     Just like \$invoice->getXml()                             ║\n";
-echo "║                                                                ║\n";
-echo "║  4. TYPE-SAFE with constants                                  ║\n";
-echo "║     Submitter::FRANCE_SUPERPDP                                ║\n";
-echo "║     Like Invoice::FACTURX_BASIC                               ║\n";
-echo "║                                                                ║\n";
-echo "║  5. EASY to switch providers/countries                        ║\n";
-echo "║     Change one parameter, that's it!                          ║\n";
-echo "║                                                                ║\n";
-echo "╚════════════════════════════════════════════════════════════════╝\n";
+echo "=== Summary ===\n\n";
+
+echo "Three ways to submit (all equivalent):\n\n";
+
+echo "1. Direct (simplest):\n";
+echo "   \$result = \$invoice->submit('superpdp', \$credentials);\n\n";
+
+echo "2. Submitter class (reusable):\n";
+echo "   \$submitter = new Submitter('superpdp');\n";
+echo "   \$result = \$submitter->submit(\$invoice);\n\n";
+
+echo "3. Using constants (type-safe):\n";
+echo "   \$submitter = new Submitter(Submitter::SUPERPDP);\n";
+echo "   \$result = \$submitter->submit(\$invoice);\n\n";
+
+echo "Key Points:\n";
+echo "  ✓ Provider IS the identifier ('superpdp' for France, 'SA' for Saudi)\n";
+echo "  ✓ Same class (Submitter) for all countries\n";
+echo "  ✓ Same pattern as Invoice generation\n";
+echo "  ✓ Easy discovery for plugins (getAvailableProviders())\n";
+echo "  ✓ Constants for type-safety (Submitter::SUPERPDP)\n\n";
+
+echo "✓ One class to learn, works everywhere!\n";
