@@ -3,6 +3,7 @@
 namespace DigitalInvoice\Submission;
 
 use DigitalInvoice\Submission\Adapters\FrancePdpSubmitter;
+use DigitalInvoice\Submission\Adapters\SuperPdpSubmitter;
 use DigitalInvoice\Submission\Adapters\SaudiZatcaSubmitter;
 
 /**
@@ -29,10 +30,7 @@ class SubmitterFactory
 
         return match ($countryCode) {
             // France - PDP intermediary model
-            'FR' => new FrancePdpSubmitter(
-                pdpProvider: $config['pdp_provider'] ?? 'basware',
-                environment: $environment
-            ),
+            'FR' => self::createFranceSubmitter($config, $environment),
 
             // Saudi Arabia - CTC clearance model
             'SA' => new SaudiZatcaSubmitter($environment),
@@ -60,6 +58,26 @@ class SubmitterFactory
     }
 
     /**
+     * Create France submitter based on PDP provider
+     *
+     * @param array $config
+     * @param string $environment
+     * @return SubmitterInterface
+     */
+    private static function createFranceSubmitter(array $config, string $environment): SubmitterInterface
+    {
+        $pdpProvider = strtolower($config['pdp_provider'] ?? 'basware');
+
+        // SuperPDP has its own dedicated submitter
+        if ($pdpProvider === 'superpdp') {
+            return new SuperPdpSubmitter($environment);
+        }
+
+        // Generic PDP submitter for other providers
+        return new FrancePdpSubmitter($pdpProvider, $environment);
+    }
+
+    /**
      * Check if a country is supported
      *
      * @param string $countryCode
@@ -84,7 +102,31 @@ class SubmitterFactory
                 'model' => 'intermediary',
                 'requires_clearance' => false,
                 'description' => 'PDP (Plateforme Agréée) via certified platforms',
-                'required_config' => ['pdp_provider', 'api_key'],
+                'required_config' => ['pdp_provider', 'api_key_or_oauth2'],
+                'supported_providers' => [
+                    'superpdp' => [
+                        'name' => 'SuperPDP (#0111)',
+                        'auth' => 'oauth2',
+                        'required' => ['client_id', 'client_secret'],
+                        'pricing' => 'Free up to 1,000 invoices/month, €0.0025 per invoice after',
+                        'url' => 'https://www.superpdp.tech',
+                    ],
+                    'basware' => [
+                        'name' => 'Basware',
+                        'auth' => 'api_key',
+                        'required' => ['api_key'],
+                    ],
+                    'tradeshift' => [
+                        'name' => 'Tradeshift',
+                        'auth' => 'api_key',
+                        'required' => ['api_key'],
+                    ],
+                    'pagero' => [
+                        'name' => 'Pagero',
+                        'auth' => 'api_key',
+                        'required' => ['api_key'],
+                    ],
+                ],
             ],
             'SA' => [
                 'name' => 'Saudi Arabia',

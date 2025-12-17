@@ -35,6 +35,10 @@ class FrancePdpSubmitter extends AbstractSubmitter
             'sandbox' => 'https://sandbox-api.pagero.com/pdp',
             'production' => 'https://api.pagero.com/pdp',
         ],
+        'superpdp' => [
+            'sandbox' => 'https://api.superpdp.tech', // SuperPDP doesn't have separate sandbox
+            'production' => 'https://api.superpdp.tech',
+        ],
         // Add more PDPs as needed
     ];
 
@@ -69,8 +73,13 @@ class FrancePdpSubmitter extends AbstractSubmitter
     {
         $this->ensureAuthenticated();
 
+        // SuperPDP uses OAuth2 client credentials flow
+        if ($this->pdpProvider === 'superpdp') {
+            $this->performOAuth2Authentication();
+            return;
+        }
+
         // For most PDPs, authentication is via Bearer token (API key)
-        // Some may require OAuth2 - implement as needed per PDP
         $apiKey = $this->credentials['api_key'] ?? null;
 
         if (!$apiKey) {
@@ -89,6 +98,75 @@ class FrancePdpSubmitter extends AbstractSubmitter
         ]);
 
         $this->log('info', 'Authenticated with PDP', ['provider' => $this->pdpProvider]);
+    }
+
+    /**
+     * Perform OAuth2 client credentials authentication (for SuperPDP)
+     *
+     * @return void
+     * @throws AuthenticationException
+     */
+    private function performOAuth2Authentication(): void
+    {
+        $clientId = $this->credentials['client_id'] ?? null;
+        $clientSecret = $this->credentials['client_secret'] ?? null;
+
+        if (!$clientId || !$clientSecret) {
+            throw new AuthenticationException(
+                'client_id and client_secret are required for SuperPDP OAuth2 authentication'
+            );
+        }
+
+        // Create temporary client for OAuth2 token request
+        $oauthClient = new Client([
+            'base_uri' => $this->getApiBaseUrl(),
+            'timeout' => 30,
+        ]);
+
+        try {
+            // Request OAuth2 token
+            $response = $oauthClient->post('/oauth2/token', [
+                'form_params' => [
+                    'grant_type' => 'client_credentials',
+                    'client_id' => $clientId,
+                    'client_secret' => $clientSecret,
+                ],
+            ]);
+
+            $tokenData = json_decode($response->getBody()->getContents(), true);
+            $this->accessToken = $tokenData['access_token'] ?? null;
+
+            if (!$this->accessToken) {
+                throw new AuthenticationException('Failed to obtain OAuth2 access token');
+            }
+
+            // Set token expiry (if provided)
+            if (isset($tokenData['expires_in'])) {
+                $this->tokenExpiry = time() + (int) $tokenData['expires_in'] - 60; // 60s buffer
+            }
+
+            // Initialize HTTP client with OAuth2 token
+            $this->httpClient = new Client([
+                'base_uri' => $this->getApiBaseUrl(),
+                'timeout' => 60,
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                    'Authorization' => 'Bearer ' . $this->accessToken,
+                ],
+            ]);
+
+            $this->log('info', 'Authenticated with SuperPDP via OAuth2', [
+                'token_expires_in' => $tokenData['expires_in'] ?? 'unknown',
+            ]);
+
+        } catch (GuzzleException $e) {
+            throw new AuthenticationException(
+                'OAuth2 authentication failed: ' . $e->getMessage(),
+                $e->getCode(),
+                $e
+            );
+        }
     }
 
     /**
