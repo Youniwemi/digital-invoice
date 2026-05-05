@@ -244,4 +244,65 @@ class InvoiceReaderTest extends TestCase
         $this->expectException(\Exception::class);
         InvoiceReader::fromXml('this is not xml at all <<<');
     }
+
+    // ─── Tax breakdown ────────────────────────────────────────────────────────
+
+    public function testTaxBreakdownCii(): void
+    {
+        $invoice = $this->buildTestInvoice(FacturX::BASIC);
+        $invoice->addItem('A', 100.0, 20.0, 2);
+        $data = InvoiceReader::fromXml($invoice->getXml());
+
+        $this->assertCount(1, $data->taxBreakdown);
+        $tb = $data->taxBreakdown[0];
+        $this->assertEquals(20.0, $tb->rate);
+        $this->assertEquals(200.0, $tb->basisAmount);
+        $this->assertEquals(40.0, $tb->calculatedAmount);
+        $this->assertNotNull($tb->categoryCode);
+    }
+
+    public function testTaxBreakdownMultipleRatesCii(): void
+    {
+        $invoice = $this->buildTestInvoice(FacturX::EN16931);
+        $invoice->addItem('Standard', 100.0, 20.0, 1);
+        $invoice->addItem('Reduced',  200.0, 10.0, 1);
+        $data = InvoiceReader::fromXml($invoice->getXml());
+
+        $this->assertCount(2, $data->taxBreakdown);
+        $byRate = [];
+        foreach ($data->taxBreakdown as $tb) {
+            $byRate[(int) $tb->rate] = $tb;
+        }
+        $this->assertArrayHasKey(20, $byRate);
+        $this->assertArrayHasKey(10, $byRate);
+        $this->assertEquals(100.0, $byRate[20]->basisAmount);
+        $this->assertEquals(200.0, $byRate[10]->basisAmount);
+    }
+
+    public function testTaxBreakdownZugferd(): void
+    {
+        $invoice = $this->buildTestInvoice(Zugferd::ZUGFERD_CONFORT);
+        $invoice->addItem('Item', 120.0, 19.0, 1);
+        $data = InvoiceReader::fromXml($invoice->getXml());
+
+        $this->assertCount(1, $data->taxBreakdown);
+        $tb = $data->taxBreakdown[0];
+        $this->assertEquals(19.0, $tb->rate);
+        $this->assertEquals(120.0, $tb->basisAmount);
+        $this->assertEqualsWithDelta(22.8, $tb->calculatedAmount, 0.01);
+    }
+
+    public function testTaxBreakdownUbl(): void
+    {
+        $invoice = $this->buildTestInvoice(Ubl::PEPPOL);
+        $invoice->addItem('Consulting', 300.0, 20.0, 1, 'DAY', 'SVC001');
+        $data = InvoiceReader::fromXml($invoice->getXml());
+
+        $this->assertCount(1, $data->taxBreakdown);
+        $tb = $data->taxBreakdown[0];
+        $this->assertEquals(20.0, $tb->rate);
+        $this->assertEquals(300.0, $tb->basisAmount);
+        $this->assertEquals(60.0, $tb->calculatedAmount);
+        $this->assertNotNull($tb->categoryCode);
+    }
 }

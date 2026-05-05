@@ -100,6 +100,19 @@ class ZugferdParser extends XmlParser
             $data->items[] = $item;
         }
 
+        // Tax breakdown (document level)
+        foreach ((array) $settlement->getTradeTaxes() as $tax) {
+            $tb = new TaxBreakdownData();
+            $tb->rate             = (float) $tax->getPercent();
+            $basis                = $tax->getBasisAmount();
+            $tb->basisAmount      = $basis !== null ? (float) $basis->getValue() : null;
+            $calculated           = $tax->getCalculatedAmount();
+            $tb->calculatedAmount = $calculated !== null ? (float) $calculated->getValue() : null;
+            $tb->categoryCode     = $tax->getCategory() ? (string) $tax->getCategory() : null;
+            $tb->exemptionReason  = $tax->getExemptionReason() ? (string) $tax->getExemptionReason() : null;
+            $data->taxBreakdown[] = $tb;
+        }
+
         // Totals (MonetarySummation fields are Amount objects with ->getValue())
         $summation = $settlement->getMonetarySummation();
         if ($summation) {

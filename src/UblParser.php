@@ -83,6 +83,17 @@ class UblParser extends XmlParser
         $data->grandTotal    = $totals->taxInclusiveAmount;
         $data->duePayable    = $totals->payableAmount;
 
+        // Tax breakdown
+        foreach ($totals->vatBreakdown as $vat) {
+            $tb = new TaxBreakdownData();
+            $tb->rate             = (float) $vat->rate;
+            $tb->basisAmount      = (float) $vat->taxableAmount;
+            $tb->calculatedAmount = (float) $vat->taxAmount;
+            $tb->categoryCode     = $vat->category ?? null;
+            $tb->exemptionReason  = $vat->exemptionReason ?? null;
+            $data->taxBreakdown[] = $tb;
+        }
+
         // Payment means
         foreach ($invoice->getPayments() as $payment) {
             $pm           = new PaymentMeanData();

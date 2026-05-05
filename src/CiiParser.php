@@ -114,6 +114,17 @@ class CiiParser extends XmlParser
             $data->items[] = $item;
         }
 
+        // Tax breakdown (document level)
+        foreach ($set->tradeTaxes as $tax) {
+            $tb = new TaxBreakdownData();
+            $tb->rate             = (float) ($tax->rateApplicablePercent ?? 0);
+            $tb->basisAmount      = isset($tax->basisAmount) ? (float) $tax->basisAmount->value : null;
+            $tb->calculatedAmount = isset($tax->calculatedAmount) ? (float) $tax->calculatedAmount->value : null;
+            $tb->categoryCode     = $tax->categoryCode ?? null;
+            $tb->exemptionReason  = $tax->exemptionReason ?? null;
+            $data->taxBreakdown[] = $tb;
+        }
+
         // Totals
         $summation = $set->specifiedTradeSettlementHeaderMonetarySummation ?? null;
         if ($summation) {

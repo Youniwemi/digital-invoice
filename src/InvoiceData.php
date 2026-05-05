@@ -62,6 +62,18 @@ class InvoiceItemData
 }
 
 /**
+ * A single tax breakdown entry (one row per rate/category combination).
+ */
+class TaxBreakdownData
+{
+    public float $rate = 0.0;
+    public ?float $basisAmount = null;
+    public ?float $calculatedAmount = null;
+    public ?string $categoryCode = null;
+    public ?string $exemptionReason = null;
+}
+
+/**
  * Payment means extracted from an invoice.
  */
 class PaymentMeanData
@@ -106,6 +118,9 @@ class InvoiceData
 
     /** @var array<array{content: string, subjectCode: ?string, contentCode: ?string}> */
     public array $notes = [];
+
+    /** @var TaxBreakdownData[] */
+    public array $taxBreakdown = [];
 
     // Monetary totals
     public ?float $taxBasisTotal = null;
