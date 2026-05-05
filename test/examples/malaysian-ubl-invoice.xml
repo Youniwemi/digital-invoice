@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+  <cbc:CustomizationID></cbc:CustomizationID>
+  <cbc:ID>INV-MY-001</cbc:ID>
+  <cbc:IssueDate>2026-05-04</cbc:IssueDate>
+  <cbc:IssueTime>15:30:00Z</cbc:IssueTime>
+  <cbc:DueDate>2026-06-03</cbc:DueDate>
+  <cbc:InvoiceTypeCode listVersionID="1.0">01</cbc:InvoiceTypeCode>
+  <cbc:Note>Malaysian e-invoice test with all required fields</cbc:Note>
+  <cbc:DocumentCurrencyCode>MYR</cbc:DocumentCurrencyCode>
+  <cbc:BuyerReference>202301234567</cbc:BuyerReference>
+  <cac:AccountingSupplierParty>
+    <cac:Party>
+      <cbc:IndustryClassificationCode name="Manufacture of computers">26201</cbc:IndustryClassificationCode>
+      <cac:PartyIdentification>
+        <cbc:ID schemeID="TIN">IG21136626090</cbc:ID>
+      </cac:PartyIdentification>
+      <cac:PartyIdentification>
+        <cbc:ID schemeID="NRIC">850125105019</cbc:ID>
+      </cac:PartyIdentification>
+      <cac:PostalAddress>
+        <cbc:CityName>Kuala Lumpur</cbc:CityName>
+        <cbc:PostalZone>50480</cbc:PostalZone>
+        <cbc:CountrySubentityCode>14</cbc:CountrySubentityCode>
+        <cac:AddressLine>
+          <cbc:Line>Lot 66, Bangunan Merdeka, Persiaran Jaya</cbc:Line>
+        </cac:AddressLine>
+        <cac:AddressLine>
+          <cbc:Line>Jalan Ampang</cbc:Line>
+        </cac:AddressLine>
+        <cac:Country>
+          <cbc:IdentificationCode>MYS</cbc:IdentificationCode>
+        </cac:Country>
+      </cac:PostalAddress>
+      <cac:PartyLegalEntity>
+        <cbc:RegistrationName>AMS Setia Jaya Sdn. Bhd.</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="NRIC">850125105019</cbc:CompanyID>
+      </cac:PartyLegalEntity>
+      <cac:Contact>
+        <cbc:Name>Ahmad Hassan</cbc:Name>
+        <cbc:Telephone>+60123456789</cbc:Telephone>
+        <cbc:ElectronicMail>general.ams@supplier.com</cbc:ElectronicMail>
+      </cac:Contact>
+    </cac:Party>
+  </cac:AccountingSupplierParty>
+  <cac:AccountingCustomerParty>
+    <cac:Party>
+      <cac:PartyIdentification>
+        <cbc:ID schemeID="TIN">C12345678901</cbc:ID>
+      </cac:PartyIdentification>
+      <cac:PartyIdentification>
+        <cbc:ID schemeID="BRN">201901234567</cbc:ID>
+      </cac:PartyIdentification>
+      <cac:PostalAddress>
+        <cbc:CityName>Kuala Lumpur</cbc:CityName>
+        <cbc:PostalZone>50480</cbc:PostalZone>
+        <cbc:CountrySubentityCode>14</cbc:CountrySubentityCode>
+        <cac:AddressLine>
+          <cbc:Line>Lot 66, Bangunan Merdeka, Persiaran Jaya</cbc:Line>
+        </cac:AddressLine>
+        <cac:AddressLine>
+          <cbc:Line>Jalan Bukit Bintang</cbc:Line>
+        </cac:AddressLine>
+        <cac:Country>
+          <cbc:IdentificationCode>MYS</cbc:IdentificationCode>
+        </cac:Country>
+      </cac:PostalAddress>
+      <cac:PartyLegalEntity>
+        <cbc:RegistrationName>Hebat Group</cbc:RegistrationName>
+      </cac:PartyLegalEntity>
+      <cac:Contact>
+        <cbc:Name>Fatimah Ali</cbc:Name>
+        <cbc:Telephone>+60987654321</cbc:Telephone>
+        <cbc:ElectronicMail>buyer@hebatgroup.com</cbc:ElectronicMail>
+      </cac:Contact>
+    </cac:Party>
+  </cac:AccountingCustomerParty>
+  <cac:Delivery/>
+  <cac:PaymentMeans>
+    <cbc:PaymentMeansCode>58</cbc:PaymentMeansCode>
+    <cac:PayeeFinancialAccount>
+      <cbc:ID>1234567890123</cbc:ID>
+      <cbc:Name>Bank Transfer</cbc:Name>
+    </cac:PayeeFinancialAccount>
+  </cac:PaymentMeans>
+  <cac:PaymentTerms>
+    <cbc:Note>Payment method is cash</cbc:Note>
+  </cac:PaymentTerms>
+  <cac:TaxTotal>
+    <cbc:TaxAmount currencyID="MYR">0</cbc:TaxAmount>
+    <cac:TaxSubtotal>
+      <cbc:TaxableAmount currencyID="MYR">1436.5</cbc:TaxableAmount>
+      <cbc:TaxAmount currencyID="MYR">0</cbc:TaxAmount>
+      <cac:TaxCategory>
+        <cbc:ID>S</cbc:ID>
+        <cbc:Percent>0</cbc:Percent>
+        <cac:TaxScheme>
+          <cbc:ID>VAT</cbc:ID>
+        </cac:TaxScheme>
+      </cac:TaxCategory>
+    </cac:TaxSubtotal>
+  </cac:TaxTotal>
+  <cac:LegalMonetaryTotal>
+    <cbc:LineExtensionAmount currencyID="MYR">1436.5</cbc:LineExtensionAmount>
+    <cbc:TaxExclusiveAmount currencyID="MYR">1436.5</cbc:TaxExclusiveAmount>
+    <cbc:TaxInclusiveAmount currencyID="MYR">1436.5</cbc:TaxInclusiveAmount>
+    <cbc:PayableAmount currencyID="MYR">1436.5</cbc:PayableAmount>
+  </cac:LegalMonetaryTotal>
+  <cac:InvoiceLine>
+    <cbc:ID>1234</cbc:ID>
+    <cbc:InvoicedQuantity unitCode="C62">1</cbc:InvoicedQuantity>
+    <cbc:LineExtensionAmount currencyID="MYR">1436.5</cbc:LineExtensionAmount>
+    <cac:TaxTotal>
+      <cbc:TaxAmount currencyID="MYR">0.00</cbc:TaxAmount>
+      <cac:TaxSubtotal>
+        <cbc:TaxableAmount currencyID="MYR">1436.50</cbc:TaxableAmount>
+        <cbc:TaxAmount currencyID="MYR">0.00</cbc:TaxAmount>
+        <cac:TaxCategory>
+          <cbc:ID>01</cbc:ID>
+          <cbc:Percent>0</cbc:Percent>
+          <cac:TaxScheme>
+            <cbc:ID schemeID="UN/ECE 5153" schemeAgencyID="6">OTH</cbc:ID>
+          </cac:TaxScheme>
+        </cac:TaxCategory>
+      </cac:TaxSubtotal>
+    </cac:TaxTotal>
+    <cac:Item>
+      <cbc:Description>High-quality laptop peripherals including mouse, keyboard, and USB hub</cbc:Description>
+      <cbc:Name>Laptop Peripherals</cbc:Name>
+      <cac:CommodityClassification>
+        <cbc:ItemClassificationCode listID="CLASS">001</cbc:ItemClassificationCode>
+      </cac:CommodityClassification>
+      <cac:ClassifiedTaxCategory>
+        <cbc:ID>S</cbc:ID>
+        <cbc:Percent>0</cbc:Percent>
+        <cac:TaxScheme>
+          <cbc:ID schemeID="UN/ECE 5153" schemeAgencyID="6">OTH</cbc:ID>
+        </cac:TaxScheme>
+      </cac:ClassifiedTaxCategory>
+    </cac:Item>
+    <cac:Price>
+      <cbc:PriceAmount currencyID="MYR">1436.5</cbc:PriceAmount>
+    </cac:Price>
+    <cac:ItemPriceExtension>
+      <cbc:Amount currencyID="MYR">1436.5</cbc:Amount>
+    </cac:ItemPriceExtension>
+  </cac:InvoiceLine>
+</Invoice>
