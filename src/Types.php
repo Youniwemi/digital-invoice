@@ -2759,237 +2759,482 @@ enum InternationalCodeDesignator: string
     // === AUSTRALIA ===
     #[Label("Australia - Australian Business Number (ABN)")]
     case AUSTRALIAN_BUSINESS_NUMBER_ABN_SCHEME = "0151";
-    
     #[Label("Australia - Australian Chambers of Commerce and Industry")]
     case AUSTRALIAN_CHAMBERS_OF_COMMERCE_AND_INDUSTRY_SCHEME = "0108";
-    
+    #[Label("Australia - The Australian GOSIP Network")]
+    case THE_AUSTRALIAN_GOSIP_NETWORK = "0038";
+    #[Label("Australia - The OZ DOD OSI Network")]
+    case THE_OZ_DOD_OSI_NETWORK = "0039";
+
+    // === AUSTRIA ===
+    #[Label("Austria - Paradine GmbH")]
+    case PARADINE_GMBH_AUSTRIA = "0176";
+
     // === BELGIUM ===
     #[Label("Belgium - Numéro d'Entreprise/Ondernemingsnummer/Unternehmensnummer")]
     case NUMERO_D_ENTREPRISE_ONDERNEMINGSNUMMER_UNTERNEHMENSNUMMER_BELGIUM = "0208";
-    
     #[Label("Belgium - Codification Numérique des Établissements Financiers")]
     case CODIFICATION_NUMERIQUE_DES_ETABLISSMENTS_FINANCIERS_EN_BELGIQUE = "0003";
-    
     #[Label("Belgium - Le Numéro National")]
     case LE_NUMERO_NATIONAL = "0008";
-    
     #[Label("Belgium - National Federation of Chambers of Commerce & Industry")]
     case NATIONAL_FEDERATION_OF_CHAMBERS_OF_COMMERCE_INDUSTRY_OF_BELGIUM_SCHEME = "0087";
-    
     #[Label("Belgium - UBL.BE Party Identifier")]
     case UBL_BE_PARTY_IDENTIFIER_NORWAY_BELGIUM = "0193";
-    
+    #[Label("Belgium - AGFA-DIS")]
+    case AGFA_DIS_BELGIUM = "0051";
+    #[Label("Belgium - Solvay OSI Coding")]
+    case SOLVAY_OSI_CODING_BELGIUM = "0065";
+
     // === CANADA ===
     #[Label("Canada - Revenue Canada Business Number Registration")]
     case REVENUE_CANADA_BUSINESS_NUMBER_REGISTRATION = "0093";
-    
+    #[Label("Canada - Mitel Terminal or Switching Equipment")]
+    case MITEL_TERMINAL_OR_SWITCHING_EQUIPMENT_CANADA = "0078";
+    #[Label("Canada - STENTOR-ICD Coding System")]
+    case STENTOR_ICD_CODING_SYSTEM_CANADA = "0117";
+    #[Label("Canada - Certicom Object Identifiers")]
+    case CERTICOM_OBJECT_IDENTIFIERS_CANADA = "0132";
+    #[Label("Canada - TELUS Corporation")]
+    case TELUS_CORPORATION_CANADA = "0164";
+    #[Label("Canada - Route1 MobiNET")]
+    case ROUTE1_MOBINET_CANADA = "0178";
+
     // === CZECH REPUBLIC ===
     #[Label("Czech Republic - Identification Number of Economic Subjects (IČO)")]
     case IDENTIFICATION_NUMBER_OF_ECONOMIC_SUBJECTS_ICO_CZECH = "0154";
-    
+
     // === DENMARK ===
     #[Label("Denmark - DIGST.org")]
     case DIGSTORG_DENMARK = "0184";
-    
     #[Label("Denmark - ERST.org")]
     case ERSTORG_DENMARK = "0198";
-    
     #[Label("Denmark - Danish Chamber of Commerce")]
     case DANISH_CHAMBER_OF_COMMERCE_SCHEME = "0096";
-    
+    #[Label("Denmark - DANZNET")]
+    case DANZNET_DENMARK = "0059";
+    #[Label("Denmark - LEGO/OSI Network")]
+    case LEGO_OSI_NETWORK_DENMARK = "0071";
+    #[Label("Denmark - CPR (Civil Registration Number)")]
+    case CPR_DANISH_CIVIL_REGISTRATION_NUMBER = "0237";
+
     // === ESTONIA ===
     #[Label("Estonia - Company Code")]
     case COMPANY_CODE_ESTONIA = "0191";
-    
+
     // === EUROPEAN UNION ===
     #[Label("European Union - EU Based Company")]
     case EU_BASED_COMPANY = "0223";
-    
+    #[Label("European Union - Non-EU Based Company")]
+    case NON_EU_BASED_COMPANY = "0227";
+    #[Label("European Union - Directorates of the European Commission")]
+    case DIRECTORATES_OF_THE_EUROPEAN_COMMISSION = "0130";
+    #[Label("European Union - CEN/ISSS Object Identifier Scheme")]
+    case CEN_ISSS_OBJECT_IDENTIFIER_SCHEME = "0162";
+    #[Label("European Union - eDelivery Network Participant Identifier")]
+    case EDELIVERY_NETWORK_PARTICIPANT_IDENTIFIER = "0203";
+    #[Label("European Union - EAEU")]
+    case EAEU = "0239";
+    #[Label("European Union - Register of Legal Persons")]
+    case REGISTER_OF_LEGAL_PERSONS = "0240";
+    #[Label("European Union - OpenPeppol Service Provider Identification Scheme (SPIS)")]
+    case OPENPEPPOL_SERVICE_PROVIDER_IDENTIFICATION_SCHEME = "0242";
+
     // === FINLAND ===
     #[Label("Finland - LY-Tunnus")]
     case LY_TUNNUS_FINLAND = "0037";
-    
     #[Label("Finland - Finnish Organization Identifier")]
     case FINNISH_ORGANIZATION_IDENTIFIER = "0212";
-    
     #[Label("Finland - Finnish Organization Value Added Tax Identifier")]
     case FINNISH_ORGANIZATION_VALUE_ADD_TAX_IDENTIFIER = "0213";
-    
     #[Label("Finland - OVT Code")]
     case OVTCODE = "0216";
-    
     #[Label("Finland - Net Service ID")]
     case NET_SERVICE_ID = "0215";
+    #[Label("Finland - Nokia Object Identifiers")]
+    case NOKIA_OBJECT_IDENTIFIERS_FINLAND = "0056";
+    #[Label("Finland - FIEIE Object Identifiers")]
+    case FIEIE_OBJECT_IDENTIFIERS_FINLAND = "0165";
+    #[Label("Finland - Tradeplace TradePI Standard")]
+    case TRADEPLACE_TRADEPI_STANDARD_FINLAND = "0214";
+    #[Label("Finland - Toimitusosoite ID")]
+    case TOIMITUSOSOITE_ID_FINLAND = "0234";
 
     // === FRANCE ===
     #[Label("France - Numéro SIREN (Système d'Identification du Répertoire des Entreprises)")]
     case SYSTEM_INFORMATION_ET_REPERTOIRE_DES_ENTREPRISE_ET_DES_ETABLISSEMENTS_SIRENE = "0002";
-    
     #[Label("France - Numéro SIRET (Système d'Identification du Répertoire des Établissements)")]
     case SIRET_CODE = "0009";
-    
+    #[Label("France - FTCTC Code Routage")]
+    case FTCTC_CODE_ROUTAGE = "0224";
+    #[Label("France - FRCTC Adresse Électronique")]
+    case FRCTC_ELECTRONIC_ADDRESS = "0225";
     #[Label("France - FRCTC Particulier")]
     case FRCTC_PARTICULIER = "0226";
-    
     #[Label("France - Single Taxable Company")]
     case SINGLE_TAXABLE_COMPANY_FRANCE = "0231";
-    
+    #[Label("France - Plateforme agréée à la facturation électronique (PPF/PDP)")]
+    case PLATEFORME_AGREEE_FACTURATION_ELECTRONIQUE = "0238";
+    #[Label("France - DGI (Direction Générale des Impôts) Code")]
+    case DGI_DIRECTION_GENERALE_DES_IMPOTS_CODE_FRANCE = "0146";
+    #[Label("France - DGCP Administrative Accounting Identification")]
+    case DGCP_ADMINISTRATIVE_ACCOUNTING_IDENTIFICATION_FRANCE = "0145";
+    #[Label("France - Bull ODI/DSA/UNIX Network")]
+    case BULL_ODI_DSA_UNIX_NETWORK_FRANCE = "0047";
+    #[Label("France - Saint Gobain")]
+    case SAINT_GOBAIN_FRANCE = "0057";
+    #[Label("France - Alcatel-Alsthom Corporate Network")]
+    case ALCANET_ALCATEL_ALSTHOM_CORPORATE_NETWORK = "0075";
+    #[Label("France - France Telecom ATM End System Address Plan")]
+    case FRANCE_TELECOM_ATM_END_SYSTEM_ADDRESS_PLAN = "0138";
+    #[Label("France - Répertoire des Entreprises et des Établissements (RIDET) — New Caledonia")]
+    case REPERTOIRE_DES_ENTREPRISES_ET_DES_ETABLISSEMENTS_RIDET = "0228";
+
     // === GERMANY ===
     #[Label("Germany - Deutscher Industrie und Handelstag (DIHT)")]
     case DEUTSCHER_INDUSTRIE_UND_HANDELSTAG_DIHT_SCHEME = "0094";
-    
     #[Label("Germany - European Business Identifier (EBID)")]
     case EUROPEAN_BUSINESS_IDENTIFIER_EBID_GERMANY = "0189";
-    
+    #[Label("Germany - Leitweg-ID")]
+    case LEITWEG_ID_GERMANY = "0204";
+    #[Label("Germany - DBP Telekom Object Identifiers")]
+    case DBP_TELEKOM_OBJECT_IDENTIFIERS_GERMANY = "0042";
+    #[Label("Germany - Siemens Corporate Network")]
+    case SIEMENS_CORPORATE_NETWORK_GERMANY = "0058";
+    #[Label("Germany - DaimlerChrysler Corporate Network")]
+    case DAIMLER_CHRYSLER_CORPORATE_NETWORK_GERMANY = "0070";
+    #[Label("Germany - Dresdner Bank Corporate Network")]
+    case DRESDNER_BANK_CORPORATE_NETWORK_GERMANY = "0127";
+    #[Label("Germany - BASF Company ATM Network")]
+    case BASF_COMPANY_ATM_NETWORK_GERMANY = "0123";
+    #[Label("Germany - Henkel Corporate Network")]
+    case HENKEL_CORPORATE_NETWORK_GERMANY = "0125";
+    #[Label("Germany - BB-DATA GmbH")]
+    case BB_DATA_GMBH_GERMANY = "0122";
+    #[Label("Germany - EINESTEINet AG")]
+    case EINESTEI_NET_AG_GERMANY = "0143";
+    #[Label("Germany - Siemens AG")]
+    case SIEMENS_AG_GERMANY = "0175";
+
     // === GREECE ===
     #[Label("Greece - Athens Chamber of Commerce & Industry")]
     case ATHENS_CHAMBER_OF_COMMERCE_INDUSTRY_SCHEME_GREECE = "0084";
-    
+
     // === ICELAND ===
     #[Label("Iceland - Icelandic Identifier (Íslensk Kennitala)")]
     case ICELANDIC_IDENTIFIER_ISLENSK_KENNITALA = "0196";
-    
+
+    // === IRELAND ===
+    #[Label("Ireland - Vodafone Ireland OSI Addressing")]
+    case VODAFONE_IRELAND_OSI_ADDRESSING = "0168";
+
     // === ISRAEL ===
     #[Label("Israel - Chamber of Commerce Tel Aviv-Jaffa")]
     case CHAMBER_OF_COMMERCE_TEL_AVIV_JAFFA_SCHEME = "0098";
-    
+    #[Label("Israel - Check Point Software Technologies")]
+    case CHECK_POINT_SOFTWARE_TECHNOLOGIES_ISRAEL = "0114";
+
     // === ITALY ===
     #[Label("Italy - Codice Fiscale")]
     case CODICE_FISCALE_ITALIA = "0210";
-    
     #[Label("Italy - Partita IVA")]
     case PARTITA_IVA = "0211";
-    
     #[Label("Italy - FTI EDIForum Italia")]
     case FTI_EDIFORUM_ITALIA = "0097";
-    
     #[Label("Italy - CODDEST")]
     case CODDEST = "0205";
-    
+    #[Label("Italy - Codice Univoco Unità Organizzativa iPA")]
+    case CODICE_UNIVOCO_UNITA_ORGANIZZATIVA_IPA_ITALY = "0201";
+    #[Label("Italy - Indirizzo di Posta Elettronica Certificata (PEC)")]
+    case INDIRIZZO_DI_POSTA_ELETTRONICA_CERTIFICATA_ITALY = "0202";
+    #[Label("Italy - Sistema Italiano di Identificazione di Oggetti")]
+    case SISTEMA_ITALIANO_DI_IDENTIFICAZIONE_DI_OGGETTI = "0076";
+    #[Label("Italy - Sistema Italiano di Indirizzamento di Reti OSI")]
+    case SISTEMA_ITALIANO_DI_INDIRIZZAMENTO_DI_RETI_OSI = "0077";
+    #[Label("Italy - ACTALIS Object Identifiers")]
+    case ACTALIS_OBJECT_IDENTIFIERS_ITALY = "0159";
+    #[Label("Italy - Penango Object Identifiers")]
+    case PENANGO_OBJECT_IDENTIFIERS_ITALY = "0179";
+    #[Label("Italy - SECETI Object Identifiers")]
+    case SECETI_OBJECT_IDENTIFIERS_ITALY = "0142";
+
     // === JAPAN ===
     #[Label("Japan - Standard Company Code (JIPDEC)")]
     case STANDARD_COMPANY_CODE_JIPDEC_JAPAN = "0147";
-    
     #[Label("Japan - Teikoku Company Code")]
     case TEIKOKU_COMPANY_CODE_JAPAN = "0170";
-    
     #[Label("Japan - Corporate Number of the Social Security and Tax Number System")]
     case CORPORATE_NUMBER_OF_THE_SOCIAL_SECURITY_AND_TAX_NUMBER_SYSTEM_JAPAN = "0188";
-    
     #[Label("Japan - The Registered Number of the Qualified Invoice Issuer")]
     case THE_REGISTERED_NUMBER_OF_THE_QUALIFIED_INVOICE_ISSUER = "0221";
-    
+    #[Label("Japan - Toshiba Organizations Partners and Suppliers (TOPAS) Code")]
+    case TOSHIBA_TOPAS_CODE_JAPAN = "0140";
+
     // === LATVIA ===
     #[Label("Latvia - Unified Registration Number")]
     case UNIFIED_REGISTRATION_NUMBER_LATVIA = "0218";
-    
     #[Label("Latvia - Taxpayer Registration Code")]
     case TAXPAYER_REGISTRATION_CODE_LATVIA = "0219";
-    
     #[Label("Latvia - The Register of Natural Persons")]
     case THE_REGISTER_OF_NATURAL_PERSONS_LATVIA = "0220";
-    
+
     // === LITHUANIA ===
     #[Label("Lithuania - Legal Entity Code")]
     case LEGAL_ENTITY_CODE_LITHUANIA = "0200";
-    
+    #[Label("Lithuania - Lithuanian Military PKI")]
+    case LITHUANIAN_MILITARY_PKI = "0180";
+
+    // === LUXEMBOURG ===
+    #[Label("Luxembourg - CP & CPS Index")]
+    case LUXEMBOURG_CP_CPS_INDEX = "0171";
+
     // === MALAYSIA ===
     #[Label("Malaysia - National e-Invoicing Framework")]
     case NATIONAL_E_INVOICING_FRAMEWORK_MALAYSIA = "0230";
-    
     #[Label("Malaysia - Tax Identification Number (TIN)")]
     case TIN_MALAYSIA = "TIN";
-    
     #[Label("Malaysia - Business Registration Number (BRN/SSM)")]
     case BRN_SSM_MALAYSIA = "BRN";
-    
     #[Label("Malaysia - NRIC")]
     case NRIC_MALAYSIA = "NRIC";
-    
+
     // === MONACO ===
     #[Label("Monaco - Registre du Commerce et de l'Industrie (RCI)")]
     case REGISTRE_DU_COMMERCE_ET_DE_L_INDUSTRIE_RCI_MONACO = "0206";
-    
+
+    // === NATO ===
+    #[Label("NATO - ISO 6523 ICDE Coding Scheme")]
+    case NATO_ISO_6523_ICDE_CODING_SCHEME = "0026";
+    #[Label("NATO - Commercial and Government Entity System (NCAGE)")]
+    case NATO_COMMERCIAL_AND_GOVERNMENT_ENTITY_SYSTEM_NCAGE = "0141";
+
     // === NETHERLANDS ===
     #[Label("Netherlands - Organisatie Identificatie Nummer (OIN)")]
     case ORGANISATIE_INDENTIFICATIE_NUMMER_OIN_NETHERLANDS = "0190";
-    
     #[Label("Netherlands - Chamber of Commerce and Industry Establishment Number")]
     case THE_NETHERLANDS_CHAMBER_OF_COMMERCE_AND_INDUSTRY_ESTABLISHMENT_NUMBER = "0217";
-    
     #[Label("Netherlands - Vereniging van Kamers van Koophandel en Fabrieken")]
     case VERENIGING_VAN_KAMERS_VAN_KOOPHANDEL_EN_FABRIEKEN_IN_NEDERLAND = "0106";
-    
-    // === NEW CALEDONIA ===
-    #[Label("New Caledonia - Répertoire des Entreprises et des Établissements (RIDET)")]
-    case REPERTOIRE_DES_ENTREPRISES_ET_DES_ETABLISSEMENTS_RIDET = "0228";
-    
+    #[Label("Netherlands - KPN OVN")]
+    case KPN_OVN_NETHERLANDS = "0062";
+    #[Label("Netherlands - ATM Interconnection with Dutch KPN Telecom")]
+    case ATM_INTERCONNECTION_DUTCH_KPN_TELECOM = "0157";
+    #[Label("Netherlands - Priority Telecom ATM End System Address Plan")]
+    case PRIORITY_TELECOM_ATM_END_SYSTEM_ADDRESS_PLAN_NETHERLANDS = "0167";
+
+    // === NEW ZEALAND ===
+    #[Label("New Zealand - OSINZ")]
+    case OSINZ_NEW_ZEALAND = "0048";
+    #[Label("New Zealand - Auckland Area Health")]
+    case AUCKLAND_AREA_HEALTH_NEW_ZEALAND = "0049";
+
+    // === NIGERIA ===
+    #[Label("Nigeria - Tax Identification Number (Tax ID)")]
+    case TAX_IDENTIFICATION_NUMBER_NIGERIA = "0244";
+
     // === NORWAY ===
     #[Label("Norway - Organisasjonsnummer")]
     case ORGANISASJONSNUMMER = "0192";
-    
+    #[Label("Norway - Norwegian Telecommunications Authority NTA EDI Identifier")]
+    case NORWEGIAN_TELECOMMUNICATIONS_AUTHORITY_NTA_EDI = "0082";
+    #[Label("Norway - HydroNETT")]
+    case HYDRONETT_NORWAY = "0043";
+    #[Label("Norway - NOBB Product Number")]
+    case NOBB_PRODUCT_NUMBER_NORWAY = "0232";
+
+    // === PAPUA NEW GUINEA ===
+    #[Label("Papua New Guinea - PNG_ICD Scheme")]
+    case PNG_ICD_SCHEME = "0100";
+
     // === PORTUGAL ===
     #[Label("Portugal - Portuguese Chamber of Commerce and Industry")]
     case PORTUGUESE_CHAMBER_OF_COMMERCE_AND_INDUSTRY_SCHEME = "0105";
-    
+
     // === RUSSIA ===
     #[Label("Russia - The All-Union Classifier of Enterprises and Organisations")]
     case THE_ALL_UNION_CLASSIFIER_OF_ENTERPRISES_AND_ORGANISATIONS = "0029";
-    
+
     // === SINGAPORE ===
     #[Label("Singapore - Nationwide e-Invoice Framework")]
     case SINGAPORE_NATIONWIDE_E_LNVOICE_FRAMEWORK = "0195";
-    
+
     // === SLOVAKIA ===
     #[Label("Slovakia - Identification Number of Economic Subject (IČO)")]
     case IDENTIFICATION_NUMBER_OF_ECONOMIC_SUBJECT_ICO_STATE_STATISTICS_SLOVAK_REPUBLIC = "0158";
-    
+
+    // === SOUTH AFRICA ===
+    #[Label("South Africa - South African Code Allocation")]
+    case SOUTH_AFRICAN_CODE_ALLOCATION = "0101";
+
     // === SWEDEN ===
     #[Label("Sweden - Organisationsnummer")]
     case ORGANISATIONSNUMMER_SWEDEN = "0007";
-    
     #[Label("Sweden - Association of Swedish Chambers of Commerce and Industry")]
     case ASSOCIATION_OF_SWEDISH_CHAMBERS_OF_COMMERCE_AND_INDUSTRY_SCHEME = "0107";
-    
+
     // === SWITZERLAND ===
     #[Label("Switzerland - Swiss Chambers of Commerce")]
     case SWISS_CHAMBERS_OF_COMMERCE_SCHEME = "0085";
-    
-    #[Label("Switzerland - EDIRA Scheme Identifier Code")]
-    case EDIRA_SCHEME_IDENTIFIER_CODE_SWITZERLAND = "0152";
-    
     #[Label("Switzerland - SwissGuide Identifier")]
     case SWISSGUIDE_IDENTIFIER_SCHEME = "0166";
-    
     #[Label("Switzerland - Swiss Federal Business Identification Number (Zefix)")]
     case SWISS_FEDERAL_BUSINESS_IDENTIFICATION_NUMBER_ZEFIX = "0169";
-    
     #[Label("Switzerland - Numéro d'Identification Suisse des Enterprises (IDE/UID-B)")]
     case NUMERO_D_IDENTIFICATION_SUISSE_DES_ENTERPRISES_IDE_UIDB = "0183";
-    
+    #[Label("Switzerland - BCNR (Swiss Clearing Bank Number)")]
+    case BCNR_SWISS_CLEARING_BANK_NUMBER = "0128";
+    #[Label("Switzerland - BPI (Swiss Business Partner Identification)")]
+    case BPI_SWISS_BUSINESS_PARTNER_IDENTIFICATION = "0129";
+    #[Label("Switzerland - Firmenich")]
+    case FIRMENICH_SWITZERLAND = "0050";
+    #[Label("Switzerland - Migros Network")]
+    case MIGROS_NETWORK_SWITZERLAND = "0053";
+    #[Label("Switzerland - SOFFEX OSI")]
+    case SOFFEX_OSI_SWITZERLAND = "0061";
+    #[Label("Switzerland - ascomOSINet")]
+    case ASCOM_OSI_NET_SWITZERLAND = "0063";
+    #[Label("Switzerland - Roche Corporate Network")]
+    case ROCHE_CORPORATE_NETWORK_SWITZERLAND = "0066";
+    #[Label("Switzerland - ZellwegerOSINet")]
+    case ZELLWEGER_OSI_NET_SWITZERLAND = "0067";
+
     // === TAHITI (FRENCH POLYNESIA) ===
-    #[Label("Tahiti - Traitement Automatique Hiérarchisé des Institutions de Tahiti et des Îles")]
+    #[Label("French Polynesia - Traitement Automatique Hiérarchisé des Institutions de Tahiti et des Îles (T.A.H.I.T.I)")]
     case TAHITI_TRAITEMENT_AUTOMATIQUE_HIERARCHISE_DES_INSTITUTIONS_DE_TAHITI_ET_DES_ILES = "0229";
-    
+
+    // === THAILAND ===
+    #[Label("Thailand - Thai Industrial Standards Institute (TISI)")]
+    case THAI_INDUSTRIAL_STANDARDS_INSTITUTE = "0044";
+
     // === UNITED ARAB EMIRATES (UAE) ===
     #[Label("UAE - Tax Identification Number (TIN)")]
     case UAE_TAX_IDENTIFICATION_NUMBER_TIN = "0235";
-    
+
     // === UNITED KINGDOM (UK) ===
     #[Label("UK - ICI Company Identification System")]
     case ICI_COMPANY_IDENTIFICATION_SYSTEM_UK = "0045";
-    
-    #[Label("UK - Data Universal Numbering System (DUNS Number)")]
-    case DATA_UNIVERSAL_NUMBERING_SYSTEM_DUNS_NUMBER_UK = "0060";
-    
     #[Label("UK - The Association of British Chambers of Commerce Ltd")]
     case THE_ASSOCIATION_OF_BRITISH_CHAMBERS_OF_COMMERCE_LTD_SCHEME = "0089";
-    
+    #[Label("UK - National Health Service Scheme (EDIRA compliant)")]
+    case UK_NATIONAL_HEALTH_SERVICE_SCHEME = "0080";
+    #[Label("UK - Advanced Telecommunications Modules Limited Corporate Network")]
+    case ADVANCED_TELECOMMUNICATIONS_MODULES_CORPORATE_NETWORK_UK = "0083";
+    #[Label("UK - Cable & Wireless Global ATM End-System Address Plan")]
+    case CABLE_AND_WIRELESS_GLOBAL_ATM_END_SYSTEM_ADDRESS_PLAN_UK = "0136";
+    #[Label("UK - Madge Networks Ltd ICD ATM Addressing Scheme")]
+    case MADGE_NETWORKS_ATM_ADDRESSING_SCHEME_UK = "0150";
+    #[Label("UK - BT - ICD Coding System")]
+    case BT_ICD_CODING_SYSTEM_UK = "0104";
+    #[Label("UK - SIA Object Identifiers")]
+    case SIA_OBJECT_IDENTIFIERS_UK = "0135";
+
     // === UNITED STATES (US) ===
     #[Label("US - United States Council for International Business (USCIB)")]
     case UNITED_STATES_COUNCIL_FOR_INTERNATIONAL_BUSINESS_USCIB_SCHEME = "0086";
-    
-    
+    #[Label("US - USA Federal Government OSI Network")]
+    case USA_FEDERAL_GOVERNMENT_OSI_NETWORK = "0005";
+    #[Label("US - USA Department of Defense OSI Network")]
+    case USA_DOD_OSI_NETWORK = "0006";
+    #[Label("US - Society of Motion Picture and Television Engineers (SMPTE)")]
+    case SMPTE_USA = "0052";
+    #[Label("US - Intel Corporation OSI")]
+    case INTEL_CORPORATION_OSI_USA = "0068";
+    #[Label("US - NAVISTAR/OSI Network")]
+    case NAVISTAR_OSI_NETWORK_USA = "0072";
+    #[Label("US - ARINC")]
+    case ARINC_USA = "0074";
+    #[Label("US - Hewlett-Packard Company Internal AM Network")]
+    case HEWLETT_PACKARD_INTERNAL_AM_NETWORK_USA = "0095";
+    #[Label("US - BellSouth ICD AESA")]
+    case BELLSOUTH_ICD_AESA_USA = "0109";
+    #[Label("US - Bell Atlantic")]
+    case BELL_ATLANTIC_USA = "0110";
+    #[Label("US - Pacific Bell Data Communications Network")]
+    case PACIFIC_BELL_DATA_COMMUNICATIONS_USA = "0115";
+    #[Label("US - MCI / OSI Network")]
+    case MCI_OSI_NETWORK_USA = "0119";
+    #[Label("US - Advantis")]
+    case ADVANTIS_USA = "0120";
+    #[Label("US - GTE/OSI Network")]
+    case GTE_OSI_NETWORK_USA = "0126";
+    #[Label("US - DoDAAC (Department of Defense Activity Address Code)")]
+    case DODAAC_USA = "0144";
+    #[Label("US - US-EPA Facility Identifier")]
+    case US_EPA_FACILITY_IDENTIFIER = "0163";
+    #[Label("US - Global Crossing AESA")]
+    case GLOBAL_CROSSING_AESA_USA = "0155";
+    #[Label("US - Amazon Unique Identification Scheme")]
+    case AMAZON_UNIQUE_IDENTIFICATION_SCHEME_USA = "0187";
+
+    // === INTERNATIONAL / GLOBAL STANDARDS ===
+    #[Label("International - EAN Location Code")]
+    case EAN_LOCATION_CODE = "0088";
+    #[Label("International - GTIN (Global Trade Item Number)")]
+    case GTIN_GLOBAL_TRADE_ITEM_NUMBER = "0160";
+    #[Label("International - Legal Entity Identifier (LEI)")]
+    case LEGAL_ENTITY_IDENTIFIER_LEI = "0199";
+    #[Label("International - Data Universal Numbering System (D-U-N-S Number)")]
+    case DATA_UNIVERSAL_NUMBERING_SYSTEM_DUNS = "0060";
+    #[Label("International - GS1 Identification Keys")]
+    case GS1_IDENTIFICATION_KEYS = "0209";
+    #[Label("International - SWIFT (Society for Worldwide Interbank Financial Telecommunication)")]
+    case SWIFT = "0021";
+    #[Label("International - Electronic Data Interchange (EDI)")]
+    case ELECTRONIC_DATA_INTERCHANGE_EDI = "0015";
+    #[Label("International - EDI Partner Identification Code")]
+    case EDI_PARTNER_IDENTIFICATION_CODE = "0031";
+    #[Label("International - eCI@ss")]
+    case ECIASS = "0173";
+    #[Label("International - ECCMA Open Technical Directory")]
+    case ECCMA_OPEN_TECHNICAL_DIRECTORY = "0161";
+    #[Label("International - Odette International Limited")]
+    case ODETTE_INTERNATIONAL_LIMITED = "0177";
+    #[Label("International - Global Business Identifier")]
+    case GLOBAL_BUSINESS_IDENTIFIER = "0149";
+    #[Label("International - Code for the Identification of National Organizations")]
+    case CODE_FOR_IDENTIFICATION_OF_NATIONAL_ORGANIZATIONS = "0131";
+    #[Label("International - Internet IP Addressing – ISO 6523 ICD Encoding")]
+    case INTERNET_IP_ADDRESSING = "0090";
+    #[Label("International - SITA Object Identifier Tree")]
+    case SITA_OBJECT_IDENTIFIER_TREE = "0069";
+    #[Label("International - ATM Forum")]
+    case ATM_FORUM = "0079";
+    #[Label("International - International NSAP")]
+    case INTERNATIONAL_NSAP = "0081";
+    #[Label("International - NBS/OSI Network")]
+    case NBS_OSI_NETWORK = "0004";
+    #[Label("International - ISO 6523 - ICD")]
+    case ISO_6523_ICD = "0028";
+    #[Label("International - EDIRA Scheme Identifier Code")]
+    case EDIRA_SCHEME_IDENTIFIER_CODE = "0152";
+    #[Label("International - Unilever Group Companies")]
+    case UNILEVER_GROUP_COMPANIES = "0040";
+    #[Label("International - Citicorp Global Information Network")]
+    case CITICORP_GLOBAL_INFORMATION_NETWORK = "0041";
+    #[Label("International - ECMA (European Computer Manufacturers Association)")]
+    case ECMA = "0012";
+    #[Label("International - ISO Register for Standards Producing Organizations")]
+    case ISO_REGISTER_FOR_STANDARDS_PRODUCING_ORGANIZATIONS = "0112";
+    #[Label("International - Infonet Services Corporation")]
+    case INFONET_SERVICES_CORPORATION = "0134";
+    #[Label("International - Concert Global Network Services ICD AESA")]
+    case CONCERT_GLOBAL_NETWORK_SERVICES = "0153";
+    #[Label("International - Reuter Open Address Standard")]
+    case REUTER_OPEN_ADDRESS_STANDARD = "0034";
+    #[Label("International - Global AESA Scheme")]
+    case GLOBAL_AESA_SCHEME = "0137";
+    #[Label("International - ICD Formatted ATM Address")]
+    case ICD_FORMATTED_ATM_ADDRESS = "0073";
+    #[Label("International - PiLog Ontology Codification Identifier (POCI)")]
+    case PILOG_ONTOLOGY_CODIFICATION_IDENTIFIER = "0207";
+    #[Label("International - KOIOS Open Technical Dictionary")]
+    case KOIOS_OPEN_TECHNICAL_DICTIONARY = "0194";
+    #[Label("International - Affable Software Data Interchange Codes")]
+    case AFFABLE_SOFTWARE_DATA_INTERCHANGE_CODES = "0121";
+    #[Label("International - Metadata Registry Support")]
+    case METADATA_REGISTRY_SUPPORT = "0222";
+    #[Label("International - eCI@ss Object Identifiers")]
+    case PROLIST_LISTS_OF_PROPERTIES = "0172";
 
 }
 
