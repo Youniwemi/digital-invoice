@@ -159,6 +159,23 @@ class InvoiceRendererTest extends TestCase
         $this->assertStringContainsString('.di-invoice', $css);
     }
 
+    public function testFormatBadgeIsDisplayed(): void
+    {
+        $data = $this->buildAndParse(FacturX::BASIC);
+        $html = (new InvoiceRenderer())->render($data);
+
+        $this->assertStringContainsString('di-format-badge', $html);
+        $this->assertStringContainsString('FacturX Basic', $html);
+    }
+
+    public function testFormatBadgePeppol(): void
+    {
+        $data = $this->buildAndParse(Ubl::PEPPOL);
+        $html = (new InvoiceRenderer())->render($data);
+
+        $this->assertStringContainsString('Peppol BIS 3.0', $html);
+    }
+
     // ─── i18n ────────────────────────────────────────────────────────────────
 
     public function testDefaultLangIsEnglish(): void

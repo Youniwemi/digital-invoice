@@ -21,21 +21,25 @@ namespace DigitalInvoice;
  */
 class InvoiceRenderer
 {
-    /** Profile URN/class fragments → human-readable format badge */
+    /** Profile URN substrings → human-readable format badge (most-specific first) */
     private const FORMAT_LABELS = [
-        'MINIMUM'           => 'FacturX Minimum',
-        'BASIC_WL'          => 'FacturX Basic WL',
-        'BASIC'             => 'FacturX Basic',
-        'EN16931'           => 'FacturX EN 16931',
-        'EXTENDED'          => 'FacturX Extended',
-        'XRECHNUNG'         => 'XRechnung',
-        'comfort'           => 'ZUGFeRD 1.0 Comfort',
-        'basic'             => 'ZUGFeRD 1.0 Basic',
-        'extended'          => 'ZUGFeRD 1.0 Extended',
-        'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0' => 'Peppol BIS 3.0',
-        'urn:cen.eu:en16931:2017#compliant#urn:fdc:nen.nl:nlcius:v1.0' => 'NLCIUS',
-        'urn:cen.eu:en16931:2017#compliant#urn:fdc:cius-ro.eu:en16931:2017' => 'CIUS-RO',
-        'urn:cen.eu:en16931:2017#compliant#urn:fdc:www.agid.gov.it:2018:peppol:billing:3.0' => 'CIUS-IT',
+        // XRechnung
+        'xrechnung'                         => 'XRechnung',
+        // FacturX / ZUGFeRD 2.x levels (URN fragments from CII)
+        'factur-x.eu:1p0:basicwl'           => 'FacturX Basic WL',
+        'factur-x.eu:1p0:basic'             => 'FacturX Basic',
+        'factur-x.eu:1p0:minimum'           => 'FacturX Minimum',
+        'factur-x.eu:1p0:extended'          => 'FacturX Extended',
+        'zugferd.de:2p1:extended'           => 'ZUGFeRD 2.1 Extended',
+        // UBL profiles (full URN exact/contains)
+        'peppol.eu:2017:poacc:billing'      => 'Peppol BIS 3.0',
+        'nen.nl:nlcius'                     => 'NLCIUS',
+        'cius-ro.eu'                        => 'CIUS-RO',
+        'agid.gov.it'                       => 'CIUS-IT',
+        // ZUGFeRD 1.0 — parser stores the class-name constant (e.g. "COMFORT")
+        'COMFORT'                           => 'ZUGFeRD 1.0 Comfort',
+        // EN 16931 base URN — must be last, it is a prefix of all CII URNs
+        'urn:cen.eu:en16931:2017'           => 'EN 16931',
     ];
 
     /** ISO 6523 and tax-scheme codes → display label */
@@ -52,6 +56,7 @@ class InvoiceRenderer
         '0210' => 'NIF',         // ES
         '0211' => 'NIF-IVA',     // ES
         'VA'   => 'TVA / VAT',
+        'VAT'  => 'TVA / VAT',
         'FC'   => 'Tax number',
         'GS1'  => 'GLN',
     ];
