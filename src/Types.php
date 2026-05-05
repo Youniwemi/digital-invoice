@@ -2605,133 +2605,247 @@ enum InternationalCodeDesignator: string
 {
     use EnumToArray;
 
+    // === AUSTRALIA ===
+    #[Label("Australia - Australian Business Number (ABN)")]
+    case AUSTRALIAN_BUSINESS_NUMBER_ABN_SCHEME = "0151";
+    
+    #[Label("Australia - Australian Chambers of Commerce and Industry")]
+    case AUSTRALIAN_CHAMBERS_OF_COMMERCE_AND_INDUSTRY_SCHEME = "0108";
+    
+    // === BELGIUM ===
+    #[Label("Belgium - Numéro d'Entreprise/Ondernemingsnummer/Unternehmensnummer")]
+    case NUMERO_D_ENTREPRISE_ONDERNEMINGSNUMMER_UNTERNEHMENSNUMMER_BELGIUM = "0208";
+    
+    #[Label("Belgium - Codification Numérique des Établissements Financiers")]
+    case CODIFICATION_NUMERIQUE_DES_ETABLISSMENTS_FINANCIERS_EN_BELGIQUE = "0003";
+    
+    #[Label("Belgium - Le Numéro National")]
+    case LE_NUMERO_NATIONAL = "0008";
+    
+    #[Label("Belgium - National Federation of Chambers of Commerce & Industry")]
+    case NATIONAL_FEDERATION_OF_CHAMBERS_OF_COMMERCE_INDUSTRY_OF_BELGIUM_SCHEME = "0087";
+    
+    #[Label("Belgium - UBL.BE Party Identifier")]
+    case UBL_BE_PARTY_IDENTIFIER_NORWAY_BELGIUM = "0193";
+    
+    // === CANADA ===
+    #[Label("Canada - Revenue Canada Business Number Registration")]
+    case REVENUE_CANADA_BUSINESS_NUMBER_REGISTRATION = "0093";
+    
+    // === CZECH REPUBLIC ===
+    #[Label("Czech Republic - Identification Number of Economic Subjects (IČO)")]
+    case IDENTIFICATION_NUMBER_OF_ECONOMIC_SUBJECTS_ICO_CZECH = "0154";
+    
+    // === DENMARK ===
+    #[Label("Denmark - DIGST.org")]
+    case DIGSTORG_DENMARK = "0184";
+    
+    #[Label("Denmark - ERST.org")]
+    case ERSTORG_DENMARK = "0198";
+    
+    #[Label("Denmark - Danish Chamber of Commerce")]
+    case DANISH_CHAMBER_OF_COMMERCE_SCHEME = "0096";
+    
+    // === ESTONIA ===
+    #[Label("Estonia - Company Code")]
+    case COMPANY_CODE_ESTONIA = "0191";
+    
+    // === EUROPEAN UNION ===
+    #[Label("European Union - EU Based Company")]
+    case EU_BASED_COMPANY = "0223";
+    
+    // === FINLAND ===
+    #[Label("Finland - LY-Tunnus")]
+    case LY_TUNNUS_FINLAND = "0037";
+    
+    #[Label("Finland - Finnish Organization Identifier")]
+    case FINNISH_ORGANIZATION_IDENTIFIER = "0212";
+    
+    #[Label("Finland - Finnish Organization Value Added Tax Identifier")]
+    case FINNISH_ORGANIZATION_VALUE_ADD_TAX_IDENTIFIER = "0213";
+    
+    #[Label("Finland - OVT Code")]
+    case OVTCODE = "0216";
+    
+    #[Label("Finland - Net Service ID")]
+    case NET_SERVICE_ID = "0215";
+
+    // === FRANCE ===
     #[Label("France - Numéro SIREN (Système d'Identification du Répertoire des Entreprises)")]
     case SYSTEM_INFORMATION_ET_REPERTOIRE_DES_ENTREPRISE_ET_DES_ETABLISSEMENTS_SIRENE = "0002";
-
-    case CODIFICATION_NUMERIQUE_DES_ETABLISSMENTS_FINANCIERS_EN_BELGIQUE = "0003";
-
-    case ORGANISATIONSNUMMER_SWEDEN = "0007";
-    case LE_NUMERO_NATIONAL = "0008";
-
+    
     #[Label("France - Numéro SIRET (Système d'Identification du Répertoire des Établissements)")]
     case SIRET_CODE = "0009";
-
-    case THE_ALL_UNION_CLASSIFIER_OF_ENTERPRISES_AND_ORGANISATIONS = "0029";
-
-    case LY_TUNNUS_FINLAND = "0037";
-
-    case ICI_COMPANY_IDENTIFICATION_SYSTEM_UK = "0045";
-
-    case DATA_UNIVERSAL_NUMBERING_SYSTEM_DUNS_NUMBER_UK = "0060";
-
-    case ATHENS_CHAMBER_OF_COMMERCE_INDUSTRY_SCHEME_GREECE = "0084";
-    case SWISS_CHAMBERS_OF_COMMERCE_SCHEME = "0085";
-    case UNITED_STATES_COUNCIL_FOR_INTERNATIONAL_BUSINESS_USCIB_SCHEME = "0086";
-    case NATIONAL_FEDERATION_OF_CHAMBERS_OF_COMMERCE_INDUSTRY_OF_BELGIUM_SCHEME = "0087";
-
-    case THE_ASSOCIATION_OF_BRITISH_CHAMBERS_OF_COMMERCE_LTD_SCHEME = "0089";
-
-    case REVENUE_CANADA_BUSINESS_NUMBER_REGISTRATION = "0093";
-    case DEUTSCHER_INDUSTRIE_UND_HANDELSTAG_DIHT_SCHEME = "0094";
-
-    case DANISH_CHAMBER_OF_COMMERCE_SCHEME = "0096";
-    case FTI_EDIFORUM_ITALIA = "0097";
-    case CHAMBER_OF_COMMERCE_TEL_AVIV_JAFFA_SCHEME = "0098";
-
-    case PORTUGUESE_CHAMBER_OF_COMMERCE_AND_INDUSTRY_SCHEME = "0105";
-    case VERENIGING_VAN_KAMERS_VAN_KOOPHANDEL_EN_FABRIEKEN_IN_NEDERLAND = "0106";
-    case ASSOCIATION_OF_SWEDISH_CHAMBERS_OF_COMMERCE_AND_INDUSTRY_SCHEME = "0107";
-
-    case AUSTRALIAN_CHAMBERS_OF_COMMERCE_AND_INDUSTRY_SCHEME = "0108";
-
-    case STANDARD_COMPANY_CODE_JIPDEC_JAPAN = "0147";
-
-    case AUSTRALIAN_BUSINESS_NUMBER_ABN_SCHEME = "0151";
-
-    case EDIRA_SCHEME_IDENTIFIER_CODE_SWITZERLAND = "0152";
-
-    case IDENTIFICATION_NUMBER_OF_ECONOMIC_SUBJECTS_ICO_CZECH = "0154";
-
-    case IDENTIFICATION_NUMBER_OF_ECONOMIC_SUBJECT_ICO_STATE_STATISTICS_SLOVAK_REPUBLIC = "0158";
-
-    case SWISSGUIDE_IDENTIFIER_SCHEME = "0166";
-
-    case SWISS_FEDERAL_BUSINESS_IDENTIFICATION_NUMBER_ZEFIX = "0169";
-
-    case TEIKOKU_COMPANY_CODE_JAPAN = "0170";
-
-    case NUMERO_D_IDENTIFICATION_SUISSE_DES_ENTERPRISES_IDE_UIDB = "0183";
-
-    case DIGSTORG_DENMARK = "0184";
-
-    case CORPORATE_NUMBER_OF_THE_SOCIAL_SECURITY_AND_TAX_NUMBER_SYSTEM_JAPAN = "0188";
-
-    case EUROPEAN_BUSINESS_IDENTIFIER_EBID_GERMANY = "0189";
-    case ORGANISATIE_INDENTIFICATIE_NUMMER_OIN_NETHERLANDS = "0190";
-
-    case COMPANY_CODE_ESTONIA = "0191";
-    case ORGANISASJONSNUMMER = "0192";
-    case UBL_BE_PARTY_IDENTIFIER_NORWAY_BELGIUM = "0193";
-
-    case SINGAPORE_NATIONWIDE_E_LNVOICE_FRAMEWORK = "0195";
-    case ICELANDIC_IDENTIFIER_ISLENSK_KENNITALA = "0196";
-
-    case ERSTORG_DENMARK = "0198";
-
-    case LEGAL_ENTITY_CODE_LITHUANIA = "0200";
-
-    case CODDEST = "0205";
-
-    case REGISTRE_DU_COMMERCE_ET_DE_L_INDUSTRIE_RCI_MONACO = "0206";
-
-    case NUMERO_D_ENTREPRISE_ONDERNEMINGSNUMMER_UNTERNEHMENSNUMMER_BELGIUM = "0208";
-
-    case CODICE_FISCALE_ITALIA = "0210";
-    case PARTITA_IVA = "0211";
-    case FINNISH_ORGANIZATION_IDENTIFIER = "0212";
-    case FINNISH_ORGANIZATION_VALUE_ADD_TAX_IDENTIFIER = "0213";
-    case TRADEPLACE_TRADEPI_STANDARD = "0214";
-    case NET_SERVICE_ID = "0215";
-    case OVTCODE = "0216";
-    case THE_NETHERLANDS_CHAMBER_OF_COMMERCE_AND_INDUSTRY_ESTABLISHMENT_NUMBER = "0217";
-
-    // LATVIA
-    case UNIFIED_REGISTRATION_NUMBER_LATVIA = "0218";
-    case TAXPAYER_REGISTRATION_CODE_LATVIA = "0219";
-    case THE_REGISTER_OF_NATURAL_PERSONS_LATVIA = "0220";
-
-    // Japan
-    case THE_REGISTERED_NUMBER_OF_THE_QUALIFIED_INVOICE_ISSUER = "0221";
-
-    // EU
-    case EU_BASED_COMPANY = "0223";
-
-    // France
+    
     #[Label("France - FTCTC Code Routage")]
     case FTCTC_CODE_ROUTAGE = "0224";
+
     #[Label("France - FRCTC Adresse Électronique")]
     case FRCTC_ELECTRONIC_ADDRESS = "0225";
+
+    #[Label("France - FRCTC Particulier")]
     case FRCTC_PARTICULIER = "0226";
-
-    // New Caledonia
-    case REPERTOIRE_DES_ENTREPRISES_ET_DES_ETABLISSEMENTS_RIDET = "0228";
-
-    // Tahiti
-    case TAHITI_TRAITEMENT_AUTOMATIQUE_HIÉRARCHISÉ_DES_INSTITUTIONS_DE_TAHITI_ET_DES_ÎLES = "0229";
-
-    // MALAYSIA
-    case NATIONAL_E_INVOICING_FRAMEWORK_MALAYSIA = "0230";
-
+    
+    #[Label("France - Single Taxable Company")]
     case SINGLE_TAXABLE_COMPANY_FRANCE = "0231";
-
-    // UAE
-    case UAE_TAX_IDENTIFICATION_NUMBER_TIN = "0235";
-
-    // Malaysian IDS
+    
+    // === GERMANY ===
+    #[Label("Germany - Deutscher Industrie und Handelstag (DIHT)")]
+    case DEUTSCHER_INDUSTRIE_UND_HANDELSTAG_DIHT_SCHEME = "0094";
+    
+    #[Label("Germany - European Business Identifier (EBID)")]
+    case EUROPEAN_BUSINESS_IDENTIFIER_EBID_GERMANY = "0189";
+    
+    // === GREECE ===
+    #[Label("Greece - Athens Chamber of Commerce & Industry")]
+    case ATHENS_CHAMBER_OF_COMMERCE_INDUSTRY_SCHEME_GREECE = "0084";
+    
+    // === ICELAND ===
+    #[Label("Iceland - Icelandic Identifier (Íslensk Kennitala)")]
+    case ICELANDIC_IDENTIFIER_ISLENSK_KENNITALA = "0196";
+    
+    // === ISRAEL ===
+    #[Label("Israel - Chamber of Commerce Tel Aviv-Jaffa")]
+    case CHAMBER_OF_COMMERCE_TEL_AVIV_JAFFA_SCHEME = "0098";
+    
+    // === ITALY ===
+    #[Label("Italy - Codice Fiscale")]
+    case CODICE_FISCALE_ITALIA = "0210";
+    
+    #[Label("Italy - Partita IVA")]
+    case PARTITA_IVA = "0211";
+    
+    #[Label("Italy - FTI EDIForum Italia")]
+    case FTI_EDIFORUM_ITALIA = "0097";
+    
+    #[Label("Italy - CODDEST")]
+    case CODDEST = "0205";
+    
+    // === JAPAN ===
+    #[Label("Japan - Standard Company Code (JIPDEC)")]
+    case STANDARD_COMPANY_CODE_JIPDEC_JAPAN = "0147";
+    
+    #[Label("Japan - Teikoku Company Code")]
+    case TEIKOKU_COMPANY_CODE_JAPAN = "0170";
+    
+    #[Label("Japan - Corporate Number of the Social Security and Tax Number System")]
+    case CORPORATE_NUMBER_OF_THE_SOCIAL_SECURITY_AND_TAX_NUMBER_SYSTEM_JAPAN = "0188";
+    
+    #[Label("Japan - The Registered Number of the Qualified Invoice Issuer")]
+    case THE_REGISTERED_NUMBER_OF_THE_QUALIFIED_INVOICE_ISSUER = "0221";
+    
+    // === LATVIA ===
+    #[Label("Latvia - Unified Registration Number")]
+    case UNIFIED_REGISTRATION_NUMBER_LATVIA = "0218";
+    
+    #[Label("Latvia - Taxpayer Registration Code")]
+    case TAXPAYER_REGISTRATION_CODE_LATVIA = "0219";
+    
+    #[Label("Latvia - The Register of Natural Persons")]
+    case THE_REGISTER_OF_NATURAL_PERSONS_LATVIA = "0220";
+    
+    // === LITHUANIA ===
+    #[Label("Lithuania - Legal Entity Code")]
+    case LEGAL_ENTITY_CODE_LITHUANIA = "0200";
+    
+    // === MALAYSIA ===
+    #[Label("Malaysia - National e-Invoicing Framework")]
+    case NATIONAL_E_INVOICING_FRAMEWORK_MALAYSIA = "0230";
+    
+    #[Label("Malaysia - Tax Identification Number (TIN)")]
     case TIN_MALAYSIA = "TIN";
+    
+    #[Label("Malaysia - Business Registration Number (BRN/SSM)")]
     case BRN_SSM_MALAYSIA = "BRN";
     case NRIC_MALAYSIA = "NRIC";
+    
+    // === MONACO ===
+    #[Label("Monaco - Registre du Commerce et de l'Industrie (RCI)")]
+    case REGISTRE_DU_COMMERCE_ET_DE_L_INDUSTRIE_RCI_MONACO = "0206";
+    
+    // === NETHERLANDS ===
+    #[Label("Netherlands - Organisatie Identificatie Nummer (OIN)")]
+    case ORGANISATIE_INDENTIFICATIE_NUMMER_OIN_NETHERLANDS = "0190";
+    
+    #[Label("Netherlands - Chamber of Commerce and Industry Establishment Number")]
+    case THE_NETHERLANDS_CHAMBER_OF_COMMERCE_AND_INDUSTRY_ESTABLISHMENT_NUMBER = "0217";
+    
+    #[Label("Netherlands - Vereniging van Kamers van Koophandel en Fabrieken")]
+    case VERENIGING_VAN_KAMERS_VAN_KOOPHANDEL_EN_FABRIEKEN_IN_NEDERLAND = "0106";
+    
+    // === NEW CALEDONIA ===
+    #[Label("New Caledonia - Répertoire des Entreprises et des Établissements (RIDET)")]
+    case REPERTOIRE_DES_ENTREPRISES_ET_DES_ETABLISSEMENTS_RIDET = "0228";
+    
+    // === NORWAY ===
+    #[Label("Norway - Organisasjonsnummer")]
+    case ORGANISASJONSNUMMER = "0192";
+    
+    // === PORTUGAL ===
+    #[Label("Portugal - Portuguese Chamber of Commerce and Industry")]
+    case PORTUGUESE_CHAMBER_OF_COMMERCE_AND_INDUSTRY_SCHEME = "0105";
+    
+    // === RUSSIA ===
+    #[Label("Russia - The All-Union Classifier of Enterprises and Organisations")]
+    case THE_ALL_UNION_CLASSIFIER_OF_ENTERPRISES_AND_ORGANISATIONS = "0029";
+    
+    // === SINGAPORE ===
+    #[Label("Singapore - Nationwide e-Invoice Framework")]
+    case SINGAPORE_NATIONWIDE_E_LNVOICE_FRAMEWORK = "0195";
+    
+    // === SLOVAKIA ===
+    #[Label("Slovakia - Identification Number of Economic Subject (IČO)")]
+    case IDENTIFICATION_NUMBER_OF_ECONOMIC_SUBJECT_ICO_STATE_STATISTICS_SLOVAK_REPUBLIC = "0158";
+    
+    // === SWEDEN ===
+    #[Label("Sweden - Organisationsnummer")]
+    case ORGANISATIONSNUMMER_SWEDEN = "0007";
+    
+    #[Label("Sweden - Association of Swedish Chambers of Commerce and Industry")]
+    case ASSOCIATION_OF_SWEDISH_CHAMBERS_OF_COMMERCE_AND_INDUSTRY_SCHEME = "0107";
+    
+    // === SWITZERLAND ===
+    #[Label("Switzerland - Swiss Chambers of Commerce")]
+    case SWISS_CHAMBERS_OF_COMMERCE_SCHEME = "0085";
+    
+    #[Label("Switzerland - EDIRA Scheme Identifier Code")]
+    case EDIRA_SCHEME_IDENTIFIER_CODE_SWITZERLAND = "0152";
+    
+    #[Label("Switzerland - SwissGuide Identifier")]
+    case SWISSGUIDE_IDENTIFIER_SCHEME = "0166";
+    
+    #[Label("Switzerland - Swiss Federal Business Identification Number (Zefix)")]
+    case SWISS_FEDERAL_BUSINESS_IDENTIFICATION_NUMBER_ZEFIX = "0169";
+    
+    #[Label("Switzerland - Numéro d'Identification Suisse des Enterprises (IDE/UID-B)")]
+    case NUMERO_D_IDENTIFICATION_SUISSE_DES_ENTERPRISES_IDE_UIDB = "0183";
+    
+    // === TAHITI (FRENCH POLYNESIA) ===
+    #[Label("Tahiti - Traitement Automatique Hiérarchisé des Institutions de Tahiti et des Îles")]
+    case TAHITI_TRAITEMENT_AUTOMATIQUE_HIERARCHISE_DES_INSTITUTIONS_DE_TAHITI_ET_DES_ILES = "0229";
+    
+    // === UNITED ARAB EMIRATES (UAE) ===
+    #[Label("UAE - Tax Identification Number (TIN)")]
+    case UAE_TAX_IDENTIFICATION_NUMBER_TIN = "0235";
+    
+    // === UNITED KINGDOM (UK) ===
+    #[Label("UK - ICI Company Identification System")]
+    case ICI_COMPANY_IDENTIFICATION_SYSTEM_UK = "0045";
+    
+    #[Label("UK - Data Universal Numbering System (DUNS Number)")]
+    case DATA_UNIVERSAL_NUMBERING_SYSTEM_DUNS_NUMBER_UK = "0060";
+    
+    #[Label("UK - The Association of British Chambers of Commerce Ltd")]
+    case THE_ASSOCIATION_OF_BRITISH_CHAMBERS_OF_COMMERCE_LTD_SCHEME = "0089";
+    
+    // === UNITED STATES (US) ===
+    #[Label("US - United States Council for International Business (USCIB)")]
+    case UNITED_STATES_COUNCIL_FOR_INTERNATIONAL_BUSINESS_USCIB_SCHEME = "0086";
+    
+    
+
 }
+
 
 
 enum IdentificationType: string
