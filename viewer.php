@@ -145,8 +145,6 @@ header {
 }
 .alert-error strong { display: block; margin-bottom: 4px; }
 
-/* ── Invoice styles ── */
-<?= $renderer->getStyles() ?>
 </style>
 </head>
 <body>

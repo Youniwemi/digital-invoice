@@ -54,7 +54,12 @@ class InvoiceRenderer
         $date    = static fn (?\DateTime $d): string =>
             $d ? $d->format('Y-m-d') : '—';
 
+        $styles = $this->getStyles();
+
         ob_start();
+        if ($styles !== '') {
+            echo '<style>', $styles, '</style>';
+        }
         include $this->templatePath;
         return (string) ob_get_clean();
     }

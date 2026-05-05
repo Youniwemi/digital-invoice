@@ -119,32 +119,44 @@ class InvoiceRendererTest extends TestCase
         $this->assertStringNotContainsString('<script', $html);
     }
 
+    public function testRenderInlinesCss(): void
+    {
+        $data = $this->buildAndParse(FacturX::BASIC);
+        $html = (new InvoiceRenderer())->render($data);
+
+        $this->assertStringContainsString('<style>', $html);
+        $this->assertStringContainsString('.di-invoice', $html);
+        $this->assertStringContainsString('.di-table', $html);
+    }
+
+    public function testCustomCssIsInlinedInRender(): void
+    {
+        $tmpCss = tempnam(sys_get_temp_dir(), 'di_css_') . '.css';
+        file_put_contents($tmpCss, '.custom { color: red; }');
+
+        $data = $this->buildAndParse(FacturX::BASIC);
+        $html = (new InvoiceRenderer(null, $tmpCss))->render($data);
+
+        $this->assertStringContainsString('.custom { color: red; }', $html);
+
+        unlink($tmpCss);
+    }
+
+    public function testMissingCssProducesNoStyleTag(): void
+    {
+        $data = $this->buildAndParse(FacturX::BASIC);
+        $html = (new InvoiceRenderer(null, '/nonexistent/styles.css'))->render($data);
+
+        $this->assertStringNotContainsString('<style>', $html);
+        $this->assertStringContainsString('di-invoice', $html);
+    }
+
     public function testGetStylesReturnsDefaultCss(): void
     {
         $css = (new InvoiceRenderer())->getStyles();
 
         $this->assertNotEmpty($css);
         $this->assertStringContainsString('.di-invoice', $css);
-        $this->assertStringContainsString('.di-table', $css);
-    }
-
-    public function testCustomCssPathIsUsed(): void
-    {
-        $tmpCss = tempnam(sys_get_temp_dir(), 'di_css_') . '.css';
-        file_put_contents($tmpCss, '.custom { color: red; }');
-
-        $css = (new InvoiceRenderer(null, $tmpCss))->getStyles();
-
-        $this->assertEquals('.custom { color: red; }', $css);
-
-        unlink($tmpCss);
-    }
-
-    public function testMissingCssReturnsEmptyString(): void
-    {
-        $css = (new InvoiceRenderer(null, '/nonexistent/styles.css'))->getStyles();
-
-        $this->assertSame('', $css);
     }
 
     // ─── Sad path ────────────────────────────────────────────────────────────
