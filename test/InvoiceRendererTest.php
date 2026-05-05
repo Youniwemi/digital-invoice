@@ -159,6 +159,55 @@ class InvoiceRendererTest extends TestCase
         $this->assertStringContainsString('.di-invoice', $css);
     }
 
+    // ─── i18n ────────────────────────────────────────────────────────────────
+
+    public function testDefaultLangIsEnglish(): void
+    {
+        $data = $this->buildAndParse(FacturX::BASIC);
+        $html = (new InvoiceRenderer())->render($data);
+
+        $this->assertStringContainsString('Seller', $html);
+        $this->assertStringContainsString('Tax basis', $html);
+    }
+
+    public function testFrenchLabels(): void
+    {
+        $data = $this->buildAndParse(FacturX::BASIC);
+        $html = (new InvoiceRenderer(lang: 'fr'))->render($data);
+
+        $this->assertStringContainsString('Vendeur', $html);
+        $this->assertStringContainsString('Base HT', $html);
+        $this->assertStringContainsString('TVA', $html);
+    }
+
+    public function testGermanLabels(): void
+    {
+        $data = $this->buildAndParse(FacturX::BASIC);
+        $html = (new InvoiceRenderer(lang: 'de'))->render($data);
+
+        $this->assertStringContainsString('Verkäufer', $html);
+        $this->assertStringContainsString('Nettobetrag', $html);
+    }
+
+    public function testUnknownLangFallsBackToEnglish(): void
+    {
+        $data = $this->buildAndParse(FacturX::BASIC);
+        $html = (new InvoiceRenderer(lang: 'zz'))->render($data);
+
+        $this->assertStringContainsString('Seller', $html);
+    }
+
+    public function testSiretDisplayed(): void
+    {
+        $data = $this->buildAndParse(FacturX::BASIC);
+        $html = (new InvoiceRenderer())->render($data);
+
+        // Seller has SIRET (schemeID 0002) and VAT registration
+        $this->assertStringContainsString('SIRET', $html);
+        $this->assertStringContainsString('TVA / VAT', $html);
+        $this->assertStringContainsString('FR12312345678', $html);
+    }
+
     // ─── Sad path ────────────────────────────────────────────────────────────
 
     public function testMissingTemplateThrows(): void

@@ -4,32 +4,39 @@
  *
  * Variables injected by InvoiceRenderer::render():
  *   @var \DigitalInvoice\InvoiceData $invoice
- *   @var string                      $cur      currency code
- *   @var \Closure                    $esc      HTML-safe string
- *   @var \Closure                    $fmt      formatted monetary amount
- *   @var \Closure                    $date     formatted DateTime or '—'
+ *   @var string                      $cur
+ *   @var array<string,string>        $labels
+ *   @var \Closure                    $esc          fn(?string): string
+ *   @var \Closure                    $fmt          fn(?float, string): string
+ *   @var \Closure                    $date         fn(?\DateTime): string
+ *   @var \Closure                    $schemeLabel  fn(string): string
+ *   @var \Closure                    $formatLabel  fn(string): string
  */
 ?>
 <div class="di-invoice">
 
   <header class="di-header">
     <div class="di-header__meta">
-      <span class="di-label">Invoice</span>
+      <span class="di-label"><?= $labels['invoice'] ?></span>
       <span class="di-invoice-id"><?= $esc($invoice->invoiceId) ?></span>
+      <?php $fmt_label = $formatLabel($invoice->profile); ?>
+      <?php if ($fmt_label): ?>
+      <span class="di-format-badge"><?= $esc($fmt_label) ?></span>
+      <?php endif; ?>
     </div>
     <div class="di-header__dates">
-      <div><span class="di-label">Issue date</span> <?= $date($invoice->issueDate) ?></div>
+      <div><span class="di-label"><?= $labels['issue_date'] ?></span> <?= $date($invoice->issueDate) ?></div>
       <?php if ($invoice->deliveryDate): ?>
-      <div><span class="di-label">Delivery date</span> <?= $date($invoice->deliveryDate) ?></div>
+      <div><span class="di-label"><?= $labels['delivery_date'] ?></span> <?= $date($invoice->deliveryDate) ?></div>
       <?php endif; ?>
       <?php if ($invoice->dueDate): ?>
-      <div><span class="di-label">Due date</span> <?= $date($invoice->dueDate) ?></div>
+      <div><span class="di-label"><?= $labels['due_date'] ?></span> <?= $date($invoice->dueDate) ?></div>
       <?php endif; ?>
     </div>
     <div class="di-header__misc">
-      <div><span class="di-label">Currency</span> <?= $esc($invoice->currency) ?></div>
+      <div><span class="di-label"><?= $labels['currency'] ?></span> <?= $esc($invoice->currency) ?></div>
       <?php if ($invoice->invoiceType && $invoice->invoiceType !== '380'): ?>
-      <div><span class="di-label">Type</span> <?= $esc($invoice->invoiceType) ?></div>
+      <div><span class="di-label"><?= $labels['invoice_type'] ?></span> <?= $esc($invoice->invoiceType) ?></div>
       <?php endif; ?>
     </div>
   </header>
@@ -46,7 +53,7 @@
 
     <?php if ($invoice->seller): ?>
     <div class="di-party di-party--seller">
-      <h3 class="di-party__role">Seller</h3>
+      <h3 class="di-party__role"><?= $labels['seller'] ?></h3>
       <strong><?= $esc($invoice->seller->name) ?></strong>
       <?php if ($invoice->seller->tradingName): ?>
       <em><?= $esc($invoice->seller->tradingName) ?></em>
@@ -59,8 +66,23 @@
         <?= $esc($a->countryCode) ?>
       </address>
       <?php endif; ?>
+      <?php if ($invoice->seller->id): ?>
+      <div class="di-identifier">
+        <span class="di-label"><?= $esc($schemeLabel($invoice->seller->idType ?? '')) ?></span>
+        <?= $esc($invoice->seller->id) ?>
+      </div>
+      <?php endif; ?>
+      <?php foreach ($invoice->seller->identifiers as $gid): ?>
+      <div class="di-identifier">
+        <span class="di-label"><?= $esc($schemeLabel($gid['idType'])) ?></span>
+        <?= $esc($gid['id']) ?>
+      </div>
+      <?php endforeach; ?>
       <?php foreach ($invoice->seller->taxRegistrations as $reg): ?>
-      <div class="di-tax-reg"><?= $esc($reg['schemeID']) ?>: <?= $esc($reg['id']) ?></div>
+      <div class="di-identifier">
+        <span class="di-label"><?= $esc($schemeLabel($reg['schemeID'])) ?></span>
+        <?= $esc($reg['id']) ?>
+      </div>
       <?php endforeach; ?>
       <?php if ($invoice->seller->contact): $c = $invoice->seller->contact; ?>
       <div class="di-contact">
@@ -74,7 +96,7 @@
 
     <?php if ($invoice->buyer): ?>
     <div class="di-party di-party--buyer">
-      <h3 class="di-party__role">Buyer</h3>
+      <h3 class="di-party__role"><?= $labels['buyer'] ?></h3>
       <strong><?= $esc($invoice->buyer->name) ?></strong>
       <?php if ($invoice->buyer->address): $a = $invoice->buyer->address; ?>
       <address>
@@ -84,8 +106,29 @@
         <?= $esc($a->countryCode) ?>
       </address>
       <?php endif; ?>
+      <?php if ($invoice->buyer->id): ?>
+      <div class="di-identifier">
+        <span class="di-label"><?= $esc($schemeLabel($invoice->buyer->idType ?? '')) ?></span>
+        <?= $esc($invoice->buyer->id) ?>
+      </div>
+      <?php endif; ?>
+      <?php foreach ($invoice->buyer->identifiers as $gid): ?>
+      <div class="di-identifier">
+        <span class="di-label"><?= $esc($schemeLabel($gid['idType'])) ?></span>
+        <?= $esc($gid['id']) ?>
+      </div>
+      <?php endforeach; ?>
+      <?php foreach ($invoice->buyer->taxRegistrations as $reg): ?>
+      <div class="di-identifier">
+        <span class="di-label"><?= $esc($schemeLabel($reg['schemeID'])) ?></span>
+        <?= $esc($reg['id']) ?>
+      </div>
+      <?php endforeach; ?>
       <?php if ($invoice->buyerReference): ?>
-      <div class="di-buyer-ref"><span class="di-label">Ref</span> <?= $esc($invoice->buyerReference) ?></div>
+      <div class="di-identifier">
+        <span class="di-label"><?= $labels['ref'] ?></span>
+        <?= $esc($invoice->buyerReference) ?>
+      </div>
       <?php endif; ?>
     </div>
     <?php endif; ?>
@@ -97,12 +140,12 @@
     <table class="di-table">
       <thead>
         <tr>
-          <th class="di-col--name">Description</th>
-          <th class="di-col--qty">Qty</th>
-          <th class="di-col--unit">Unit</th>
-          <th class="di-col--price">Unit price</th>
-          <th class="di-col--tax">VAT %</th>
-          <th class="di-col--total">Line total</th>
+          <th class="di-col--name"><?= $labels['description'] ?></th>
+          <th class="di-col--qty"><?= $labels['qty'] ?></th>
+          <th class="di-col--unit"><?= $labels['unit'] ?></th>
+          <th class="di-col--price"><?= $labels['unit_price'] ?></th>
+          <th class="di-col--tax"><?= $labels['vat_pct'] ?></th>
+          <th class="di-col--total"><?= $labels['line_total'] ?></th>
         </tr>
       </thead>
       <tbody>
@@ -128,27 +171,27 @@
 
   <section class="di-totals">
     <?php if ($invoice->taxBasisTotal !== null): ?>
-    <div class="di-total-row"><span>Tax basis</span><span><?= $fmt($invoice->taxBasisTotal, $cur) ?></span></div>
+    <div class="di-total-row"><span><?= $labels['tax_basis'] ?></span><span><?= $fmt($invoice->taxBasisTotal, $cur) ?></span></div>
     <?php endif; ?>
     <?php if ($invoice->taxTotal !== null): ?>
-    <div class="di-total-row"><span>VAT</span><span><?= $fmt($invoice->taxTotal, $cur) ?></span></div>
+    <div class="di-total-row"><span><?= $labels['vat'] ?></span><span><?= $fmt($invoice->taxTotal, $cur) ?></span></div>
     <?php endif; ?>
     <?php if ($invoice->grandTotal !== null): ?>
-    <div class="di-total-row di-total-row--grand"><span>Total</span><span><?= $fmt($invoice->grandTotal, $cur) ?></span></div>
+    <div class="di-total-row di-total-row--grand"><span><?= $labels['total'] ?></span><span><?= $fmt($invoice->grandTotal, $cur) ?></span></div>
     <?php endif; ?>
     <?php if ($invoice->duePayable !== null && $invoice->duePayable !== $invoice->grandTotal): ?>
-    <div class="di-total-row"><span>Due payable</span><span><?= $fmt($invoice->duePayable, $cur) ?></span></div>
+    <div class="di-total-row"><span><?= $labels['due_payable'] ?></span><span><?= $fmt($invoice->duePayable, $cur) ?></span></div>
     <?php endif; ?>
   </section>
 
   <?php if ($invoice->paymentMeans): ?>
   <section class="di-payment">
-    <h3>Payment</h3>
+    <h3><?= $labels['payment'] ?></h3>
     <?php foreach ($invoice->paymentMeans as $pm): ?>
     <div class="di-payment-mean">
-      <?php if ($pm->iban): ?><div><span class="di-label">IBAN</span> <?= $esc($pm->iban) ?></div><?php endif; ?>
-      <?php if ($pm->bic): ?><div><span class="di-label">BIC</span> <?= $esc($pm->bic) ?></div><?php endif; ?>
-      <?php if ($pm->accountName): ?><div><span class="di-label">Account</span> <?= $esc($pm->accountName) ?></div><?php endif; ?>
+      <?php if ($pm->iban): ?><div><span class="di-label"><?= $labels['iban'] ?></span> <?= $esc($pm->iban) ?></div><?php endif; ?>
+      <?php if ($pm->bic): ?><div><span class="di-label"><?= $labels['bic'] ?></span> <?= $esc($pm->bic) ?></div><?php endif; ?>
+      <?php if ($pm->accountName): ?><div><span class="di-label"><?= $labels['account'] ?></span> <?= $esc($pm->accountName) ?></div><?php endif; ?>
     </div>
     <?php endforeach; ?>
     <?php if ($invoice->paymentTermsDescription): ?>

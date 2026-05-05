@@ -172,17 +172,23 @@ class CiiParser extends XmlParser
         }
 
         foreach ($party->taxRegistrations as $reg) {
-            $p->taxRegistrations[] = [
-                'id'       => $reg->id->value ?? '',
-                'schemeID' => $reg->id->schemeID ?? '',
-            ];
+            $id = $reg->registration->value ?? '';
+            if ($id !== '') {
+                $p->taxRegistrations[] = [
+                    'id'       => $id,
+                    'schemeID' => $reg->registration->schemeID ?? '',
+                ];
+            }
         }
 
         foreach ($party->globalID as $gid) {
-            $p->identifiers[] = [
-                'id'     => $gid->value ?? '',
-                'idType' => $gid->schemeID ?? '',
-            ];
+            $id = $gid->value ?? '';
+            if ($id !== '') {
+                $p->identifiers[] = [
+                    'id'     => $id,
+                    'idType' => $gid->schemeID ?? '',
+                ];
+            }
         }
 
         return $p;
