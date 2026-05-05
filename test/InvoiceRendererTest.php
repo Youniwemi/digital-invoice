@@ -164,7 +164,7 @@ class InvoiceRendererTest extends TestCase
     public function testMissingTemplateThrows(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessageMatches('/template not found/i');
+        $this->expectExceptionMessageMatches('/template file not found/i');
 
         $data = $this->buildAndParse(FacturX::BASIC);
         (new InvoiceRenderer('/nonexistent/path/template.php'))->render($data);

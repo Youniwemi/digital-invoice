@@ -40,7 +40,7 @@ class InvoiceRenderer
     {
         if (!file_exists($this->templatePath)) {
             throw new \InvalidArgumentException(
-                "InvoiceRenderer: template not found at '{$this->templatePath}'."
+                'InvoiceRenderer: template file not found.'
             );
         }
 
@@ -50,7 +50,8 @@ class InvoiceRenderer
         $esc     = static fn (?string $s): string =>
             htmlspecialchars((string) $s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $fmt     = static fn (?float $v, string $currency = ''): string =>
-            $v === null ? '—' : number_format($v, 2, '.', ' ') . ($currency ? ' ' . $currency : '');
+            $v === null ? '—' : number_format($v, 2, '.', ' ')
+                . ($currency ? ' ' . htmlspecialchars($currency, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') : '');
         $date    = static fn (?\DateTime $d): string =>
             $d ? $d->format('Y-m-d') : '—';
 

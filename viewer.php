@@ -15,18 +15,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['invoice'])) {
     $file = $_FILES['invoice'];
 
     if ($file['error'] !== UPLOAD_ERR_OK) {
-        $error = 'Upload error (code ' . $file['error'] . ').';
+        $error = 'Upload error (code ' . (int) $file['error'] . ').';
+    } elseif (!is_uploaded_file($file['tmp_name'])) {
+        $error = 'Invalid upload.';
+    } elseif ($file['size'] > 10 * 1024 * 1024) {
+        $error = 'File too large (max 10 MB).';
     } else {
-        $filename = htmlspecialchars($file['name'], ENT_QUOTES, 'UTF-8');
-        $content  = file_get_contents($file['tmp_name']);
-        if ($content === false || $content === '') {
-            $error = 'Could not read the uploaded file.';
+        $mime = (new \finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);
+        if (!in_array($mime, ['text/xml', 'application/xml', 'application/pdf', 'text/plain'], true)) {
+            $error = 'Unsupported file type (expected XML or PDF).';
         } else {
-            try {
-                $data     = InvoiceReader::read($content);
-                $rendered = $renderer->render($data);
-            } catch (\Throwable $e) {
-                $error = htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8');
+            $filename = htmlspecialchars($file['name'], ENT_QUOTES, 'UTF-8');
+            $content  = file_get_contents($file['tmp_name']);
+            if ($content === false || $content === '') {
+                $error = 'Could not read the uploaded file.';
+            } else {
+                try {
+                    $data     = InvoiceReader::read($content);
+                    $rendered = $renderer->render($data);
+                } catch (\Throwable $e) {
+                    $error = $e->getMessage();
+                }
             }
         }
     }
@@ -176,7 +185,7 @@ header {
     <?php if ($error): ?>
       <div class="alert-error">
         <strong>Could not read invoice</strong>
-        <?= $error ?>
+        <?= htmlspecialchars($error, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
       </div>
     <?php elseif ($rendered): ?>
       <?= $rendered ?>

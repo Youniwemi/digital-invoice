@@ -31,6 +31,15 @@ class InvoiceReader
             return self::fromXml($input);
         }
 
+        // Reject anything that is not PDF binary content.
+        // The Facturx library calls @is_file() on its input, so passing a
+        // filesystem path would silently read an arbitrary local file.
+        if (!str_starts_with($input, '%PDF-')) {
+            throw new \InvalidArgumentException(
+                'InvoiceReader: input is neither valid XML nor a PDF file.'
+            );
+        }
+
         return (new CiiParser())->parsePdf($input);
     }
 
@@ -54,9 +63,14 @@ class InvoiceReader
      */
     private static function detectParser(string $xml): XmlParser
     {
+        // Block DOCTYPE declarations to prevent billion-laughs entity expansion.
+        if (stripos($xml, '<!doctype') !== false) {
+            throw new \Exception('InvoiceReader: DOCTYPE declarations are not allowed.');
+        }
+
         $doc = new \DOMDocument();
         libxml_use_internal_errors(true);
-        $loaded = $doc->loadXML($xml);
+        $loaded = $doc->loadXML($xml, LIBXML_NONET);
         libxml_use_internal_errors(false);
 
         if (!$loaded || !$doc->documentElement) {
