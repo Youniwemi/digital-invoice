@@ -1,13 +1,14 @@
 <?php
-/** @var \DigitalInvoice\InvoiceData $invoice */
-
-$fmt = static function (?float $v, string $currency = ''): string {
-    if ($v === null) return '—';
-    return number_format($v, 2, '.', ' ') . ($currency ? ' ' . $currency : '');
-};
-$esc = static fn(?string $s): string => htmlspecialchars((string)$s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-$date = static fn(?\DateTime $d): string => $d ? $d->format('Y-m-d') : '—';
-$cur = $invoice->currency;
+/**
+ * Default invoice template.
+ *
+ * Variables injected by InvoiceRenderer::render():
+ *   @var \DigitalInvoice\InvoiceData $invoice
+ *   @var string                      $cur      currency code
+ *   @var \Closure                    $esc      HTML-safe string
+ *   @var \Closure                    $fmt      formatted monetary amount
+ *   @var \Closure                    $date     formatted DateTime or '—'
+ */
 ?>
 <div class="di-invoice">
 

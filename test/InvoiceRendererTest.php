@@ -119,6 +119,34 @@ class InvoiceRendererTest extends TestCase
         $this->assertStringNotContainsString('<script', $html);
     }
 
+    public function testGetStylesReturnsDefaultCss(): void
+    {
+        $css = (new InvoiceRenderer())->getStyles();
+
+        $this->assertNotEmpty($css);
+        $this->assertStringContainsString('.di-invoice', $css);
+        $this->assertStringContainsString('.di-table', $css);
+    }
+
+    public function testCustomCssPathIsUsed(): void
+    {
+        $tmpCss = tempnam(sys_get_temp_dir(), 'di_css_') . '.css';
+        file_put_contents($tmpCss, '.custom { color: red; }');
+
+        $css = (new InvoiceRenderer(null, $tmpCss))->getStyles();
+
+        $this->assertEquals('.custom { color: red; }', $css);
+
+        unlink($tmpCss);
+    }
+
+    public function testMissingCssReturnsEmptyString(): void
+    {
+        $css = (new InvoiceRenderer(null, '/nonexistent/styles.css'))->getStyles();
+
+        $this->assertSame('', $css);
+    }
+
     // ─── Sad path ────────────────────────────────────────────────────────────
 
     public function testMissingTemplateThrows(): void

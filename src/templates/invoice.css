@@ -1,0 +1,177 @@
+/* ── Invoice card ── */
+.di-invoice {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  padding: 32px 36px;
+  max-width: 860px;
+  margin: 0 auto;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  color: #1a1a2e;
+}
+
+/* ── Label ── */
+.di-label {
+  display: inline-block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #999;
+  margin-right: 6px;
+}
+
+/* ── Header ── */
+.di-header {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e8e8f0;
+}
+.di-header__meta { flex: 1; }
+.di-invoice-id {
+  display: block;
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+.di-header__dates,
+.di-header__misc {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
+}
+
+/* ── Notes ── */
+.di-notes { margin-bottom: 20px; }
+.di-note {
+  background: #fffbe6;
+  border-left: 3px solid #f5c518;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #555;
+  border-radius: 0 4px 4px 0;
+  margin-bottom: 6px;
+}
+
+/* ── Parties ── */
+.di-parties {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+.di-party {
+  flex: 1;
+  min-width: 200px;
+  padding: 16px;
+  background: #f9f9fc;
+  border-radius: 8px;
+}
+.di-party__role {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #999;
+  margin-bottom: 8px;
+}
+.di-party strong { display: block; font-size: 15px; margin-bottom: 4px; }
+.di-party em {
+  display: block;
+  font-size: 12px;
+  color: #777;
+  margin-bottom: 6px;
+  font-style: normal;
+}
+.di-party address {
+  font-style: normal;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #555;
+  margin: 6px 0;
+}
+.di-tax-reg  { font-size: 12px; color: #777; margin-top: 4px; }
+.di-buyer-ref { font-size: 12px; color: #777; margin-top: 6px; }
+.di-contact  { font-size: 12px; color: #777; margin-top: 6px; }
+
+/* ── Line items ── */
+.di-items { margin-bottom: 24px; }
+.di-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.di-table th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #999;
+  border-bottom: 2px solid #e8e8f0;
+  padding: 8px 10px;
+}
+.di-table td {
+  padding: 10px;
+  border-bottom: 1px solid #f0f0f5;
+  vertical-align: top;
+}
+.di-table td small {
+  display: block;
+  color: #888;
+  margin-top: 3px;
+  font-size: 11px;
+}
+.di-col--qty,
+.di-col--unit,
+.di-col--price,
+.di-col--tax,
+.di-col--total { text-align: right; white-space: nowrap; }
+
+/* ── Totals ── */
+.di-totals {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+.di-total-row {
+  display: flex;
+  gap: 48px;
+  font-size: 13px;
+  color: #555;
+}
+.di-total-row span:last-child {
+  min-width: 120px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.di-total-row--grand {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+  padding-top: 8px;
+  border-top: 2px solid #e8e8f0;
+  margin-top: 4px;
+}
+
+/* ── Payment ── */
+.di-payment { font-size: 13px; color: #555; }
+.di-payment h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #999;
+  margin-bottom: 10px;
+}
+.di-payment-mean {
+  background: #f9f9fc;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  line-height: 1.8;
+}
+.di-payment-terms { margin-top: 8px; color: #777; font-size: 12px; }
