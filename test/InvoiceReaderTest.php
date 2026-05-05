@@ -222,7 +222,7 @@ class InvoiceReaderTest extends TestCase
         $pdfTemplate = file_get_contents(__DIR__ . '/examples/basic.pdf');
         $pdf = $invoice->getPdf($pdfTemplate);
 
-        $data = InvoiceReader::fromPdf($pdf);
+        $data = InvoiceReader::read($pdf);
 
         $this->assertEquals('INV-001', $data->invoiceId);
         $this->assertNotNull($data->seller);

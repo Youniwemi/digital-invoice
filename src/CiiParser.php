@@ -13,9 +13,22 @@ use Easybill\ZUGFeRD211\Reader;
  * Uses easybill/zugferd-php ZUGFeRD211 Reader which deserializes via JMS Serializer
  * into the CrossIndustryInvoice object graph. Can be used directly for generic CII
  * parsing or extended by format-specific subclasses (e.g. FacturXParser).
+ *
+ * Also handles PDF input: FacturX / ZUGFeRD PDFs embed their CII XML as an attachment,
+ * so PDF extraction naturally belongs here rather than in the generic InvoiceReader.
  */
 class CiiParser extends XmlParser
 {
+    /**
+     * Extract the embedded CII XML from a FacturX / ZUGFeRD PDF, then parse it.
+     * Accepts a file path or raw PDF binary content.
+     */
+    public function parsePdf(string $pdfPathOrContent): InvoiceData
+    {
+        $xml = (new PdfWriter())->getFacturxXmlFromPdf($pdfPathOrContent);
+        return $this->parse($xml);
+    }
+
     public function parse(string $xml): InvoiceData
     {
         $cii = Reader::create()->transform($xml);
