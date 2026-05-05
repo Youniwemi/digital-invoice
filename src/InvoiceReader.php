@@ -68,7 +68,7 @@ class InvoiceReader
 
         return match ($localName) {
             'Invoice'               => new UblParser(),
-            'CrossIndustryInvoice'  => new FacturXParser(),
+            'CrossIndustryInvoice'  => new CiiParser(),
             'CrossIndustryDocument' => new ZugferdParser(),
             default => throw new \Exception(
                 "InvoiceReader: unknown invoice format (root element: <$localName>)."
