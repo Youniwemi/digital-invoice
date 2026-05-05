@@ -55,6 +55,9 @@ class InvoiceRenderer
         '0208' => 'KBO/BCE',     // BE
         '0210' => 'NIF',         // ES
         '0211' => 'NIF-IVA',     // ES
+        '0224' => 'Code Routage',
+        '0225' => 'Adresse Élec.',
+        '0226' => 'FRCTC',
         'VA'   => 'TVA / VAT',
         'VAT'  => 'TVA / VAT',
         'FC'   => 'Tax number',
