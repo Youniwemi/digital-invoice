@@ -76,6 +76,10 @@ class CiiParser extends XmlParser
             $data->buyerReference = $agr->buyerReference ?? null;
         }
 
+        // Electronic addresses (BT-34/BT-49): easybill's TradeParty model does not map
+        // URIUniversalCommunication, so read them straight from the XML.
+        $this->fillElectronicAddresses($xml, $data);
+
         // Line items
         foreach ($tx->lineItems as $lineItem) {
             $item = new InvoiceItemData();
@@ -160,6 +164,39 @@ class CiiParser extends XmlParser
         }
 
         return $data;
+    }
+
+    /**
+     * BT-34 (seller) / BT-49 (buyer): URIUniversalCommunication/URIID on each
+     * trade party. Namespace-agnostic XPath so FacturX, ZUGFeRD and XRechnung
+     * prefixes all match.
+     */
+    private function fillElectronicAddresses(string $xml, InvoiceData $data): void
+    {
+        $doc = new \DOMDocument();
+        libxml_use_internal_errors(true);
+        $loaded = $doc->loadXML($xml, LIBXML_NONET);
+        libxml_use_internal_errors(false);
+        if (!$loaded) {
+            return;
+        }
+        $xpath = new \DOMXPath($doc);
+
+        foreach (['Seller' => $data->seller, 'Buyer' => $data->buyer] as $role => $party) {
+            if (!$party) {
+                continue;
+            }
+            $nodes = $xpath->query(
+                "//*[local-name()='{$role}TradeParty']/*[local-name()='URIUniversalCommunication']/*[local-name()='URIID']"
+            );
+            if ($nodes && $nodes->length > 0) {
+                $node = $nodes->item(0);
+                $party->electronicAddress       = trim($node->textContent) ?: null;
+                $party->electronicAddressScheme = $node instanceof \DOMElement
+                    ? ($node->getAttribute('schemeID') ?: null)
+                    : null;
+            }
+        }
     }
 
     private function extractParty(TradeParty $party): PartyData

@@ -118,6 +118,13 @@ class UblParser extends XmlParser
         $p->name        = (string) $party->getName();
         $p->tradingName = $party->getTradingName();
 
+        // BT-34/BT-49: UBL EndpointID
+        $endpoint = $party->getElectronicAddress();
+        if ($endpoint) {
+            $p->electronicAddress       = $endpoint->getValue();
+            $p->electronicAddressScheme = $endpoint->getScheme();
+        }
+
         $companyId = $party->getCompanyId();
         if ($companyId) {
             $p->id     = $companyId->getValue();

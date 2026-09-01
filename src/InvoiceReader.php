@@ -40,7 +40,45 @@ class InvoiceReader
             );
         }
 
-        return (new CiiParser())->parsePdf($input);
+        try {
+            return (new CiiParser())->parsePdf($input);
+        } catch (\Throwable $e) {
+            // atgp/factur-x matches the attachment Filespec /F against the literal
+            // 'factur-x.xml'; PDFs encoding that name in UTF-16BE (BOM FE FF, seen
+            // in Chorus/PA flows) never match. Fall back to reading the embedded
+            // file streams directly.
+            $xml = self::extractEmbeddedXml($input);
+            if ($xml === null) {
+                throw $e;
+            }
+            return self::fromXml($xml);
+        }
+    }
+
+    /**
+     * Extract the first XML attachment from a PDF by scanning /EmbeddedFile
+     * streams directly, regardless of how the attachment is named.
+     */
+    public static function extractEmbeddedXml(string $pdf): ?string
+    {
+        if (!preg_match_all('#/EmbeddedFile.{0,300}?stream\r?\n(.*?)\r?\nendstream#s', $pdf, $m)) {
+            return null;
+        }
+
+        foreach ($m[1] as $raw) {
+            $xml = @gzuncompress($raw);
+            if ($xml === false) {
+                $xml = @gzinflate($raw);
+            }
+            if ($xml === false) {
+                $xml = $raw;
+            }
+            if (str_starts_with(ltrim($xml), '<')) {
+                return $xml;
+            }
+        }
+
+        return null;
     }
 
     /**

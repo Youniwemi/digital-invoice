@@ -39,6 +39,13 @@ class PartyData
     public ?AddressData $address = null;
     public ?ContactData $contact = null;
 
+    /**
+     * Electronic routing address (EN16931 BT-34/BT-49):
+     * CII URIUniversalCommunication/URIID, UBL EndpointID.
+     */
+    public ?string $electronicAddress = null;
+    public ?string $electronicAddressScheme = null;
+
     /** @var array<array{id: string, schemeID: string}> */
     public array $taxRegistrations = [];
 
