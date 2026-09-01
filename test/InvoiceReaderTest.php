@@ -305,4 +305,86 @@ class InvoiceReaderTest extends TestCase
         $this->assertEquals(60.0, $tb->calculatedAmount);
         $this->assertNotNull($tb->categoryCode);
     }
+
+    // ─── Electronic addresses (BT-34 / BT-49) ────────────────────────────────
+
+    public function testCiiSellerElectronicAddressParsed(): void
+    {
+        $invoice = $this->buildTestInvoice(FacturX::BASIC);
+        $invoice->addItem('Item', 100.0, 20.0, 1);
+        $xml = $invoice->getXml();
+
+        // The builder does not emit URIUniversalCommunication: inject it into
+        // SellerTradeParty, keeping whatever namespace prefix the generator used.
+        $patched = preg_replace(
+            '#(<(\w+:)?SellerTradeParty>)#',
+            '$1<$2URIUniversalCommunication><$2URIID schemeID="0225">315143296_85088</$2URIID></$2URIUniversalCommunication>',
+            $xml,
+            1
+        );
+        $this->assertNotSame($xml, $patched, 'URIID injection failed');
+
+        $data = InvoiceReader::fromXml($patched);
+
+        $this->assertSame('315143296_85088', $data->seller->electronicAddress);
+        $this->assertSame('0225', $data->seller->electronicAddressScheme);
+        $this->assertNull($data->buyer->electronicAddress);
+    }
+
+    public function testUblEndpointIdParsed(): void
+    {
+        $invoice = $this->buildTestInvoice(Ubl::PEPPOL);
+        $invoice->addItem('Item', 100.0, 20.0, 1, 'DAY', 'SVC001');
+        $xml = $invoice->getXml();
+
+        // EndpointID must be the first child of cac:Party (UBL element order).
+        $patched = preg_replace(
+            '#(<cac:AccountingSupplierParty>\s*<cac:Party>)#',
+            '$1<cbc:EndpointID schemeID="0088">7300010000001</cbc:EndpointID>',
+            $xml,
+            1
+        );
+        $this->assertNotSame($xml, $patched, 'EndpointID injection failed');
+
+        $data = InvoiceReader::fromXml($patched);
+
+        $this->assertSame('7300010000001', $data->seller->electronicAddress);
+        $this->assertSame('0088', $data->seller->electronicAddressScheme);
+    }
+
+    // ─── Embedded XML extraction fallback ────────────────────────────────────
+
+    private function buildPdfWithUtf16AttachmentName(string $xml): string
+    {
+        // Attachment name encoded in UTF-16BE (BOM FE FF): atgp/factur-x compares
+        // the Filespec /F against the literal 'factur-x.xml' and never matches.
+        return "%PDF-1.7\n237 0 obj\n"
+            . "<</EF<</F 236 0 R>>/F(\xFE\xFF\x00f\x00a\x00c\x00t\x00u\x00r\x00-\x00x)/Type/Filespec>>\nendobj\n"
+            . "236 0 obj\n<</Filter/FlateDecode/Subtype/text#2fxml/Type/EmbeddedFile>>\nstream\n"
+            . gzcompress($xml)
+            . "\nendstream\nendobj\n";
+    }
+
+    public function testExtractEmbeddedXmlWithUtf16FilespecName(): void
+    {
+        $xml = '<?xml version="1.0"?><rsm:CrossIndustryInvoice xmlns:rsm="urn:x"/>';
+
+        $this->assertSame($xml, InvoiceReader::extractEmbeddedXml($this->buildPdfWithUtf16AttachmentName($xml)));
+    }
+
+    public function testExtractEmbeddedXmlWithoutAttachmentReturnsNull(): void
+    {
+        $this->assertNull(InvoiceReader::extractEmbeddedXml("%PDF-1.7\n1 0 obj\n<</Type/Page>>\nendobj\n"));
+    }
+
+    public function testReadPdfFallsBackToEmbeddedXmlExtraction(): void
+    {
+        $invoice = $this->buildTestInvoice(FacturX::BASIC);
+        $invoice->addItem('Item', 100.0, 20.0, 1);
+        $pdf = $this->buildPdfWithUtf16AttachmentName($invoice->getXml());
+
+        $data = InvoiceReader::read($pdf);
+
+        $this->assertSame('INV-001', $data->invoiceId);
+    }
 }
