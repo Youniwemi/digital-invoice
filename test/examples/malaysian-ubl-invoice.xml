@@ -2,9 +2,9 @@
 <Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
   <cbc:CustomizationID></cbc:CustomizationID>
   <cbc:ID>INV-MY-001</cbc:ID>
-  <cbc:IssueDate>2026-05-04</cbc:IssueDate>
+  <cbc:IssueDate>2026-09-01</cbc:IssueDate>
   <cbc:IssueTime>15:30:00Z</cbc:IssueTime>
-  <cbc:DueDate>2026-06-03</cbc:DueDate>
+  <cbc:DueDate>2026-10-01</cbc:DueDate>
   <cbc:InvoiceTypeCode listVersionID="1.0">01</cbc:InvoiceTypeCode>
   <cbc:Note>Malaysian e-invoice test with all required fields</cbc:Note>
   <cbc:DocumentCurrencyCode>MYR</cbc:DocumentCurrencyCode>

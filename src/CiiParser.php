@@ -26,6 +26,7 @@ class CiiParser extends XmlParser
     public function parsePdf(string $pdfPathOrContent): InvoiceData
     {
         $xml = (new PdfWriter())->getFacturxXmlFromPdf($pdfPathOrContent);
+        self::assertNoDoctype($xml);
         return $this->parse($xml);
     }
 
@@ -173,11 +174,8 @@ class CiiParser extends XmlParser
      */
     private function fillElectronicAddresses(string $xml, InvoiceData $data): void
     {
-        $doc = new \DOMDocument();
-        libxml_use_internal_errors(true);
-        $loaded = $doc->loadXML($xml, LIBXML_NONET);
-        libxml_use_internal_errors(false);
-        if (!$loaded) {
+        $doc = $this->getDoc($xml);
+        if (!$doc) {
             return;
         }
         $xpath = new \DOMXPath($doc);

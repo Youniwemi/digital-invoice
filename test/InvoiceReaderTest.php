@@ -331,6 +331,34 @@ class InvoiceReaderTest extends TestCase
         $this->assertNull($data->buyer->electronicAddress);
     }
 
+    public function testCiiParserInstanceReusableAcrossDifferentXml(): void
+    {
+        $makeXml = function (string $uriid): string {
+            $invoice = $this->buildTestInvoice(FacturX::BASIC);
+            $invoice->addItem('Item', 100.0, 20.0, 1);
+            return preg_replace(
+                '#(<(\w+:)?SellerTradeParty>)#',
+                '$1<$2URIUniversalCommunication><$2URIID schemeID="0225">' . $uriid . '</$2URIID></$2URIUniversalCommunication>',
+                $invoice->getXml(),
+                1
+            );
+        };
+
+        $parser = new \DigitalInvoice\CiiParser();
+        $first  = $parser->parse($makeXml('FIRST_ADDR'));
+        $second = $parser->parse($makeXml('SECOND_ADDR'));
+
+        $this->assertSame('FIRST_ADDR', $first->seller->electronicAddress);
+        // Cached DOM must not leak from the first parse into the second.
+        $this->assertSame('SECOND_ADDR', $second->seller->electronicAddress);
+    }
+
+    public function testDoctypeXmlRejected(): void
+    {
+        $this->expectExceptionMessage('DOCTYPE declarations are not allowed');
+        InvoiceReader::fromXml('<!DOCTYPE foo [<!ENTITY x "y">]><Invoice/>');
+    }
+
     public function testUblEndpointIdParsed(): void
     {
         $invoice = $this->buildTestInvoice(Ubl::PEPPOL);

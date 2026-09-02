@@ -102,9 +102,7 @@ class InvoiceReader
     private static function detectParser(string $xml): XmlParser
     {
         // Block DOCTYPE declarations to prevent billion-laughs entity expansion.
-        if (stripos($xml, '<!doctype') !== false) {
-            throw new \Exception('InvoiceReader: DOCTYPE declarations are not allowed.');
-        }
+        XmlParser::assertNoDoctype($xml);
 
         $doc = new \DOMDocument();
         libxml_use_internal_errors(true);
@@ -118,9 +116,9 @@ class InvoiceReader
         $localName = $doc->documentElement->localName;
 
         return match ($localName) {
-            'Invoice'               => new UblParser(),
-            'CrossIndustryInvoice'  => new CiiParser(),
-            'CrossIndustryDocument' => new ZugferdParser(),
+            'Invoice'               => new UblParser($doc),
+            'CrossIndustryInvoice'  => new CiiParser($doc),
+            'CrossIndustryDocument' => new ZugferdParser($doc),
             default => throw new \Exception(
                 "InvoiceReader: unknown invoice format (root element: <$localName>)."
             ),
