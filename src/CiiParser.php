@@ -2,15 +2,15 @@
 
 namespace DigitalInvoice;
 
-use Easybill\ZUGFeRD211\Model\TradeParty;
-use Easybill\ZUGFeRD211\Model\TradeContact;
-use Easybill\ZUGFeRD211\Model\TradeAddress;
-use Easybill\ZUGFeRD211\Reader;
+use Easybill\ZUGFeRD2\Model\TradeParty;
+use Easybill\ZUGFeRD2\Model\TradeContact;
+use Easybill\ZUGFeRD2\Model\TradeAddress;
+use Easybill\ZUGFeRD2\Reader;
 
 /**
  * Reads any Cross Industry Invoice (CII) XML: FacturX, ZUGFeRD 2.1.1, XRechnung.
  *
- * Uses easybill/zugferd-php ZUGFeRD211 Reader which deserializes via JMS Serializer
+ * Uses easybill/zugferd-php ZUGFeRD2 Reader which deserializes via JMS Serializer
  * into the CrossIndustryInvoice object graph. Can be used directly for generic CII
  * parsing or extended by format-specific subclasses (e.g. FacturXParser).
  *
@@ -45,7 +45,7 @@ class CiiParser extends XmlParser
         $data->invoiceId   = $doc->id ?? '';
         $data->invoiceType = $doc->typeCode ?? '380';
         $data->profile     = $ctx->documentContextParameter->id ?? '';
-        $data->currency    = $set->currency ?? 'EUR';
+        $data->currency    = $set->invoiceCurrencyCode ?? 'EUR';
 
         if (isset($doc->issueDateTime->dateTimeString)) {
             $data->issueDate = $this->parseDate($doc->issueDateTime->dateTimeString->value, 'Ymd');
@@ -53,8 +53,8 @@ class CiiParser extends XmlParser
 
         // Delivery date
         $delivery = $tx->applicableHeaderTradeDelivery ?? null;
-        if ($delivery && isset($delivery->chainEvent->date->dateTimeString)) {
-            $data->deliveryDate = $this->parseDate($delivery->chainEvent->date->dateTimeString->value, 'Ymd');
+        if ($delivery && isset($delivery->actualDeliverySupplyChainEvent->occurrenceDateTime->dateTimeString)) {
+            $data->deliveryDate = $this->parseDate($delivery->actualDeliverySupplyChainEvent->occurrenceDateTime->dateTimeString->value, 'Ymd');
         }
 
         // Notes
@@ -166,8 +166,8 @@ class CiiParser extends XmlParser
         $terms = $set->specifiedTradePaymentTerms[0] ?? null;
         if ($terms) {
             $data->paymentTermsDescription = $terms->description ?? null;
-            if (isset($terms->dueDate->dateTimeString)) {
-                $data->dueDate = $this->parseDate($terms->dueDate->dateTimeString->value, 'Ymd');
+            if (isset($terms->dueDateDateTime->dateTimeString)) {
+                $data->dueDate = $this->parseDate($terms->dueDateDateTime->dateTimeString->value, 'Ymd');
             }
         }
 
@@ -209,8 +209,8 @@ class CiiParser extends XmlParser
         $p       = new PartyData();
         $p->name = $party->name ?? '';
 
-        if (isset($party->legalOrganization)) {
-            $lo        = $party->legalOrganization;
+        if (isset($party->specifiedLegalOrganization)) {
+            $lo        = $party->specifiedLegalOrganization;
             $p->id     = $lo->id->value ?? null;
             $p->idType = $lo->id->schemeID ?? null;
             $p->tradingName = $lo->tradingBusinessName ?? null;
@@ -220,16 +220,16 @@ class CiiParser extends XmlParser
             $p->address = $this->extractAddress($party->postalTradeAddress);
         }
 
-        if (isset($party->definedTradeContact)) {
-            $p->contact = $this->extractContact($party->definedTradeContact);
+        if (!empty($party->definedTradeContact)) {
+            $p->contact = $this->extractContact($party->definedTradeContact[0]);
         }
 
         foreach ($party->taxRegistrations as $reg) {
-            $id = $reg->registration->value ?? '';
+            $id = $reg->id->value ?? '';
             if ($id !== '') {
                 $p->taxRegistrations[] = [
                     'id'       => $id,
-                    'schemeID' => $reg->registration->schemeID ?? '',
+                    'schemeID' => $reg->id->schemeID ?? '',
                 ];
             }
         }
@@ -251,9 +251,9 @@ class CiiParser extends XmlParser
     {
         return $this->buildAddress(
             $addr->lineOne ?? null,
-            $addr->postcode ?? null,
-            $addr->city ?? null,
-            $addr->countryCode ?? null,
+            $addr->postcodeCode ?? null,
+            $addr->cityName ?? null,
+            $addr->countryID ?? null,
             $addr->lineTwo ?? null,
             $addr->lineThree ?? null,
             $addr->countrySubDivisionName ?? null,
