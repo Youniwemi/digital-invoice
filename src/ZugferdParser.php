@@ -70,7 +70,11 @@ class ZugferdParser extends XmlParser
             if ($product) {
                 $item->name        = (string) $product->getName();
                 $item->description = $product->getDescription() ? (string) $product->getDescription() : null;
-                $item->globalID    = $product->getSellerAssignedID() ? (string) $product->getSellerAssignedID() : null;
+                try {
+                    $item->globalID = $product->getSellerAssignedID() ? (string) $product->getSellerAssignedID() : null;
+                } catch (\Error $e) {
+                    $item->globalID = null;
+                }
             }
 
             $netPrice = $lineItem->getTradeAgreement()->getNetPrice() ?? null;
@@ -97,6 +101,12 @@ class ZugferdParser extends XmlParser
                 }
             }
 
+            $monetarySummation = $itemSettlement ? $itemSettlement->getMonetarySummation() : null;
+            if ($monetarySummation) {
+                $totalAmount = $monetarySummation->getTotalAmount();
+                $item->lineTotal = $totalAmount ? (float) $totalAmount->getValue() : null;
+            }
+
             $data->items[] = $item;
         }
 
@@ -119,6 +129,8 @@ class ZugferdParser extends XmlParser
             $data->taxBasisTotal = $summation->getTaxBasisTotal() !== null ? (float) $summation->getTaxBasisTotal()->getValue() : null;
             $data->taxTotal      = $summation->getTaxTotal() !== null ? (float) $summation->getTaxTotal()->getValue() : null;
             $data->grandTotal    = $summation->getGrandTotal() !== null ? (float) $summation->getGrandTotal()->getValue() : null;
+            $prepaid = $summation->getTotalPrepaidAmount();
+            $data->prepaidAmount = $prepaid !== null ? (float) $prepaid->getValue() : null;
             $data->duePayable    = $summation->getDuePayableAmount() !== null ? (float) $summation->getDuePayableAmount()->getValue() : null;
         }
 

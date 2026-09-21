@@ -116,6 +116,11 @@ class CiiParser extends XmlParser
                 }
             }
 
+            $monetarySummation = $lineItem->specifiedLineTradeSettlement->monetarySummation ?? null;
+            if ($monetarySummation && isset($monetarySummation->totalAmount)) {
+                $item->lineTotal = (float) $monetarySummation->totalAmount->value;
+            }
+
             $data->items[] = $item;
         }
 
@@ -136,6 +141,7 @@ class CiiParser extends XmlParser
             $data->taxBasisTotal = isset($summation->taxBasisTotalAmount[0]) ? (float) $summation->taxBasisTotalAmount[0]->value : null;
             $data->taxTotal      = isset($summation->taxTotalAmount[0]) ? (float) $summation->taxTotalAmount[0]->value : null;
             $data->grandTotal    = isset($summation->grandTotalAmount[0]) ? (float) $summation->grandTotalAmount[0]->value : null;
+            $data->prepaidAmount = isset($summation->totalPrepaidAmount) ? (float) $summation->totalPrepaidAmount->value : null;
             $data->duePayable    = isset($summation->duePayableAmount) ? (float) $summation->duePayableAmount->value : null;
         }
 

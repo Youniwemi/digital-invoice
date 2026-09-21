@@ -51,7 +51,11 @@ class UblParser extends XmlParser
             $data->buyer = $this->extractParty($buyer);
         }
 
+        // Parse LineExtensionAmount values from raw XML
+        $lineExtAmounts = $this->parseLineExtensionAmounts($xml);
+
         // Line items
+        $lineIndex = 0;
         foreach ($invoice->getLines() as $line) {
             $item              = new InvoiceItemData();
             $item->name        = (string) $line->getName();
@@ -68,22 +72,38 @@ class UblParser extends XmlParser
                 $item->globalIDCode = $std->getScheme();
             }
 
+            if (isset($lineExtAmounts[$lineIndex])) {
+                $item->lineTotal = $lineExtAmounts[$lineIndex];
+            }
+
             if ($item->taxRate === 0.0) {
                 $data->taxExemptionCategory = $line->getVatCategory() ?? null;
                 $data->taxExemptionReason   = $line->getVatExemptionReason() ?? null;
             }
 
             $data->items[] = $item;
+            $lineIndex++;
         }
 
-        // Totals (calculated from the Invoice object)
-        $totals              = $invoice->getTotals();
-        $data->taxBasisTotal = $totals->taxExclusiveAmount;
-        $data->taxTotal      = $totals->vatAmount;
-        $data->grandTotal    = $totals->taxInclusiveAmount;
-        $data->duePayable    = $totals->payableAmount;
+        // Totals — read from XML to preserve original values
+        $xmlTotals = $this->parseMonetaryTotals($xml);
+        if ($xmlTotals) {
+            $data->taxBasisTotal  = $xmlTotals['taxExclusive'];
+            $data->taxTotal       = $xmlTotals['taxAmount'];
+            $data->grandTotal     = $xmlTotals['taxInclusive'];
+            $data->prepaidAmount  = $xmlTotals['prepaid'];
+            $data->duePayable     = $xmlTotals['payable'];
+        } else {
+            $totals              = $invoice->getTotals();
+            $data->taxBasisTotal = $totals->taxExclusiveAmount;
+            $data->taxTotal      = $totals->vatAmount;
+            $data->grandTotal    = $totals->taxInclusiveAmount;
+            $data->prepaidAmount = $totals->paidAmount != 0 ? $totals->paidAmount : null;
+            $data->duePayable    = $totals->payableAmount;
+        }
 
         // Tax breakdown
+        $totals = $totals ?? $invoice->getTotals();
         foreach ($totals->vatBreakdown as $vat) {
             $tb = new TaxBreakdownData();
             $tb->rate             = (float) $vat->rate;
@@ -110,6 +130,56 @@ class UblParser extends XmlParser
         $data->paymentTermsDescription = $invoice->getPaymentTerms();
 
         return $data;
+    }
+
+    private function parseMonetaryTotals(string $xml): ?array
+    {
+        $doc = $this->getDoc($xml);
+        if (!$doc) {
+            return null;
+        }
+        $xpath = new \DOMXPath($doc);
+        $xpath->registerNamespace('cac', 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2');
+        $xpath->registerNamespace('cbc', 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2');
+
+        $getVal = function (string $element) use ($xpath): ?float {
+            $nodes = $xpath->query("//cac:LegalMonetaryTotal/cbc:$element");
+            return ($nodes && $nodes->length > 0) ? (float) $nodes->item(0)->textContent : null;
+        };
+
+        $taxAmountNodes = $xpath->query('//cac:TaxTotal/cbc:TaxAmount');
+        $taxAmount = ($taxAmountNodes && $taxAmountNodes->length > 0) ? (float) $taxAmountNodes->item(0)->textContent : null;
+
+        return [
+            'taxExclusive' => $getVal('TaxExclusiveAmount'),
+            'taxAmount'    => $taxAmount,
+            'taxInclusive' => $getVal('TaxInclusiveAmount'),
+            'prepaid'      => $getVal('PrepaidAmount'),
+            'payable'      => $getVal('PayableAmount'),
+        ];
+    }
+
+    /**
+     * @return array<int, float>
+     */
+    private function parseLineExtensionAmounts(string $xml): array
+    {
+        $doc = $this->getDoc($xml);
+        if (!$doc) {
+            return [];
+        }
+        $xpath = new \DOMXPath($doc);
+        $xpath->registerNamespace('cac', 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2');
+        $xpath->registerNamespace('cbc', 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2');
+
+        $amounts = [];
+        $nodes = $xpath->query('//cac:InvoiceLine/cbc:LineExtensionAmount | //cac:CreditNoteLine/cbc:LineExtensionAmount');
+        if ($nodes) {
+            foreach ($nodes as $i => $node) {
+                $amounts[$i] = (float) $node->textContent;
+            }
+        }
+        return $amounts;
     }
 
     private function extractParty(Party $party): PartyData

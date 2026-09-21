@@ -225,6 +225,154 @@ class InvoiceRendererTest extends TestCase
         $this->assertStringContainsString('FR12312345678', $html);
     }
 
+    // ─── lineTotal / prepaid / discount ─────────────────────────────────────
+
+    public function testNegativeBaseQuantityRendersNegativeTotal(): void
+    {
+        $xml = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
+    xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+    xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+    <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0</cbc:CustomizationID>
+    <cbc:ID>DISC-001</cbc:ID>
+    <cbc:IssueDate>2024-01-15</cbc:IssueDate>
+    <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>
+    <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>
+    <cbc:BuyerReference>ref</cbc:BuyerReference>
+    <cac:AccountingSupplierParty>
+        <cac:Party><cac:PartyLegalEntity><cbc:RegistrationName>Seller</cbc:RegistrationName></cac:PartyLegalEntity></cac:Party>
+    </cac:AccountingSupplierParty>
+    <cac:AccountingCustomerParty>
+        <cac:Party><cac:PartyLegalEntity><cbc:RegistrationName>Buyer</cbc:RegistrationName></cac:PartyLegalEntity></cac:Party>
+    </cac:AccountingCustomerParty>
+    <cac:TaxTotal>
+        <cbc:TaxAmount currencyID="EUR">0.00</cbc:TaxAmount>
+        <cac:TaxSubtotal>
+            <cbc:TaxableAmount currencyID="EUR">68.68</cbc:TaxableAmount>
+            <cbc:TaxAmount currencyID="EUR">0.00</cbc:TaxAmount>
+            <cac:TaxCategory><cbc:ID>E</cbc:ID><cbc:Percent>0</cbc:Percent><cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme></cac:TaxCategory>
+        </cac:TaxSubtotal>
+    </cac:TaxTotal>
+    <cac:LegalMonetaryTotal>
+        <cbc:LineExtensionAmount currencyID="EUR">68.68</cbc:LineExtensionAmount>
+        <cbc:TaxExclusiveAmount currencyID="EUR">68.68</cbc:TaxExclusiveAmount>
+        <cbc:TaxInclusiveAmount currencyID="EUR">68.68</cbc:TaxInclusiveAmount>
+        <cbc:PayableAmount currencyID="EUR">68.68</cbc:PayableAmount>
+    </cac:LegalMonetaryTotal>
+    <cac:InvoiceLine>
+        <cbc:ID>1</cbc:ID>
+        <cbc:InvoicedQuantity unitCode="C62">1</cbc:InvoicedQuantity>
+        <cbc:LineExtensionAmount currencyID="EUR">69.05</cbc:LineExtensionAmount>
+        <cac:Item><cbc:Name>Product</cbc:Name>
+            <cac:ClassifiedTaxCategory><cbc:ID>E</cbc:ID><cbc:Percent>0</cbc:Percent><cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme></cac:ClassifiedTaxCategory>
+        </cac:Item>
+        <cac:Price><cbc:PriceAmount currencyID="EUR">69.05</cbc:PriceAmount></cac:Price>
+    </cac:InvoiceLine>
+    <cac:InvoiceLine>
+        <cbc:ID>2</cbc:ID>
+        <cbc:InvoicedQuantity unitCode="C62">1</cbc:InvoicedQuantity>
+        <cbc:LineExtensionAmount currencyID="EUR">-0.37</cbc:LineExtensionAmount>
+        <cac:Item><cbc:Name>Discount</cbc:Name>
+            <cac:ClassifiedTaxCategory><cbc:ID>E</cbc:ID><cbc:Percent>0</cbc:Percent><cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme></cac:ClassifiedTaxCategory>
+        </cac:Item>
+        <cac:Price>
+            <cbc:PriceAmount currencyID="EUR">0.37</cbc:PriceAmount>
+            <cbc:BaseQuantity unitCode="C62">-1</cbc:BaseQuantity>
+        </cac:Price>
+    </cac:InvoiceLine>
+</Invoice>
+XML;
+
+        $data = InvoiceReader::fromXml($xml);
+        $html = (new InvoiceRenderer())->render($data);
+
+        // Discount line must show -0.37, not 0.37
+        $this->assertEquals(-0.37, $data->items[1]->lineTotal);
+        $this->assertStringContainsString('-0.37', $html);
+        // Totals should match the XML values
+        $this->assertEquals(68.68, $data->duePayable);
+    }
+
+    public function testPrepaidAmountShowsPaymentsOnAccount(): void
+    {
+        $xml = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
+    xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+    xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+    <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0</cbc:CustomizationID>
+    <cbc:ID>PREPAID-001</cbc:ID>
+    <cbc:IssueDate>2024-01-15</cbc:IssueDate>
+    <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>
+    <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>
+    <cbc:BuyerReference>ref</cbc:BuyerReference>
+    <cac:AccountingSupplierParty>
+        <cac:Party><cac:PartyLegalEntity><cbc:RegistrationName>Seller</cbc:RegistrationName></cac:PartyLegalEntity></cac:Party>
+    </cac:AccountingSupplierParty>
+    <cac:AccountingCustomerParty>
+        <cac:Party><cac:PartyLegalEntity><cbc:RegistrationName>Buyer</cbc:RegistrationName></cac:PartyLegalEntity></cac:Party>
+    </cac:AccountingCustomerParty>
+    <cac:TaxTotal>
+        <cbc:TaxAmount currencyID="EUR">3.58</cbc:TaxAmount>
+        <cac:TaxSubtotal>
+            <cbc:TaxableAmount currencyID="EUR">69.05</cbc:TaxableAmount>
+            <cbc:TaxAmount currencyID="EUR">3.58</cbc:TaxAmount>
+            <cac:TaxCategory><cbc:ID>S</cbc:ID><cbc:Percent>5.19</cbc:Percent><cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme></cac:TaxCategory>
+        </cac:TaxSubtotal>
+    </cac:TaxTotal>
+    <cac:LegalMonetaryTotal>
+        <cbc:LineExtensionAmount currencyID="EUR">69.05</cbc:LineExtensionAmount>
+        <cbc:TaxExclusiveAmount currencyID="EUR">69.05</cbc:TaxExclusiveAmount>
+        <cbc:TaxInclusiveAmount currencyID="EUR">72.63</cbc:TaxInclusiveAmount>
+        <cbc:PrepaidAmount currencyID="EUR">72.63</cbc:PrepaidAmount>
+        <cbc:PayableAmount currencyID="EUR">0.00</cbc:PayableAmount>
+    </cac:LegalMonetaryTotal>
+    <cac:InvoiceLine>
+        <cbc:ID>1</cbc:ID>
+        <cbc:InvoicedQuantity unitCode="C62">1</cbc:InvoicedQuantity>
+        <cbc:LineExtensionAmount currencyID="EUR">69.05</cbc:LineExtensionAmount>
+        <cac:Item><cbc:Name>Service</cbc:Name>
+            <cac:ClassifiedTaxCategory><cbc:ID>S</cbc:ID><cbc:Percent>5.19</cbc:Percent><cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme></cac:ClassifiedTaxCategory>
+        </cac:Item>
+        <cac:Price><cbc:PriceAmount currencyID="EUR">69.05</cbc:PriceAmount></cac:Price>
+    </cac:InvoiceLine>
+</Invoice>
+XML;
+
+        $data = InvoiceReader::fromXml($xml);
+        $html = (new InvoiceRenderer())->render($data);
+
+        // Prepaid and payable amounts from XML
+        $this->assertEquals(72.63, $data->prepaidAmount);
+        $this->assertEquals(0.0, $data->duePayable);
+
+        // "Payments on account" must appear between Total and Payable amount
+        $this->assertStringContainsString('Payments on account', $html);
+        $totalPos = strpos($html, '>Total<');
+        $prepaidPos = strpos($html, 'Payments on account');
+        $payablePos = strpos($html, 'Payable amount');
+        $this->assertGreaterThan($totalPos, $prepaidPos);
+        $this->assertGreaterThan($prepaidPos, $payablePos);
+    }
+
+    public function testLineTotalUsesXmlValueNotCalculation(): void
+    {
+        $data = $this->buildAndParse(Ubl::PEPPOL);
+
+        // lineTotal should come from the XML's LineExtensionAmount, not price*qty
+        $this->assertNotNull($data->items[0]->lineTotal);
+        $this->assertEquals(400.0, $data->items[0]->getCalculatedTotal());
+    }
+
+    public function testNoPrepaidHidesPaymentsOnAccount(): void
+    {
+        $data = $this->buildAndParse(FacturX::BASIC);
+        $html = (new InvoiceRenderer())->render($data);
+
+        $this->assertStringNotContainsString('Payments on account', $html);
+    }
+
     // ─── Sad path ────────────────────────────────────────────────────────────
 
     public function testMissingTemplateThrows(): void

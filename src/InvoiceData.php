@@ -66,6 +66,12 @@ class InvoiceItemData
     public ?string $globalID = null;
     public ?string $globalIDCode = null;
     public ?string $description = null;
+    public ?float $lineTotal = null;
+
+    public function getCalculatedTotal(): float
+    {
+        return $this->lineTotal ?? round($this->price * $this->quantity, 2);
+    }
 }
 
 /**
@@ -133,6 +139,7 @@ class InvoiceData
     public ?float $taxBasisTotal = null;
     public ?float $taxTotal = null;
     public ?float $grandTotal = null;
+    public ?float $prepaidAmount = null;
     public ?float $duePayable = null;
 
     // Tax exemption (when tax rate is 0)

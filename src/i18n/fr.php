@@ -17,6 +17,7 @@
     'tax_basis'     => 'Base HT',
     'vat'           => 'TVA',
     'total'         => 'Total TTC',
+    'prepaid'       => 'Acomptes versés',
     'due_payable'   => 'Net à payer',
     'payment'       => 'Règlement',
     'iban'          => 'IBAN',

@@ -161,7 +161,7 @@
           <td class="di-col--unit"><?= $esc($item->unit) ?></td>
           <td class="di-col--price"><?= $fmt($item->price) ?></td>
           <td class="di-col--tax"><?= $fmt($item->taxRate) ?>%</td>
-          <td class="di-col--total"><?= $fmt(round($item->price * $item->quantity, 2)) ?></td>
+          <td class="di-col--total"><?= $fmt($item->getCalculatedTotal()) ?></td>
         </tr>
         <?php endforeach; ?>
       </tbody>
@@ -179,8 +179,11 @@
     <?php if ($invoice->grandTotal !== null): ?>
     <div class="di-total-row di-total-row--grand"><span><?= $labels['total'] ?></span><span><?= $fmt($invoice->grandTotal, $cur) ?></span></div>
     <?php endif; ?>
-    <?php if ($invoice->duePayable !== null && $invoice->duePayable !== $invoice->grandTotal): ?>
-    <div class="di-total-row"><span><?= $labels['due_payable'] ?></span><span><?= $fmt($invoice->duePayable, $cur) ?></span></div>
+    <?php if ($invoice->prepaidAmount !== null && $invoice->prepaidAmount != 0): ?>
+    <div class="di-total-row"><span><?= $labels['prepaid'] ?></span><span>- <?= $fmt($invoice->prepaidAmount, $cur) ?></span></div>
+    <?php endif; ?>
+    <?php if ($invoice->duePayable !== null): ?>
+    <div class="di-total-row di-total-row--grand"><span><?= $labels['due_payable'] ?></span><span><?= $fmt($invoice->duePayable, $cur) ?></span></div>
     <?php endif; ?>
   </section>
 
