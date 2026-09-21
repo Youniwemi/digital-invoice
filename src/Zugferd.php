@@ -219,7 +219,11 @@ class Zugferd extends XmlGenerator
             ->setBuyerReference($buyerReference);
 
         if ($this->hasDelivery) {
-            $this->delivery->setShipToTradeParty($this->buyer);
+            $shipTo = new TradeParty($name, new Address());
+            if ($id) {
+                $shipTo->setId($id);
+            }
+            $this->delivery->setShipToTradeParty($shipTo);
         }
     }
 
@@ -256,7 +260,11 @@ class Zugferd extends XmlGenerator
 
     public function setBuyerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null, ?string $stateCode = null)
     {
-        $this->buyer->setAddress($this->createAddress($postCode, $city, $countryCode, $lineOne, $lineTwo, $lineThree));
+        $address = $this->createAddress($postCode, $city, $countryCode, $lineOne, $lineTwo, $lineThree);
+        $this->buyer->setAddress($address);
+        if ($this->hasDelivery && $this->delivery->getShipToTradeParty()) {
+            $this->delivery->getShipToTradeParty()->setAddress($address);
+        }
     }
 
     public function addItem(string $name, float $price, float $taxRatePercent, float  $quantity, UnitOfMeasurement $unit, ?string $globalID = null, string $globalIDCode = null, ?string $description = null): array

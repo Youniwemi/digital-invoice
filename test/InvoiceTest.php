@@ -484,4 +484,48 @@ class InvoiceTest extends TestCase
         $this->assertArrayHasKey('022', $classificationCodes);
         $this->assertEquals('Others', $classificationCodes['022']);
     }
+
+    /**
+     * ShipToTradeParty must not contain SpecifiedTaxRegistration (CII schematron rule).
+     * @dataProvider ciiProfilesProvider
+     */
+    public function testShipToTradePartyHasNoTaxRegistration(string $profile): void
+    {
+        $invoice = new Invoice('TEST-SHIPTO', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, $profile);
+        $invoice->setSeller('12344', '0002', 'Seller');
+        $invoice->setSellerTaxRegistration('FR1231344', 'VA');
+        $invoice->setSellerAddress('1 rue test', '90000', 'Paris', 'FR');
+        $invoice->setBuyer('', 'Buyer');
+        $invoice->setBuyerAddress('2 rue test', '90000', 'Paris', 'FR');
+
+        if (in_array($profile, [FacturX::MINIMUM, FacturX::BASIC_WL])) {
+            $invoice->setPrice(100, 20);
+        } else {
+            $invoice->addItem('item', 100, 20, 1, 'DAY');
+        }
+        $invoice->addPaymentMean('58', 'FR7630001007941234567890185', 'Test');
+        $invoice->setPaymentTerms(new \Datetime('2023-12-07'));
+
+        $xml = $invoice->getXml();
+
+        $doc = new \DOMDocument();
+        $doc->loadXML($xml);
+        $xpath = new \DOMXPath($doc);
+        $xpath->registerNamespace('ram', 'urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100');
+        $xpath->registerNamespace('ram10', 'urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:12');
+
+        $nodes = $xpath->query('//ram:ShipToTradeParty/ram:SpecifiedTaxRegistration | //ram10:ShipToTradeParty/ram10:SpecifiedTaxRegistration');
+        $this->assertEquals(0, $nodes->length, "ShipToTradeParty must not contain SpecifiedTaxRegistration in $profile\n$xml");
+    }
+
+    public static function ciiProfilesProvider(): array
+    {
+        return [
+            'FacturX BASIC_WL' => [FacturX::BASIC_WL],
+            'FacturX BASIC' => [FacturX::BASIC],
+            'FacturX EN16931' => [FacturX::EN16931],
+            'Zugferd BASIC' => [Zugferd::ZUGFERD_BASIC],
+            'Zugferd COMFORT' => [Zugferd::ZUGFERD_CONFORT],
+        ];
+    }
 }

@@ -220,7 +220,11 @@ class FacturX extends XmlGenerator
     }
     public function setBuyerAddress(string $lineOne, string $postCode, string $city, string $countryCode, ?string $lineTwo = null, ?string $lineThree = null, ?string $stateCode = null)
     {
-        $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->buyerTradeParty->postalTradeAddress = $this->createAddress($postCode, $city, $countryCode, $lineOne, $lineTwo, $lineThree);
+        $address = $this->createAddress($postCode, $city, $countryCode, $lineOne, $lineTwo, $lineThree);
+        $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->buyerTradeParty->postalTradeAddress = $address;
+        if ($this->hasDelivery && $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeDelivery->shipToTradeParty) {
+            $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeDelivery->shipToTradeParty->postalTradeAddress = $address;
+        }
 
         return $this;
     }
@@ -240,7 +244,9 @@ class FacturX extends XmlGenerator
         }
         $buyerTradeParty->name = $name ;
         if ($this->hasDelivery) {
-            $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeDelivery->shipToTradeParty = $buyerTradeParty;
+            $shipTo = new TradeParty();
+            $shipTo->name = $name;
+            $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeDelivery->shipToTradeParty = $shipTo;
         }
 
         return $this;
