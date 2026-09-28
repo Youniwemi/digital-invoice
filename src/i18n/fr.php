@@ -1,5 +1,6 @@
 <?php return [
     'invoice'       => 'Facture',
+    'credit_note'   => 'Avoir',
     'issue_date'    => 'Date d\'émission',
     'delivery_date' => 'Date de livraison',
     'due_date'      => 'Date d\'échéance',

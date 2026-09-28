@@ -1,5 +1,6 @@
 <?php return [
     'invoice'       => 'Invoice',
+    'credit_note'   => 'Credit note',
     'issue_date'    => 'Issue date',
     'delivery_date' => 'Delivery date',
     'due_date'      => 'Due date',

@@ -9,9 +9,29 @@ use DigitalInvoice\InvoiceRenderer;
 $rendered  = null;
 $error     = null;
 $filename  = null;
-$renderer  = new InvoiceRenderer();
+$content   = null;
+$langs     = ['fr' => 'Français', 'en' => 'English', 'de' => 'Deutsch'];
+$lang      = $_POST['lang'] ?? 'fr';
+if (!isset($langs[$lang])) {
+    $lang = 'fr';
+}
+$renderer  = new InvoiceRenderer(lang: $lang);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['invoice'])) {
+// Language switch: re-render the previously uploaded file sent back by the form.
+if ($_SERVER['REQUEST_METHOD'] === 'POST'
+    && ($_FILES['invoice']['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE
+    && !empty($_POST['previous'])
+) {
+    $content  = base64_decode((string) $_POST['previous'], true) ?: null;
+    $filename = htmlspecialchars((string) ($_POST['previous_name'] ?? ''), ENT_QUOTES, 'UTF-8');
+    if ($content !== null) {
+        try {
+            $rendered = $renderer->render(InvoiceReader::read($content));
+        } catch (\Throwable $e) {
+            $error = $e->getMessage();
+        }
+    }
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['invoice'])) {
     $file = $_FILES['invoice'];
 
     if ($file['error'] !== UPLOAD_ERR_OK) {
@@ -123,6 +143,16 @@ header {
 }
 .btn:hover { background: #3a57e8; }
 
+.lang-select {
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px;
+  border: 1px solid #c0c4d0;
+  border-radius: 6px;
+  font-size: 13px;
+  background: #fff;
+}
+
 .formats { font-size: 11px; color: #aaa; text-align: center; }
 .current-file { font-size: 12px; color: #666; word-break: break-all; }
 
@@ -173,6 +203,15 @@ header {
         <input type="file" id="file-input" name="invoice" accept=".xml,.pdf"
                onchange="document.getElementById('upload-form').submit()">
       </div>
+      <select name="lang" class="lang-select" onchange="this.form.submit()">
+        <?php foreach ($langs as $code => $label): ?>
+        <option value="<?= $code ?>"<?= $code === $lang ? ' selected' : '' ?>><?= $label ?></option>
+        <?php endforeach; ?>
+      </select>
+      <?php if ($rendered && $content !== null): ?>
+      <input type="hidden" name="previous" value="<?= base64_encode($content) ?>">
+      <input type="hidden" name="previous_name" value="<?= $filename ?>">
+      <?php endif; ?>
       <noscript><button type="submit" class="btn" style="margin-top:12px">View invoice</button></noscript>
     </form>
     <p class="formats">Supported: FacturX, ZUGFeRD, UBL (Peppol…)<br>Formats: XML · PDF</p>

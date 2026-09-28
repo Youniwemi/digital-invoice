@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CreditNote xmlns="urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:cec="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2" xmlns:clm54217="urn:un:unece:uncefact:codelist:specification:54217:2001" xmlns:clm5639="urn:un:unece:uncefact:codelist:specification:5639:1988" xmlns:clm66411="urn:un:unece:uncefact:codelist:specification:66411:2001" xmlns:clmIANAMIMEMediaType="urn:un:unece:uncefact:codelist:specification:IANAMIMEMediaType:2003" xmlns:qdt="urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2" xmlns:sac="urn:oasis:names:specification:ubl:schema:xsd:SignatureAggregateComponents-2" xmlns:sbc="urn:oasis:names:specification:ubl:schema:xsd:SignatureBasicComponents-2" xmlns:sig="urn:oasis:names:specification:ubl:schema:xsd:CommonSignatureComponents-2" xmlns:udt="urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <cbc:UBLVersionID>2.1</cbc:UBLVersionID>
+    <cbc:CustomizationID>urn:cen.eu:en16931:2017#conformant#urn.cpro.gouv.fr:1p0:extended-ctc-fr</cbc:CustomizationID>
+    <cbc:ProfileID>B2</cbc:ProfileID>
+    <cbc:ID>JA83112035</cbc:ID>
+    <cbc:IssueDate>2026-09-24</cbc:IssueDate>
+    <cbc:CreditNoteTypeCode>381</cbc:CreditNoteTypeCode>
+    <cbc:Note>##AAB##Les réglements reçus avant la date d&apos;échéance ne donneront pas lieu à escompte.</cbc:Note>
+    <cbc:Note>##PMD##Tout retard de paiement engendre une pénalité exigible à compter de la date d&apos;échéance, calculée sur la base de trois fois le taux d&apos;intérêt légal</cbc:Note>
+    <cbc:Note>##PMT##Indemnité forfaitaire pour frais de recouvrement en cas de retard de paiement : 40 ?.</cbc:Note>
+    <cbc:Note>#BAR#B2B</cbc:Note>
+    <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>
+    <cbc:BuyerReference>0000200461</cbc:BuyerReference>
+    <cac:OrderReference>
+        <cbc:ID>W1876805004</cbc:ID>
+        <cbc:SalesOrderID>HAN1194516</cbc:SalesOrderID>
+        <cbc:IssueDate>2026-09-24</cbc:IssueDate>
+    </cac:OrderReference>
+    <cac:BillingReference>
+        <cac:InvoiceDocumentReference>
+            <cbc:ID>BD84614017</cbc:ID>
+            <cbc:IssueDate>2026-09-24</cbc:IssueDate>
+        </cac:InvoiceDocumentReference>
+    </cac:BillingReference>
+    <cac:AccountingSupplierParty>
+        <cac:Party>
+            <cbc:EndpointID schemeID="0225">483209383</cbc:EndpointID>
+            <cac:PostalAddress>
+                <cbc:StreetName>3-5 rue Saint-Georges</cbc:StreetName>
+                <cbc:CityName>Paris</cbc:CityName>
+                <cbc:PostalZone>75009</cbc:PostalZone>
+                <cac:Country>
+                    <cbc:IdentificationCode>FR</cbc:IdentificationCode>
+                </cac:Country>
+            </cac:PostalAddress>
+            <cac:PartyTaxScheme>
+                <cbc:CompanyID>FR21483209383</cbc:CompanyID>
+                <cac:TaxScheme>
+                    <cbc:ID>VAT</cbc:ID>
+                </cac:TaxScheme>
+            </cac:PartyTaxScheme>
+            <cac:PartyLegalEntity>
+                <cbc:RegistrationName>Apple Retail France  E.U.R.L.</cbc:RegistrationName>
+                <cbc:CompanyID schemeID="0002">483209383</cbc:CompanyID>
+            </cac:PartyLegalEntity>
+        </cac:Party>
+    </cac:AccountingSupplierParty>
+    <cac:AccountingCustomerParty>
+        <cac:Party>
+            <cbc:EndpointID schemeID="0225">935147538</cbc:EndpointID>
+            <cac:PostalAddress>
+                <cbc:StreetName>5 rue de l&apos;Ambroisie</cbc:StreetName>
+                <cbc:CityName>Paris</cbc:CityName>
+                <cbc:PostalZone>75012</cbc:PostalZone>
+                <cac:Country>
+                    <cbc:IdentificationCode>FR</cbc:IdentificationCode>
+                </cac:Country>
+            </cac:PostalAddress>
+            <cac:PartyTaxScheme>
+                <cbc:CompanyID>FR90935147538</cbc:CompanyID>
+                <cac:TaxScheme>
+                    <cbc:ID>VAT</cbc:ID>
+                </cac:TaxScheme>
+            </cac:PartyTaxScheme>
+            <cac:PartyLegalEntity>
+                <cbc:RegistrationName>BA 6R2 Société de Conseil</cbc:RegistrationName>
+                <cbc:CompanyID schemeID="0002">935147538</cbc:CompanyID>
+            </cac:PartyLegalEntity>
+            <cac:Contact>
+                <cbc:ElectronicMail>beatrice_roux@orange.fr</cbc:ElectronicMail>
+            </cac:Contact>
+        </cac:Party>
+    </cac:AccountingCustomerParty>
+    <cac:Delivery>
+        <cac:DeliveryLocation>
+            <cac:Address>
+                <cbc:StreetName>114 av. des Champs-Élysées</cbc:StreetName>
+                <cbc:CityName>Paris</cbc:CityName>
+                <cbc:PostalZone>75008</cbc:PostalZone>
+                <cac:Country>
+                    <cbc:IdentificationCode>FR</cbc:IdentificationCode>
+                </cac:Country>
+            </cac:Address>
+        </cac:DeliveryLocation>
+    </cac:Delivery>
+    <cac:PaymentMeans>
+        <cbc:PaymentMeansCode>68</cbc:PaymentMeansCode>
+        <cbc:PaymentDueDate>2026-09-24</cbc:PaymentDueDate>
+        <cac:PayeeFinancialAccount>
+            <cbc:ID>FR7641219160100003100002507</cbc:ID>
+            <cbc:Name>Bank of America N.A.</cbc:Name>
+            <cac:FinancialInstitutionBranch>
+                <cbc:ID>BOFAFRPP</cbc:ID>
+            </cac:FinancialInstitutionBranch>
+        </cac:PayeeFinancialAccount>
+    </cac:PaymentMeans>
+    <cac:PaymentTerms>
+        <cbc:Note>Credit Card Visa/MCard Refunds</cbc:Note>
+    </cac:PaymentTerms>
+    <cac:TaxTotal>
+        <cbc:TaxAmount currencyID="EUR">6.66</cbc:TaxAmount>
+        <cac:TaxSubtotal>
+            <cbc:TaxableAmount currencyID="EUR">33.29</cbc:TaxableAmount>
+            <cbc:TaxAmount currencyID="EUR">6.66</cbc:TaxAmount>
+            <cac:TaxCategory>
+                <cbc:ID>S</cbc:ID>
+                <cbc:Percent>20.00</cbc:Percent>
+                <cac:TaxScheme>
+                    <cbc:ID>VAT</cbc:ID>
+                </cac:TaxScheme>
+            </cac:TaxCategory>
+        </cac:TaxSubtotal>
+    </cac:TaxTotal>
+    <cac:LegalMonetaryTotal>
+        <cbc:LineExtensionAmount currencyID="EUR">33.29</cbc:LineExtensionAmount>
+        <cbc:TaxExclusiveAmount currencyID="EUR">33.29</cbc:TaxExclusiveAmount>
+        <cbc:TaxInclusiveAmount currencyID="EUR">39.95</cbc:TaxInclusiveAmount>
+        <cbc:PrepaidAmount currencyID="EUR">39.95</cbc:PrepaidAmount>
+        <cbc:PayableAmount currencyID="EUR">0.00</cbc:PayableAmount>
+    </cac:LegalMonetaryTotal>
+    <cac:CreditNoteLine>
+        <cbc:ID>000020</cbc:ID>
+        <cbc:Note>Protège-écran en verre UltraGlass 2 de Belkin pour iPhone 18 Pro Max | iPhone 17 Pro Max</cbc:Note>
+        <cbc:CreditedQuantity unitCode="H87">1.0000</cbc:CreditedQuantity>
+        <cbc:LineExtensionAmount currencyID="EUR">33.29</cbc:LineExtensionAmount>
+        <cac:OrderLineReference>
+            <cbc:LineID>000020</cbc:LineID>
+            <cac:OrderReference>
+                <cbc:ID>W1876805004</cbc:ID>
+            </cac:OrderReference>
+        </cac:OrderLineReference>
+        <cac:TaxTotal>
+            <cbc:TaxAmount currencyID="EUR">6.66</cbc:TaxAmount>
+        </cac:TaxTotal>
+        <cac:Item>
+            <cbc:Description>BELKIN ULTRGLSS 2 IPH17 PRO MAX-BOX-ZML</cbc:Description>
+            <cbc:Name>BELKIN ULTRGLSS 2 IPH17 PRO MAX-BOX-ZML</cbc:Name>
+            <cac:SellersItemIdentification>
+                <cbc:ID>745883934362</cbc:ID>
+            </cac:SellersItemIdentification>
+            <cac:ClassifiedTaxCategory>
+                <cbc:ID>S</cbc:ID>
+                <cbc:Percent>20.00</cbc:Percent>
+                <cac:TaxScheme>
+                    <cbc:ID>VAT</cbc:ID>
+                </cac:TaxScheme>
+            </cac:ClassifiedTaxCategory>
+        </cac:Item>
+        <cac:Price>
+            <cbc:PriceAmount currencyID="EUR">33.290000</cbc:PriceAmount>
+        </cac:Price>
+    </cac:CreditNoteLine>
+</CreditNote>

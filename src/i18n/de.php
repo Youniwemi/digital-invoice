@@ -1,5 +1,6 @@
 <?php return [
     'invoice'       => 'Rechnung',
+    'credit_note'   => 'Gutschrift',
     'issue_date'    => 'Ausstellungsdatum',
     'delivery_date' => 'Lieferdatum',
     'due_date'      => 'Fälligkeitsdatum',

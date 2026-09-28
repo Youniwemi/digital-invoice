@@ -232,6 +232,22 @@ class InvoiceReaderTest extends TestCase
 
     // ─── Format detection ─────────────────────────────────────────────────────
 
+    public function testUblCreditNoteParsed(): void
+    {
+        $data = InvoiceReader::read(file_get_contents(__DIR__ . '/examples/ubl-credit-note.xml'));
+
+        $this->assertEquals('JA83112035', $data->invoiceId);
+        $this->assertEquals('381', $data->invoiceType);
+        $this->assertEquals('Apple Retail France  E.U.R.L.', $data->seller->name);
+        $this->assertCount(1, $data->items);
+        $this->assertEquals(33.29, $data->items[0]->lineTotal);
+        $this->assertEquals(33.29, $data->taxBasisTotal);
+        $this->assertEquals(6.66, $data->taxTotal);
+        $this->assertEquals(39.95, $data->grandTotal);
+        $this->assertEquals(39.95, $data->prepaidAmount);
+        $this->assertEquals(0.0, $data->duePayable);
+    }
+
     public function testUnknownFormatThrows(): void
     {
         $this->expectException(\Exception::class);

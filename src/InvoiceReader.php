@@ -95,7 +95,7 @@ class InvoiceReader
      * Detect the correct parser by inspecting the XML root element.
      *
      * Detection rules:
-     *   localName == 'Invoice'               → UBL (Peppol, CIUS, Malaysia…)
+     *   localName == 'Invoice'|'CreditNote'  → UBL (Peppol, CIUS, Malaysia…)
      *   localName == 'CrossIndustryInvoice'  → CII (FacturX / ZUGFeRD 2.1.1 / XRechnung)
      *   localName == 'CrossIndustryDocument' → ZUGFeRD 1.0
      */
@@ -116,7 +116,7 @@ class InvoiceReader
         $localName = $doc->documentElement->localName;
 
         return match ($localName) {
-            'Invoice'               => new UblParser($doc),
+            'Invoice', 'CreditNote' => new UblParser($doc),
             'CrossIndustryInvoice'  => new CiiParser($doc),
             'CrossIndustryDocument' => new ZugferdParser($doc),
             default => throw new \Exception(

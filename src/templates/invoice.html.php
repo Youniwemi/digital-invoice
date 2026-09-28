@@ -17,7 +17,7 @@
 
   <header class="di-header">
     <div class="di-header__meta">
-      <span class="di-label"><?= $labels['invoice'] ?></span>
+      <span class="di-label"><?= in_array($invoice->invoiceType, ['381', '396'], true) ? $labels['credit_note'] : $labels['invoice'] ?></span>
       <span class="di-invoice-id"><?= $esc($invoice->invoiceId) ?></span>
       <?php $fmt_label = $formatLabel($invoice->profile); ?>
       <?php if ($fmt_label): ?>
