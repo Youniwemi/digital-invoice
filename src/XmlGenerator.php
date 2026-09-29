@@ -22,6 +22,8 @@ interface XmlGeneratorInterface
 
     public function setBuyer(string $buyerReference, string $name, string $id = null);
 
+    public function setBuyerOrderReference(string $reference);
+
     public function setBuyerContact(?string $personName = null, ?string $telephone = null, ?string $email = null, ?string $departmentName = null);
 
     public function createAddress(string $postCode, string $city, string $countryCode, string $lineOne, ?string $lineTwo = null, ?string $lineThree = null);

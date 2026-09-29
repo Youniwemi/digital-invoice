@@ -9,6 +9,7 @@
     'seller'        => 'Seller',
     'buyer'         => 'Buyer',
     'ref'           => 'Ref',
+    'purchase_order' => 'Purchase order',
     'description'   => 'Description',
     'qty'           => 'Qty',
     'unit'          => 'Unit',

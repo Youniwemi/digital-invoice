@@ -29,6 +29,7 @@ class UblParser extends XmlParser
         $data->issueDate  = $invoice->getIssueDate();
         $data->dueDate    = $invoice->getDueDate();
         $data->buyerReference = $invoice->getBuyerReference();
+        $data->buyerOrderReference = $invoice->getPurchaseOrderReference();
 
         // Notes
         foreach ($invoice->getNotes() as $note) {

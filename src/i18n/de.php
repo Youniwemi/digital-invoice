@@ -9,6 +9,7 @@
     'seller'        => 'Verkäufer',
     'buyer'         => 'Käufer',
     'ref'           => 'Ref.',
+    'purchase_order' => 'Bestellnummer',
     'description'   => 'Beschreibung',
     'qty'           => 'Menge',
     'unit'          => 'Einheit',

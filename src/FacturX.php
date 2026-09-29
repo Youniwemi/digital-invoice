@@ -229,6 +229,11 @@ class FacturX extends XmlGenerator
         return $this;
     }
 
+    public function setBuyerOrderReference(string $reference)
+    {
+        $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->buyerOrderReferencedDocument = ReferencedDocument::create($reference);
+    }
+
     public function setSellerTaxRegistration(string $id, string $schemeID)
     {
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->sellerTradeParty->taxRegistrations[] = TaxRegistration::create($id, $schemeID);

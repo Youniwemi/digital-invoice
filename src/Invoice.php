@@ -115,6 +115,14 @@ class Invoice
         $this->xmlGenerator->setBuyer($buyerReference, $name, $id);
     }
 
+    /**
+     * Purchase order reference (BT-13), distinct from the buyer reference (BT-10)
+     */
+    public function setBuyerOrderReference(string $reference)
+    {
+        $this->xmlGenerator->setBuyerOrderReference($reference);
+    }
+
     public function setBuyerIdentifier(string $id, ?string $idDesignator, string $type = 'Legal')
     {
         try {

@@ -26,6 +26,7 @@ use Easybill\ZUGFeRD\Model\Trade\Item\SpecifiedTradeSettlement;
 use Easybill\ZUGFeRD\Model\Trade\MonetarySummation;
 use Easybill\ZUGFeRD\Model\Trade\PaymentMeans;
 use Easybill\ZUGFeRD\Model\Trade\PaymentTerms;
+use Easybill\ZUGFeRD\Model\Trade\ReferencedDocument;
 use Easybill\ZUGFeRD\Model\Trade\Settlement;
 use Easybill\ZUGFeRD\Model\Trade\Tax\TaxRegistration;
 use Easybill\ZUGFeRD\Model\Trade\Tax\TradeTax;
@@ -225,6 +226,11 @@ class Zugferd extends XmlGenerator
             }
             $this->delivery->setShipToTradeParty($shipTo);
         }
+    }
+
+    public function setBuyerOrderReference(string $reference)
+    {
+        $this->agreement->setBuyerOrder(new ReferencedDocument($reference));
     }
 
     public function setBuyerIdentifier( string $identifier, ?InternationalCodeDesignator $idType=null, IdentificationType $type = IdentificationType::OTHER )

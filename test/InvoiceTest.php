@@ -518,6 +518,60 @@ class InvoiceTest extends TestCase
         $this->assertEquals(0, $nodes->length, "ShipToTradeParty must not contain SpecifiedTaxRegistration in $profile\n$xml");
     }
 
+    /**
+     * BT-13 purchase order reference is written, validated and read back.
+     * @dataProvider buyerOrderReferenceProvider
+     */
+    public function testBuyerOrderReference(string $profile, string $query, string $file): void
+    {
+        $invoice = new Invoice('TEST-BT13', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, $profile);
+        $invoice->setSeller('12344', '0002', 'Seller');
+        $invoice->setSellerTaxRegistration('FR1231344', 'VA');
+        $invoice->setSellerAddress('1 rue test', '90000', 'Paris', 'FR');
+        $invoice->setBuyer('REF-ACHETEUR', 'Buyer');
+        $invoice->setBuyerOrderReference('BC-42');
+        $invoice->setBuyerAddress('2 rue test', '90000', 'Paris', 'FR');
+        $invoice->addItem('item', 100, 20, 1, 'DAY', 'xxxx');
+        $invoice->addPaymentMean('58', 'FR7630001007941234567890185', 'Test');
+        $invoice->setPaymentTerms(new \Datetime('2023-12-07'));
+
+        $xml = $invoice->getXml();
+        // Kept for external validation
+        file_put_contents(__DIR__.'/examples/'.$file.'.xml', $xml);
+        if ($profile === FacturX::EN16931) {
+            file_put_contents(__DIR__.'/examples/'.$file.'.pdf', $invoice->getPdf(file_get_contents(__DIR__.'/examples/basic.pdf'), true));
+        }
+
+        $doc = new \DOMDocument();
+        $doc->loadXML($xml);
+        $xpath = new \DOMXPath($doc);
+        $xpath->registerNamespace('ram', 'urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100');
+        $xpath->registerNamespace('ram10', 'urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:12');
+        $xpath->registerNamespace('cac', 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2');
+        $xpath->registerNamespace('cbc', 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2');
+        $this->assertSame('BC-42', $xpath->evaluate("string($query)"), $xml);
+
+        // BT-10 is left untouched
+        $this->assertStringContainsString('REF-ACHETEUR', $xml);
+
+        $result = $invoice->validate($xml);
+        $this->assertEmpty($result, $result ? print_r($result, true)."\n".$xml : '');
+        $result = $invoice->validate($xml, true);
+        $this->assertEmpty($result, $result ? print_r($result, true)."\n".$xml : '');
+
+        $data = \DigitalInvoice\InvoiceReader::fromXml($xml);
+        $this->assertSame('BC-42', $data->buyerOrderReference);
+    }
+
+    public static function buyerOrderReferenceProvider(): array
+    {
+        return [
+            'FacturX EN16931' => [FacturX::EN16931, '//ram:ApplicableHeaderTradeAgreement/ram:BuyerOrderReferencedDocument/ram:IssuerAssignedID', 'basic-bt13-facturx-en16931'],
+            'Zugferd COMFORT' => [Zugferd::ZUGFERD_CONFORT, '//ram10:ApplicableSupplyChainTradeAgreement/ram10:BuyerOrderReferencedDocument/ram10:ID', 'basic-bt13-zugferd-comfort'],
+            'UBL PEPPOL' => [Ubl::PEPPOL, '/*/cac:OrderReference/cbc:ID', 'basic-bt13-ubl-peppol'],
+        ];
+    }
+
     public static function ciiProfilesProvider(): array
     {
         return [

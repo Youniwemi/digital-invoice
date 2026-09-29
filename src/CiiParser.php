@@ -76,6 +76,7 @@ class CiiParser extends XmlParser
             $data->buyer          = $this->extractParty($agr->buyerTradeParty);
             $data->buyerReference = $agr->buyerReference ?? null;
         }
+        $data->buyerOrderReference = $agr->buyerOrderReferencedDocument?->issuerAssignedID->value ?? null;
 
         // Electronic addresses (BT-34/BT-49): easybill's TradeParty model does not map
         // URIUniversalCommunication, so read them straight from the XML.

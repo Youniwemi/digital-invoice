@@ -31,6 +31,7 @@ $invoice->setSellerAddress('1 rue de la Paix', '75001', 'Paris', 'FR');
 $invoice->setSellerTaxRegistration('FR12312345678', 'VA');
 
 $invoice->setBuyer('', 'Client SARL');
+$invoice->setBuyerOrderReference('BC-42'); // purchase order (BT-13)
 $invoice->setBuyerAddress('2 avenue de la Gare', '69001', 'Lyon', 'FR');
 
 $invoice->addItem('Consulting', 200.0, 20.0, 2);
@@ -81,6 +82,7 @@ $data->invoiceType;             // string  e.g. '380'
 $data->seller;                  // ?PartyData
 $data->buyer;                   // ?PartyData
 $data->buyerReference;          // ?string
+$data->buyerOrderReference;     // ?string  purchase order (BT-13)
 
 $data->notes;                   // array  [{content, subjectCode, contentCode}]
 $data->items;                   // InvoiceItemData[]

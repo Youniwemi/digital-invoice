@@ -197,6 +197,23 @@ class InvoiceRendererTest extends TestCase
         $this->assertStringContainsString('TVA', $html);
     }
 
+    public function testBuyerOrderReferenceDisplayed(): void
+    {
+        $invoice = new Invoice('INV-RENDER-02', new \DateTime('2024-03-15'), null, CurrencyCode::EURO, FacturX::EN16931);
+        $invoice->setSeller('12345', '0002', 'ACME Corp');
+        $invoice->setBuyer('', 'Client SARL');
+        $invoice->setBuyerOrderReference('BC-42');
+        $invoice->addItem('Consulting', 200.0, 20.0, 1);
+        $data = InvoiceReader::fromXml($invoice->getXml());
+
+        $html = (new InvoiceRenderer(lang: 'fr'))->render($data);
+        $this->assertStringContainsString('Bon de commande', $html);
+        $this->assertStringContainsString('BC-42', $html);
+
+        $html = (new InvoiceRenderer())->render($this->buildAndParse(FacturX::BASIC));
+        $this->assertStringNotContainsString('Purchase order', $html);
+    }
+
     public function testGermanLabels(): void
     {
         $data = $this->buildAndParse(FacturX::BASIC);

@@ -130,6 +130,12 @@
         <?= $esc($invoice->buyerReference) ?>
       </div>
       <?php endif; ?>
+      <?php if ($invoice->buyerOrderReference): ?>
+      <div class="di-identifier">
+        <span class="di-label"><?= $labels['purchase_order'] ?></span>
+        <?= $esc($invoice->buyerOrderReference) ?>
+      </div>
+      <?php endif; ?>
     </div>
     <?php endif; ?>
 

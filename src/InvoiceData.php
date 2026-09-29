@@ -120,6 +120,9 @@ class InvoiceData
     public ?PartyData $buyer = null;
     public ?string $buyerReference = null;
 
+    /** Purchase order reference (BT-13). */
+    public ?string $buyerOrderReference = null;
+
     /** @var InvoiceItemData[] */
     public array $items = [];
 

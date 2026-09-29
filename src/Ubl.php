@@ -171,6 +171,11 @@ class Ubl extends XmlGenerator
         $this->invoice->setBuyerReference($buyerReference);
     }
 
+    public function setBuyerOrderReference(string $reference)
+    {
+        $this->invoice->setPurchaseOrderReference($reference);
+    }
+
     public function setBuyerIdentifier( string $identifier, ?InternationalCodeDesignator $idType=null, IdentificationType $type = IdentificationType::OTHER )
     {
         if ($type ===  IdentificationType::VAT){

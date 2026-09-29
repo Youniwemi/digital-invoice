@@ -62,6 +62,7 @@ class ZugferdParser extends XmlParser
                 $data->buyerReference = null;
             }
         }
+        $data->buyerOrderReference = $agreement->getBuyerOrder()?->getId();
 
         // Line items
         foreach ((array) $trade->getLineItems() as $lineItem) {
