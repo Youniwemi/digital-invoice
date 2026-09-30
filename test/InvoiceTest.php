@@ -2,6 +2,8 @@
 
 namespace DigitalInvoice\Tests;
 
+require_once __DIR__.'/FnfeRules.php';
+
 use DigitalInvoice\CurrencyCode;
 use DigitalInvoice\FacturX;
 use DigitalInvoice\Invoice;
@@ -14,6 +16,8 @@ use PHPUnit\Framework\TestCase;
 
 class InvoiceTest extends TestCase
 {
+    use FnfeRules;
+
     public function testFormatingDecimals()
     {
         $this->assertEquals(FacturX::decimalFormat(10), "10.00");
@@ -145,17 +149,36 @@ class InvoiceTest extends TestCase
             $currency =  CurrencyCode::EURO;
             $validate = true;
         }
+        // FNFE rules (make fnfe), the Factur-X profiles used by the French CTC also get the French rules
+        $fnfe = match ($profile) {
+            FacturX::BASIC_WL => ['FACTUR-X_BASIC-WL', 'BR-FR-CII'],
+            FacturX::EN16931 => ['FACTUR-X_EN16931', 'BR-FR-CII'],
+            FacturX::EXTENDED => ['FACTUR-X_EXTENDED', 'BR-FR-CII'],
+            FacturX::BASIC, FacturX::XRECHNUNG => ['EN16931-CII'],
+            Ubl::PEPPOL, Ubl::NLCIUS, Ubl::CIUS_RO, Ubl::CIUS_IT, Ubl::CIUS_ES_FACE, Ubl::CIUS_AT_GOV, Ubl::CIUS_AT_NAT => ['EN16931-UBL'],
+            default => [],
+        };
+        $french = in_array('BR-FR-CII', $fnfe);
         $invoice = new Invoice('123', new \Datetime('2023-11-07'), null, $currency , $profile);
 
-        
+
         $invoice->addNote("My Document note");
+        if ($french) {
+            $invoice->setBillingMode('S1');
+            $invoice->addNote('Indemnité forfaitaire pour frais de recouvrement : 40 €', 'PMT');
+            $invoice->addNote('Pénalités de retard : 3 fois le taux d\'intérêt légal', 'PMD');
+            $invoice->addNote('Pas d\'escompte pour paiement anticipé', 'AAB');
+        }
 
 
         $invoice->setSeller(
-            '12344',
+            $profile === Ubl::MALAYSIA ? '12344' : '732829320',
             $identificationDesignator,
             'Seller'
         );
+        if ($french) {
+            $invoice->setSellerElectronicAddress('732829320', '0225');
+        }
         
         // Add TIN for Malaysian invoices (required by validation rules)
         if ($profile === Ubl::MALAYSIA) {
@@ -166,7 +189,7 @@ class InvoiceTest extends TestCase
             '+2129999999999',
             'seller@email.com'
         );
-        $invoice->setSellerTaxRegistration('FR1231344', 'VA') ;
+        $invoice->setSellerTaxRegistration('FR44732829320', 'VA') ;
         if ($taxRate == 0) {
             $invoice->setTaxExemption(Invoice::EXEMPT_FROM_TAX, 'Assujeti') ;
         }
@@ -198,9 +221,12 @@ class InvoiceTest extends TestCase
         );
 
         $invoice->setBuyerIdentifier(
-            '12344',
-            $identificationDesignator, 
+            $profile === Ubl::MALAYSIA ? '12344' : '552100554',
+            $identificationDesignator,
         );
+        if ($french) {
+            $invoice->setBuyerElectronicAddress('buyer@example.fr', 'EM');
+        }
         
         // Add TIN for Malaysian invoices (required by validation rules)
         if ($profile === Ubl::MALAYSIA) {
@@ -274,8 +300,9 @@ class InvoiceTest extends TestCase
             $pdfFile = file_get_contents(__DIR__.'/examples/basic.pdf');
             $addLogo = in_array($profile, [FacturX::MINIMUM ,FacturX::BASIC_WL, FacturX::BASIC,  FacturX::EN16931, FacturX::EXTENDED]);
             $result = $invoice->getPdf($pdfFile, $addLogo);
+            // ZUGFeRD 1.0 profiles (BASIC, COMFORT, EXTENDED) would overwrite the Factur-X ones
             $profile = explode(":", $profile);
-            $short = array_pop($profile);
+            $short = count($profile) > 1 ? array_pop($profile) : 'zugferd-'.strtolower($profile[0]);
             file_put_contents(__DIR__.'/examples/basic-'.$short.'.pdf', $result);
             // Check xml again
             $facturX = new PdfWriter();
@@ -291,6 +318,8 @@ class InvoiceTest extends TestCase
         // A complete validation using schematron
         $result = $invoice->validate($xml, $validate);
         $this->assertEmpty($result, $result ? print_r($result, true) ."\n".$xml : '');
+
+        $this->assertFnfeRules($xml, $fnfe);
     }
 
     public function testMalaysiaValidation()
@@ -524,11 +553,24 @@ class InvoiceTest extends TestCase
      */
     public function testBuyerOrderReference(string $profile, string $query, string $file): void
     {
+        // The Factur-X invoice is French CTC compliant, UBL PEPPOL allows a single note so it only gets EN16931 rules
+        $french = $profile === FacturX::EN16931;
         $invoice = new Invoice('TEST-BT13', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, $profile);
-        $invoice->setSeller('12344', '0002', 'Seller');
-        $invoice->setSellerTaxRegistration('FR1231344', 'VA');
+        if ($french) {
+            $invoice->setBillingMode('S1');
+            $invoice->addNote('Indemnité forfaitaire pour frais de recouvrement : 40 €', 'PMT');
+            $invoice->addNote('Pénalités de retard : 3 fois le taux d\'intérêt légal', 'PMD');
+            $invoice->addNote('Pas d\'escompte pour paiement anticipé', 'AAB');
+        }
+        $invoice->setSeller('732829320', '0002', 'Seller');
+        $invoice->setSellerTaxRegistration('FR44732829320', 'VA');
         $invoice->setSellerAddress('1 rue test', '90000', 'Paris', 'FR');
         $invoice->setBuyer('REF-ACHETEUR', 'Buyer');
+        if ($french) {
+            $invoice->setSellerElectronicAddress('732829320', '0225');
+            $invoice->setBuyerIdentifier('552100554', '0002');
+            $invoice->setBuyerElectronicAddress('buyer@example.fr', 'EM');
+        }
         $invoice->setBuyerOrderReference('BC-42');
         $invoice->setBuyerAddress('2 rue test', '90000', 'Paris', 'FR');
         $invoice->addItem('item', 100, 20, 1, 'DAY', 'xxxx');
@@ -558,6 +600,11 @@ class InvoiceTest extends TestCase
         $this->assertEmpty($result, $result ? print_r($result, true)."\n".$xml : '');
         $result = $invoice->validate($xml, true);
         $this->assertEmpty($result, $result ? print_r($result, true)."\n".$xml : '');
+        $this->assertFnfeRules($xml, match ($profile) {
+            FacturX::EN16931 => ['FACTUR-X_EN16931', 'BR-FR-CII'],
+            Ubl::PEPPOL => ['EN16931-UBL'],
+            default => [],
+        });
 
         $data = \DigitalInvoice\InvoiceReader::fromXml($xml);
         $this->assertSame('BC-42', $data->buyerOrderReference);
@@ -570,6 +617,25 @@ class InvoiceTest extends TestCase
             'Zugferd COMFORT' => [Zugferd::ZUGFERD_CONFORT, '//ram10:ApplicableSupplyChainTradeAgreement/ram10:BuyerOrderReferencedDocument/ram10:ID', 'basic-bt13-zugferd-comfort'],
             'UBL PEPPOL' => [Ubl::PEPPOL, '/*/cac:OrderReference/cbc:ID', 'basic-bt13-ubl-peppol'],
         ];
+    }
+
+    public function testFacturXSellerContact(): void
+    {
+        $invoice = new Invoice('TEST-CONTACT', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, FacturX::EN16931);
+        $invoice->setSeller('12344', '0002', 'Seller');
+        $invoice->setSellerContact('Contact Seller', '+33100000000', 'seller@email.com');
+        $invoice->setBuyer('', 'Buyer');
+        $invoice->addItem('item', 100, 20, 1, 'DAY');
+
+        $doc = new \DOMDocument();
+        $doc->loadXML($invoice->getXml());
+        $xpath = new \DOMXPath($doc);
+        $xpath->registerNamespace('ram', 'urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100');
+        $contact = '//ram:SellerTradeParty/ram:DefinedTradeContact';
+        $this->assertSame('Contact Seller', $xpath->evaluate("string($contact/ram:PersonName)"));
+        $this->assertSame('+33100000000', $xpath->evaluate("string($contact/ram:TelephoneUniversalCommunication/ram:CompleteNumber)"));
+        $this->assertSame('seller@email.com', $xpath->evaluate("string($contact/ram:EmailURIUniversalCommunication/ram:URIID)"));
+        $this->assertSame(0, $xpath->query("$contact/ram:DepartmentName")->length);
     }
 
     public static function ciiProfilesProvider(): array

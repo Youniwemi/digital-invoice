@@ -17,6 +17,8 @@ Digital Invoice offers a unified interface for **generating and reading** e-invo
 composer require youniwemi/digital-invoice
 ```
 
+Requires PHP 8.3+ (easybill/zugferd-php 6).
+
 ## Generating an invoice
 
 ```php
@@ -197,7 +199,7 @@ php -S localhost:8000
 make test
 ```
 
-`test/FrenchRulesTest.php` validates generated Factur-X and UBL invoices with the official [FNFE artefacts](https://github.com/fnfempe/France_RFE) (Factur-X / EN16931 profile rules and French BR-FR rules). The rules are XSLT 2.0 and run with Saxon-HE, so Java is required. Download them once, the test is skipped otherwise:
+Generated Factur-X and UBL invoices are also validated with the official [FNFE artefacts](https://github.com/fnfempe/France_RFE): Factur-X / EN16931 profile rules, and French BR-FR rules for the French CTC profiles (Factur-X BASIC-WL, EN16931, EXTENDED and `test/FrenchRulesTest.php`). The rules are XSLT 2.0 and run with Saxon-HE, so Java is required. Download them once, these checks are skipped otherwise:
 
 ```bash
 make fnfe

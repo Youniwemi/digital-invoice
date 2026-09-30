@@ -99,7 +99,7 @@ class Zugferd extends XmlGenerator
 
     protected function getAmount(float $amount): Amount
     {
-        return new Amount(self::decimalFormat($amount), $this->currency->value);
+        return new Amount($amount, $this->currency->value);
     }
 
     protected $calculated = false;
@@ -125,7 +125,7 @@ class Zugferd extends XmlGenerator
                     $tradeTax->setCategory(VatCategory::STANDARD->value);
                     $totalBasis += $sum;
                     $tradeTax->setBasisAmount($this->getAmount($sum));
-                    $tradeTax->setPercent(self::decimalFormat($rate))  ;
+                    $tradeTax->setPercent((float) $rate)  ;
                     $tax += $calculated = $sum * $rate / 100;
                     $tradeTax->setCalculatedAmount($this->getAmount($calculated));
 
@@ -322,7 +322,7 @@ class Zugferd extends XmlGenerator
     public function addPaymentMean(PaymentMeansCode $typeCode, ?string $ibanId = null, ?string $accountName = null, ?string $bicId = null)
     {
 
-        $this->settlement = new Settlement('', $this->currency); // should we send a payment reference?
+        $this->settlement = new Settlement('', $this->currency->value); // should we send a payment reference?
         $mean = new PaymentMeans();
         $mean->setCode($typeCode->value) ;
 

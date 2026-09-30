@@ -35,6 +35,7 @@ fnfe:
 	curl -sfL $(FNFE_URL)/CII/EN16931/2xslt/BR-FR-Flux2-Schematron-CII.xslt -o $(FNFE_DIR)/BR-FR-CII.xslt
 	curl -sfL $(FNFE_URL)/UBL/EN16931/2xslt/BR-FR-Flux2-Schematron-UBL.xslt -o $(FNFE_DIR)/BR-FR-UBL.xslt
 	curl -sfL $(FNFE_URL)/UBL/EN16931/2xslt/EN16931-UBL-validation.xslt -o $(FNFE_DIR)/EN16931-UBL.xslt
+	curl -sfL $(FNFE_URL)/CII/EN16931/2xslt/EN16931-CII-validation.xslt -o $(FNFE_DIR)/EN16931-CII.xslt
 	@# Factur-X profile rules, the stylesheets load their code list from the same folder
 	@for p in BASICWL:BASIC-WL EN16931:EN16931 EXTENDED:EXTENDED; do \
 		d=$${p%%:*}; n=$${p##*:}; \

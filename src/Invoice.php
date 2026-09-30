@@ -2,7 +2,7 @@
 
 namespace DigitalInvoice;
 
-use Easybill\ZUGFeRD211\Model\DateTime;
+use Easybill\ZUGFeRD2\Model\DateTime;
 
 class Invoice
 {

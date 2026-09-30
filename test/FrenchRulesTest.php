@@ -2,6 +2,8 @@
 
 namespace DigitalInvoice\Tests;
 
+require_once __DIR__.'/FnfeRules.php';
+
 use DigitalInvoice\CurrencyCode;
 use DigitalInvoice\FacturX;
 use DigitalInvoice\Invoice;
@@ -9,13 +11,12 @@ use DigitalInvoice\Ubl;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Validates generated invoices with the FNFE artefacts (https://github.com/fnfempe/France_RFE):
- * the Factur-X / EN16931 profile rules and the French CTC rules (BR-FR, XP Z12-012).
- * The rules are XSLT 2.0, run with Saxon-HE: `make fnfe` downloads both into test/fnfe.
+ * French CTC invoices validated with the FNFE profile rules and the French rules (BR-FR, XP Z12-012).
+ * Run `make fnfe` first, the test is skipped otherwise.
  */
 class FrenchRulesTest extends TestCase
 {
-    private const DIR = __DIR__.'/fnfe';
+    use FnfeRules;
 
     public static function profilesProvider(): array
     {
@@ -32,7 +33,7 @@ class FrenchRulesTest extends TestCase
      */
     public function testFrenchRules(string $profile, array $stylesheets): void
     {
-        if (!is_file(self::DIR.'/saxon-he.jar')) {
+        if (!self::fnfeAvailable()) {
             $this->markTestSkipped('Run `make fnfe` to download Saxon and the FNFE rules');
         }
 
@@ -65,37 +66,6 @@ class FrenchRulesTest extends TestCase
             $this->assertNull($result, print_r($result, true)."\n".$xml);
         }
 
-        foreach ($stylesheets as $stylesheet) {
-            $errors = $this->validate($xml, $stylesheet);
-            $this->assertEmpty($errors, "$stylesheet\n".implode("\n", $errors)."\n".$xml);
-        }
-    }
-
-    /**
-     * Returns the failed asserts, except warnings, as "ID: message"
-     */
-    private function validate(string $xml, string $stylesheet): array
-    {
-        $file = tempnam(sys_get_temp_dir(), 'fnfe');
-        file_put_contents($file, $xml);
-        exec(sprintf(
-            'java -jar %s -s:%s -xsl:%s 2>&1',
-            escapeshellarg(self::DIR.'/saxon-he.jar'),
-            escapeshellarg($file),
-            escapeshellarg(self::DIR."/$stylesheet.xslt")
-        ), $output, $code);
-        unlink($file);
-        $svrl = implode("\n", $output);
-        $this->assertSame(0, $code, $svrl);
-
-        $doc = new \DOMDocument();
-        $doc->loadXML($svrl);
-        $xpath = new \DOMXPath($doc);
-        $xpath->registerNamespace('svrl', 'http://purl.oclc.org/dsdl/svrl');
-        $errors = [];
-        foreach ($xpath->query('//svrl:failed-assert[not(@flag="warning") and not(@flag="information")]') as $assert) {
-            $errors[] = $assert->getAttribute('id').': '.trim(preg_replace('/\s+/', ' ', $assert->textContent));
-        }
-        return $errors;
+        $this->assertFnfeRules($xml, $stylesheets);
     }
 }
