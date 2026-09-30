@@ -55,6 +55,22 @@ $invoice = new Invoice('INV-2024-001', new DateTime(), null, CurrencyCode::EURO,
 $xml = $invoice->getXml();
 ```
 
+### French e-invoicing (CTC reform)
+
+The French rules (BR-FR, XP Z12-012) require a billing mode, electronic addresses and the legal notes:
+
+```php
+$invoice->setBillingMode('S1');                          // BT-23: B1, S1, M1, B2, S2, M2, S3, B4 …
+$invoice->setSellerElectronicAddress('123456789', '0225'); // BT-34, after setSeller
+$invoice->setBuyerElectronicAddress('ap@client.fr', 'EM'); // BT-49, after setBuyer
+
+$invoice->addNote('Indemnité forfaitaire pour frais de recouvrement : 40 €', 'PMT');
+$invoice->addNote('Pénalités de retard : 3 fois le taux d\'intérêt légal', 'PMD');
+$invoice->addNote('Pas d\'escompte pour paiement anticipé', 'AAB');
+```
+
+In UBL, note subject codes are written as a `#PMT#…` prefix.
+
 ## Reading an invoice
 
 `InvoiceReader` auto-detects the format (CII/FacturX, ZUGFeRD 1.0, UBL) and returns a normalised `InvoiceData` object.
@@ -174,6 +190,18 @@ php -S localhost:8000
 - **Identifier support** — SIRET, SIREN, DUNS, LEI, VAT, and 60+ ISO 6523 codes
 - **Multi-currency** — including MYR for Malaysian e-invoices
 - **Secure by default** — DOCTYPE guard, LIBXML_NONET, upload MIME validation, XSS-safe renderer
+
+## Testing
+
+```bash
+make test
+```
+
+`test/FrenchRulesTest.php` validates generated Factur-X and UBL invoices with the official [FNFE artefacts](https://github.com/fnfempe/France_RFE) (Factur-X / EN16931 profile rules and French BR-FR rules). The rules are XSLT 2.0 and run with Saxon-HE, so Java is required. Download them once, the test is skipped otherwise:
+
+```bash
+make fnfe
+```
 
 ## Development Status
 

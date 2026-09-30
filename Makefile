@@ -11,10 +11,16 @@ BRANCH   := master
 LATEST   := $(shell git describe --tags --abbrev=0 2>/dev/null)
 VERSION  ?= $(shell echo "$(LATEST)" | awk -F. -v OFS=. '{$$NF += 1; print}')
 
-.PHONY: help test check release packagist
+# FNFE French CTC rules (XSLT 2.0) and Saxon-HE to run them, used by test/FrenchRulesTest.php
+FNFE_DIR  := test/fnfe
+FNFE_URL  := https://raw.githubusercontent.com/fnfempe/France_RFE/main/FNFE_RFE_INVOICE
+SAXON_URL := https://repo1.maven.org/maven2/net/sf/saxon/Saxon-HE/10.9/Saxon-HE-10.9.jar
+
+.PHONY: help test check release packagist fnfe
 
 help:
 	@echo "make test                    Validate composer.json and run the test suite"
+	@echo "make fnfe                    Download Saxon and the FNFE French rules for test/FrenchRulesTest.php"
 	@echo "make release [VERSION=vX.Y.Z] Test, tag and push (latest: $(LATEST), next: $(VERSION))"
 
 test:
@@ -22,6 +28,19 @@ test:
 	composer run-script test
 	@# The Malaysian UBL test rewrites its fixture with today's date.
 	git checkout -- test/examples/malaysian-ubl-invoice.xml
+
+fnfe:
+	@mkdir -p $(FNFE_DIR)
+	curl -sfL $(SAXON_URL) -o $(FNFE_DIR)/saxon-he.jar
+	curl -sfL $(FNFE_URL)/CII/EN16931/2xslt/BR-FR-Flux2-Schematron-CII.xslt -o $(FNFE_DIR)/BR-FR-CII.xslt
+	curl -sfL $(FNFE_URL)/UBL/EN16931/2xslt/BR-FR-Flux2-Schematron-UBL.xslt -o $(FNFE_DIR)/BR-FR-UBL.xslt
+	curl -sfL $(FNFE_URL)/UBL/EN16931/2xslt/EN16931-UBL-validation.xslt -o $(FNFE_DIR)/EN16931-UBL.xslt
+	@# Factur-X profile rules, the stylesheets load their code list from the same folder
+	@for p in BASICWL:BASIC-WL EN16931:EN16931 EXTENDED:EXTENDED; do \
+		d=$${p%%:*}; n=$${p##*:}; \
+		curl -sfL $(FNFE_URL)/Factur-X/$$d/2xslt/FACTUR-X_$$n.xslt -o $(FNFE_DIR)/FACTUR-X_$$n.xslt || exit 1; \
+		curl -sfL $(FNFE_URL)/Factur-X/$$d/2xslt/FACTUR-X_$${n}_codedb.xml -o $(FNFE_DIR)/FACTUR-X_$${n}_codedb.xml || exit 1; \
+	done
 
 check:
 	@test "$$(git rev-parse --abbrev-ref HEAD)" = "$(BRANCH)" || { echo "Not on $(BRANCH)"; exit 1; }

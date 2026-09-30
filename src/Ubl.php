@@ -198,6 +198,21 @@ class Ubl extends XmlGenerator
         return $this;
     }
 
+    public function setBillingMode(string $mode)
+    {
+        $this->invoice->setBusinessProcess($mode);
+    }
+
+    public function setSellerElectronicAddress(string $id, string $scheme)
+    {
+        $this->seller->setElectronicAddress(new Identifier($id, $scheme));
+    }
+
+    public function setBuyerElectronicAddress(string $id, string $scheme)
+    {
+        $this->buyer->setElectronicAddress(new Identifier($id, $scheme));
+    }
+
     public function createAddress(string $postCode, string $city, string $countryCode, string $lineOne, ?string $lineTwo = null, ?string $lineThree = null)
     {
     }
@@ -256,7 +271,8 @@ class Ubl extends XmlGenerator
 
     public function addNote(string $content, ?string $subjectCode = null, ?string $contentCode = null)
     {
-        $this->invoice->addNote($content);
+        // UBL has no subject code element, the French CTC convention prefixes it: #PMT#content
+        $this->invoice->addNote($subjectCode ? "#$subjectCode#$content" : $content);
     }
 
     public function addPaymentMean(PaymentMeansCode $typeCode, ?string $ibanId = null, ?string $accountName = null, ?string $bicId = null)

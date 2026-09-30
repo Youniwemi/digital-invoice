@@ -4,3 +4,4 @@ vendor
 .vscode
 test/examples/basic-*
 .php-cs-fixer.cache
+test/fnfe

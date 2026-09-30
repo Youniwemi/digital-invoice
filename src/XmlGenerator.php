@@ -141,4 +141,19 @@ abstract class XmlGenerator implements XmlGeneratorInterface
     {
         // Default implementation - override in specific generators if needed
     }
+
+    public function setBillingMode(string $mode)
+    {
+        // Default implementation - override in specific generators if needed
+    }
+
+    public function setSellerElectronicAddress(string $id, string $scheme)
+    {
+        // Default implementation - override in specific generators if needed
+    }
+
+    public function setBuyerElectronicAddress(string $id, string $scheme)
+    {
+        // Default implementation - override in specific generators if needed
+    }
 }

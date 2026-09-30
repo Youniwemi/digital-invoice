@@ -69,6 +69,9 @@ class Invoice
                 throw new \Exception("$invoiceType is not a valid Invoice Type");
             }
         }
+        if ($profile === FacturX::EXTENDED_LEGACY) {
+            $profile = FacturX::EXTENDED;
+        }
         $this->profile = $profile;
         if ( $this->isUbl()) {
             $this->xmlGenerator = new Ubl($profile, $currency);
@@ -121,6 +124,30 @@ class Invoice
     public function setBuyerOrderReference(string $reference)
     {
         $this->xmlGenerator->setBuyerOrderReference($reference);
+    }
+
+    /**
+     * Business process / billing mode (BT-23), required by the French CTC: B1, S1, M1...
+     */
+    public function setBillingMode(string $mode)
+    {
+        $this->xmlGenerator->setBillingMode($mode);
+    }
+
+    /**
+     * Seller electronic address (BT-34), e.g. ('123456789', '0225') or ('a@b.fr', 'EM'). Call after setSeller.
+     */
+    public function setSellerElectronicAddress(string $id, string $scheme)
+    {
+        $this->xmlGenerator->setSellerElectronicAddress($id, $scheme);
+    }
+
+    /**
+     * Buyer electronic address (BT-49), e.g. ('123456789', '0225') or ('a@b.fr', 'EM'). Call after setBuyer.
+     */
+    public function setBuyerElectronicAddress(string $id, string $scheme)
+    {
+        $this->xmlGenerator->setBuyerElectronicAddress($id, $scheme);
     }
 
     public function setBuyerIdentifier(string $id, ?string $idDesignator, string $type = 'Legal')

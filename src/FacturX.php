@@ -49,7 +49,9 @@ class FacturX extends XmlGenerator
     public const BASIC_WL = 'urn:factur-x.eu:1p0:basicwl';
     public const BASIC = 'urn:cen.eu:en16931:2017#compliant#urn:factur-x.eu:1p0:basic';
     public const EN16931 = 'urn:cen.eu:en16931:2017';
-    public const EXTENDED = 'urn:cen.eu:en16931:2017#conformant#urn:zugferd.de:2p1:extended';
+    public const EXTENDED = 'urn:cen.eu:en16931:2017#conformant#urn:factur-x.eu:1p0:extended';
+    // Former EXTENDED value, rejected by the current Factur-X schematron, still accepted as input
+    public const EXTENDED_LEGACY = 'urn:cen.eu:en16931:2017#conformant#urn:zugferd.de:2p1:extended';
     public const XRECHNUNG = 'urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_1.2';
 
     public const LEVEL_MINIMUM = 0;
@@ -232,6 +234,30 @@ class FacturX extends XmlGenerator
     public function setBuyerOrderReference(string $reference)
     {
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->buyerOrderReferencedDocument = ReferencedDocument::create($reference);
+    }
+
+    public function setBillingMode(string $mode)
+    {
+        $this->invoice->exchangedDocumentContext->businessProcessSpecifiedDocumentContextParameter = new DocumentContextParameter();
+        $this->invoice->exchangedDocumentContext->businessProcessSpecifiedDocumentContextParameter->id = $mode;
+    }
+
+    public function setSellerElectronicAddress(string $id, string $scheme)
+    {
+        $this->setElectronicAddress($this->seller, $id, $scheme);
+    }
+
+    public function setBuyerElectronicAddress(string $id, string $scheme)
+    {
+        $this->setElectronicAddress($this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->buyerTradeParty, $id, $scheme);
+    }
+
+    protected function setElectronicAddress(TradeParty $party, string $id, string $scheme)
+    {
+        if ($this->getProfileLevel() > self::LEVEL_MINIMUM) {
+            $party->uriUniversalCommunication = new UniversalCommunication();
+            $party->uriUniversalCommunication->uriid = Id::create($id, $scheme);
+        }
     }
 
     public function setSellerTaxRegistration(string $id, string $schemeID)
