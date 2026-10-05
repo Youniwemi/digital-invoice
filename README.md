@@ -19,6 +19,12 @@ composer require youniwemi/digital-invoice
 
 Requires PHP 8.3+ (easybill/zugferd-php 6).
 
+### Upgrading to 0.4
+
+- PHP 8.3 or later is required.
+- easybill/zugferd-php 6 replaces the `Youniwemi/zugferd-php` fork: the Factur-X models moved from `Easybill\ZUGFeRD211\Model` to `Easybill\ZUGFeRD2\Model`. Only code using `$invoice->xmlGenerator->invoice` directly is affected.
+- Use `addAllowance()` for discounts, negative prices are rejected by EN16931 (BR-27) and the French rules (BR-FR-DEC-03).
+
 ## Generating an invoice
 
 ```php
