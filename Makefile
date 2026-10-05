@@ -26,8 +26,6 @@ help:
 test:
 	composer validate
 	composer run-script test
-	@# The Malaysian UBL test rewrites its fixture with today's date.
-	git checkout -- test/examples/malaysian-ubl-invoice.xml
 
 fnfe:
 	@mkdir -p $(FNFE_DIR)
