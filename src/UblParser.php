@@ -31,6 +31,14 @@ class UblParser extends XmlParser
         $data->buyerReference = $invoice->getBuyerReference();
         $data->buyerOrderReference = $invoice->getPurchaseOrderReference();
 
+        // Preceding invoice references (BG-3)
+        foreach ($invoice->getPrecedingInvoiceReferences() as $reference) {
+            $data->precedingInvoices[] = [
+                'id'        => $reference->getValue(),
+                'issueDate' => $reference->getIssueDate(),
+            ];
+        }
+
         // Notes
         foreach ($invoice->getNotes() as $note) {
             $data->notes[] = [

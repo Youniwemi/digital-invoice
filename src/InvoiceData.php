@@ -2,6 +2,8 @@
 
 namespace DigitalInvoice;
 
+require_once __DIR__ . '/Types.php';
+
 /**
  * Address data extracted from an invoice party.
  */
@@ -116,6 +118,9 @@ class InvoiceData
     /** Numeric invoice type code (e.g. '380' = commercial invoice). */
     public string $invoiceType = '380';
 
+    /** @var array<array{id: string, issueDate: ?\DateTime}> Preceding invoice references (BG-3), e.g. the invoice a credit note credits */
+    public array $precedingInvoices = [];
+
     public ?PartyData $seller = null;
     public ?PartyData $buyer = null;
     public ?string $buyerReference = null;
@@ -148,4 +153,9 @@ class InvoiceData
     // Tax exemption (when tax rate is 0)
     public ?string $taxExemptionCategory = null;
     public ?string $taxExemptionReason = null;
+
+    public function isCreditNote(): bool
+    {
+        return InvoiceTypeCode::tryFrom($this->invoiceType)?->isCreditNote() ?? false;
+    }
 }

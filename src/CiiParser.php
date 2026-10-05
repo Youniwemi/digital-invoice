@@ -57,6 +57,16 @@ class CiiParser extends XmlParser
             $data->deliveryDate = $this->parseDate($delivery->actualDeliverySupplyChainEvent->occurrenceDateTime->dateTimeString->value, 'Ymd');
         }
 
+        // Preceding invoice references (BG-3)
+        foreach ($set->invoiceReferencedDocument as $reference) {
+            $data->precedingInvoices[] = [
+                'id'        => $reference->issuerAssignedID->value ?? '',
+                'issueDate' => isset($reference->formattedIssueDateTime->dateTimeString)
+                    ? $this->parseDate($reference->formattedIssueDateTime->dateTimeString->value, 'Ymd')
+                    : null,
+            ];
+        }
+
         // Notes
         foreach ($doc->notes as $note) {
             $data->notes[] = [

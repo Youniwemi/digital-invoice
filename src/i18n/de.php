@@ -10,6 +10,7 @@
     'buyer'         => 'Käufer',
     'ref'           => 'Ref.',
     'purchase_order' => 'Bestellnummer',
+    'preceding_invoice' => 'Ursprungsrechnung',
     'description'   => 'Beschreibung',
     'qty'           => 'Menge',
     'unit'          => 'Einheit',

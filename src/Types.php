@@ -2570,6 +2570,26 @@ enum InvoiceTypeCode: string
     case PARTIAL_FINAL_CONSTRUCTION_INVOICE = '876';
     case FINAL_CONSTRUCTION_INVOICE = '877';
     case CUSTOMS_INVOICE = '935';
+
+    /**
+     * Credit note codes of the EN16931 UNTDID 1001 subset
+     */
+    public function isCreditNote(): bool
+    {
+        return in_array($this, [
+            self::CREDIT_NOTE_RELATED_TO_GOODS_OR_SERVICES,
+            self::CREDIT_NOTE_RELATED_TO_FINANCIAL_ADJUSTMENTS,
+            self::SELF_BILLED_CREDIT_NOTE,
+            self::CONSOLIDATED_CREDIT_NOTE_GOODS_AND_SERVICES,
+            self::CREDIT_NOTE_FOR_PRICE_VARIATION,
+            self::DELCREDERE_CREDIT_NOTE,
+            self::CREDIT_NOTE,
+            self::FACTORED_CREDIT_NOTE,
+            self::OCR_PAYMENT_CREDIT_NOTE,
+            self::REVERSAL_OF_CREDIT,
+            self::FORWARDER_CREDIT_NOTE,
+        ], true);
+    }
 }
 
 

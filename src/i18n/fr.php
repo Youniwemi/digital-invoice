@@ -10,6 +10,7 @@
     'buyer'         => 'Acheteur',
     'ref'           => 'Réf.',
     'purchase_order' => 'Bon de commande',
+    'preceding_invoice' => 'Facture d\'origine',
     'description'   => 'Description',
     'qty'           => 'Qté',
     'unit'          => 'Unité',

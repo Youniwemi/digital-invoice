@@ -230,6 +230,40 @@ class InvoiceReaderTest extends TestCase
         $this->assertEquals('PDF item', $data->items[0]->name);
     }
 
+    // ─── Credit notes ────────────────────────────────────────────────────────
+
+    public static function creditNoteProfilesProvider(): array
+    {
+        return [
+            'FacturX EN16931' => [FacturX::EN16931],
+            'UBL PEPPOL' => [Ubl::PEPPOL],
+        ];
+    }
+
+    /**
+     * @dataProvider creditNoteProfilesProvider
+     */
+    public function testCreditNoteRoundTrip(string $profile): void
+    {
+        $creditNote = new Invoice('CN-001', new \DateTime('2023-11-07'), null, CurrencyCode::EURO, $profile, '381');
+        $creditNote->setSeller('12345', '0002', 'ACME Corp');
+        $creditNote->setSellerAddress('1 rue de la Paix', '75001', 'Paris', 'FR');
+        $creditNote->setBuyer('', 'Client SARL');
+        $creditNote->setBuyerAddress('2 avenue de la Gare', '69001', 'Lyon', 'FR');
+        $creditNote->addItem('Consulting', 100.0, 20.0, 1, 'H87', '1');
+        $creditNote->addPrecedingInvoiceReference('INV-001', new \DateTime('2023-10-01'));
+        $this->assertTrue($creditNote->isCreditNote());
+
+        $data = InvoiceReader::fromXml($creditNote->getXml());
+
+        $this->assertEquals('381', $data->invoiceType);
+        $this->assertTrue($data->isCreditNote());
+        $this->assertCount(1, $data->precedingInvoices);
+        $this->assertEquals('INV-001', $data->precedingInvoices[0]['id']);
+        $this->assertEquals('2023-10-01', $data->precedingInvoices[0]['issueDate']->format('Y-m-d'));
+        $this->assertEquals(120.0, $data->grandTotal);
+    }
+
     // ─── Format detection ─────────────────────────────────────────────────────
 
     public function testUblCreditNoteParsed(): void

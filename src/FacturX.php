@@ -14,10 +14,12 @@ use Easybill\ZUGFeRD2\Model\DocumentContextParameter;
 use Easybill\ZUGFeRD2\Model\DocumentLineDocument;
 use Easybill\ZUGFeRD2\Model\ExchangedDocument;
 use Easybill\ZUGFeRD2\Model\ExchangedDocumentContext;
+use Easybill\ZUGFeRD2\Model\FormattedDateTime;
 use Easybill\ZUGFeRD2\Model\HeaderTradeAgreement;
 use Easybill\ZUGFeRD2\Model\HeaderTradeDelivery;
 use Easybill\ZUGFeRD2\Model\HeaderTradeSettlement;
 use Easybill\ZUGFeRD2\Model\Id;
+use Easybill\ZUGFeRD2\Model\Indicator;
 use Easybill\ZUGFeRD2\Model\LegalOrganization;
 use Easybill\ZUGFeRD2\Model\LineTradeAgreement;
 use Easybill\ZUGFeRD2\Model\LineTradeDelivery;
@@ -29,6 +31,7 @@ use Easybill\ZUGFeRD2\Model\SupplyChainEvent;
 use Easybill\ZUGFeRD2\Model\SupplyChainTradeLineItem;
 use Easybill\ZUGFeRD2\Model\SupplyChainTradeTransaction;
 use Easybill\ZUGFeRD2\Model\TaxRegistration;
+use Easybill\ZUGFeRD2\Model\TradeAllowanceCharge;
 use Easybill\ZUGFeRD2\Model\TradeAddress;
 use Easybill\ZUGFeRD2\Model\TradeContact;
 use Easybill\ZUGFeRD2\Model\TradeParty;
@@ -68,6 +71,9 @@ class FacturX extends XmlGenerator
         FacturX::EXTENDED => self::LEVEL_EN16931 ,
         FacturX::XRECHNUNG => self::LEVEL_EN16931,
     ];
+
+    // Document level allowances (BG-20), [rate, amount, reason, reasonCode]
+    protected array $allowances = [];
 
     //protected $noTaxCategory = VatCategory::FREE_EXPORT_ITEM_TAX_NOT_CHARGED;
     //protected $noTaxCategory = VatCategory::EXEMPT_FROM_TAX;
@@ -243,6 +249,17 @@ class FacturX extends XmlGenerator
         $this->invoice->exchangedDocumentContext->businessProcessSpecifiedDocumentContextParameter->id = $mode;
     }
 
+    public function addPrecedingInvoiceReference(string $invoiceId, ?\DateTime $issueDate = null)
+    {
+        if ($this->getProfileLevel() >= self::LEVEL_BASIC_WL) {
+            $reference = ReferencedDocument::create($invoiceId);
+            if ($issueDate) {
+                $reference->formattedIssueDateTime = FormattedDateTime::create(102, $issueDate->format(self::DATE_102));
+            }
+            $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->invoiceReferencedDocument[] = $reference;
+        }
+    }
+
     public function setSellerElectronicAddress(string $id, string $scheme)
     {
         $this->setElectronicAddress($this->seller, $id, $scheme);
@@ -312,15 +329,26 @@ class FacturX extends XmlGenerator
             }
         }
 
+        // Allowances are deducted from the VAT basis of their rate
+        $allowancesByRate = [];
+        $allowanceTotal = 0;
+        foreach ($this->allowances as [$rate, $amount]) {
+            $allowancesByRate[$rate] = ($allowancesByRate[$rate] ?? 0) + $amount;
+            $allowanceTotal += $amount;
+            if (! isset($this->taxLines[$rate])) {
+                $this->taxLines[$rate] = [];
+            }
+        }
+
         if (count($this->taxLines)) {
             $totalBasis = 0;
             $tax = 0;
             // We recalculate, so we reset.
             $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->tradeTaxes = [];
             foreach ($this->taxLines as $rate => $items) {
+                $sum = array_sum($items) - ($allowancesByRate[$rate] ?? 0);
                 // turn back rate to float
                 $rate = (float) $rate;
-                $sum = array_sum($items);
                 $totalBasis += $sum;
                 $tax += $calculated = $sum * $rate / 100;
                 // and skip tax 0
@@ -359,17 +387,16 @@ class FacturX extends XmlGenerator
         $grand = $totalBasis + $tax  ;
 
         $summation = new TradeSettlementHeaderMonetarySummation();
-        //$summation->chargeTotalAmount = Amount::create('0.00');
-        //$summation->allowanceTotalAmount = Amount::create('0.00');
         $summation->taxBasisTotalAmount[] = Amount::create(self::decimalFormat($totalBasis));
         $summation->taxTotalAmount[] = Amount::create(self::decimalFormat($tax), $this->currency->value);
         $summation->grandTotalAmount[] = Amount::create(self::decimalFormat($grand));
         //$summation->totalPrepaidAmount = Amount::create('0.00');
         if ($this->getProfileLevel() > self::LEVEL_MINIMUM) {
-            $summation->lineTotalAmount = Amount::create(self::decimalFormat($totalBasis));
             // [BR-CO-13]-Invoice total amount without VAT (BT-109) = Σ Invoice line net amount (BT-131) - Sum of allowances on document level (BT-107) + Sum of charges on document level (BT-108).
-            //$summation->chargeTotalAmount = Amount::create('0.00');
-            //$summation->allowanceTotalAmount = Amount::create('0.00');
+            $summation->lineTotalAmount = Amount::create(self::decimalFormat($totalBasis + $allowanceTotal));
+            if ($allowanceTotal) {
+                $summation->allowanceTotalAmount = Amount::create(self::decimalFormat($allowanceTotal));
+            }
         }
 
         $summation->duePayableAmount = Amount::create(self::decimalFormat($grand));
@@ -467,6 +494,36 @@ class FacturX extends XmlGenerator
         }
 
         return [$item, $totalLineBasis];
+    }
+
+    public function addAllowance(float $amount, float $taxRatePercent, ?string $reason = null, ?string $reasonCode = null)
+    {
+        if ($this->getProfileLevel() < self::LEVEL_BASIC_WL) {
+            throw new \Exception('Allowances are not supported for the MINIMUM profile');
+        }
+        $rate = self::decimalFormat($taxRatePercent, 4);
+        $this->allowances[] = [$rate, $amount, $reason, $reasonCode];
+
+        $tradeTax = new TradeTax();
+        $tradeTax->typeCode = TaxTypeCodeContent::VAT->value;
+        if ($taxRatePercent == 0) {
+            if ($this->noTaxCategory) {
+                $tradeTax->categoryCode = $this->noTaxCategory->value;
+                // [BR-O-14] No rate for the "Not subject to VAT" category
+                if ($this->noTaxCategory !== VatCategory::SERVICE_OUTSIDE_SCOPE_OF_TAX) {
+                    $tradeTax->rateApplicablePercent = self::decimalFormat($taxRatePercent);
+                }
+            }
+        } else {
+            $tradeTax->categoryCode = VatCategory::STANDARD->value;
+            $tradeTax->rateApplicablePercent = self::decimalFormat($taxRatePercent);
+        }
+
+        $indicator = new Indicator();
+        $indicator->indicator = false;
+        $allowance = TradeAllowanceCharge::create(Amount::create(self::decimalFormat($amount)), $indicator, null, null, $reason, [$tradeTax]);
+        $allowance->reasonCode = $reasonCode;
+        $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->specifiedTradeAllowanceCharge[] = $allowance;
     }
 
     public function addNote(string $content, ?string $subjectCode = null, ?string $contentCode = null)

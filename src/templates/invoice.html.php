@@ -17,7 +17,7 @@
 
   <header class="di-header">
     <div class="di-header__meta">
-      <span class="di-label"><?= in_array($invoice->invoiceType, ['381', '396'], true) ? $labels['credit_note'] : $labels['invoice'] ?></span>
+      <span class="di-label"><?= $invoice->isCreditNote() ? $labels['credit_note'] : $labels['invoice'] ?></span>
       <span class="di-invoice-id"><?= $esc($invoice->invoiceId) ?></span>
       <?php $fmt_label = $formatLabel($invoice->profile); ?>
       <?php if ($fmt_label): ?>
@@ -38,6 +38,9 @@
       <?php if ($invoice->invoiceType && $invoice->invoiceType !== '380'): ?>
       <div><span class="di-label"><?= $labels['invoice_type'] ?></span> <?= $esc($invoice->invoiceType) ?></div>
       <?php endif; ?>
+      <?php foreach ($invoice->precedingInvoices as $ref): ?>
+      <div><span class="di-label"><?= $labels['preceding_invoice'] ?></span> <?= $esc($ref['id']) ?><?php if ($ref['issueDate']): ?> (<?= $date($ref['issueDate']) ?>)<?php endif; ?></div>
+      <?php endforeach; ?>
     </div>
   </header>
 

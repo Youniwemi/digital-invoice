@@ -10,6 +10,7 @@
     'buyer'         => 'Buyer',
     'ref'           => 'Ref',
     'purchase_order' => 'Purchase order',
+    'preceding_invoice' => 'Preceding invoice',
     'description'   => 'Description',
     'qty'           => 'Qty',
     'unit'          => 'Unit',

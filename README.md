@@ -73,6 +73,27 @@ $invoice->addNote('Pas d\'escompte pour paiement anticipé', 'AAB');
 
 In UBL, note subject codes are written as a `#PMT#…` prefix.
 
+### Credit notes
+
+Pass a credit note type code (381, 396, 261…) and reference the credited invoice (BG-3, required by BR-FR-CO-05). Amounts stay positive; UBL output switches to a `<CreditNote>` document.
+
+```php
+$creditNote = new Invoice('AV-2024-001', new DateTime(), null, CurrencyCode::EURO, FacturX::EN16931, InvoiceTypeCode::CREDIT_NOTE);
+$creditNote->addPrecedingInvoiceReference('INV-2024-001', new DateTime('2024-01-15')); // BT-25, BT-26
+$creditNote->isCreditNote(); // true
+```
+
+When read back, `InvoiceData::isCreditNote()` and `InvoiceData::$precedingInvoices` expose them.
+
+### Discounts
+
+Add a document level allowance (BG-20) instead of a negative line, prices must stay positive (BR-27, BR-FR-DEC-03). The amount is deducted from the VAT basis of the given rate. Supported by Factur-X (BASIC WL and above) and UBL.
+
+```php
+$invoice->addAllowance(7, 20);                          // 7 € excl. VAT at 20 %, reason "Remise", code 95 (Discount)
+$invoice->addAllowance(18, 20, 'Remise fidélité', '95'); // reason (BT-97) and UNTDID 5189 code (BT-98)
+```
+
 ## Reading an invoice
 
 `InvoiceReader` auto-detects the format (CII/FacturX, ZUGFeRD 1.0, UBL) and returns a normalised `InvoiceData` object.
@@ -95,7 +116,9 @@ $data->issueDate;               // ?DateTime
 $data->dueDate;                 // ?DateTime
 $data->currency;                // string  e.g. 'EUR'
 $data->profile;                 // string  URN or format identifier
-$data->invoiceType;             // string  e.g. '380'
+$data->invoiceType;             // string  e.g. '380', '381'
+$data->isCreditNote();          // bool
+$data->precedingInvoices;       // array  [{id, issueDate}] (BG-3)
 
 $data->seller;                  // ?PartyData
 $data->buyer;                   // ?PartyData

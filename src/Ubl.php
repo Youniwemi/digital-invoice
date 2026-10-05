@@ -3,12 +3,14 @@
 namespace DigitalInvoice;
 
 use DateTime;
+use Einvoicing\AllowanceOrCharge;
 use Einvoicing\Attachment;
 use Einvoicing\Delivery;
 use Einvoicing\Exceptions\ValidationException;
 use Einvoicing\Identifier;
 use Einvoicing\Invoice;
 use Einvoicing\InvoiceLine;
+use Einvoicing\InvoiceReference;
 use Einvoicing\Party;
 use Einvoicing\Payments\Payment;
 use Einvoicing\Payments\Transfer;
@@ -62,6 +64,11 @@ class Ubl extends XmlGenerator
      */
     protected function euValidation(string $contents, string $type)
     {
+        // The API has a distinct validation type for UBL credit notes
+        $document = new \DOMDocument();
+        if (@$document->loadXML($contents) && $document->documentElement->localName === 'CreditNote') {
+            $type = 'credit';
+        }
 
         $ch = curl_init();
         curl_setopt_array($ch, [
@@ -70,7 +77,7 @@ class Ubl extends XmlGenerator
             CURLOPT_POSTFIELDS => json_encode([
                 'contentToValidate' => base64_encode($contents),
                 'embeddingMethod' => 'BASE64',
-                'validationType' => 'ubl',
+                'validationType' => $type,
                 ]) ,
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
@@ -215,6 +222,11 @@ class Ubl extends XmlGenerator
         $this->invoice->setBusinessProcess($mode);
     }
 
+    public function addPrecedingInvoiceReference(string $invoiceId, ?DateTime $issueDate = null)
+    {
+        $this->invoice->addPrecedingInvoiceReference(new InvoiceReference($invoiceId, $issueDate));
+    }
+
     public function setSellerElectronicAddress(string $id, string $scheme)
     {
         $this->seller->setElectronicAddress(new Identifier($id, $scheme));
@@ -279,6 +291,22 @@ class Ubl extends XmlGenerator
         $this->items[] = $line;
 
         return [$line, $line->getNetAmountBeforeAllowancesCharges()];
+    }
+
+    public function addAllowance(float $amount, float $taxRatePercent, ?string $reason = null, ?string $reasonCode = null)
+    {
+        $allowance = new AllowanceOrCharge();
+        $allowance->setAmount($amount);
+        $allowance->setReason($reason);
+        $allowance->setReasonCode($reasonCode);
+        if ($taxRatePercent == 0 && $this->noTaxCategory) {
+            $allowance->setVatCategory($this->noTaxCategory->value);
+            // [BR-O-14] No rate for the "Not subject to VAT" category
+            $allowance->setVatRate($this->noTaxCategory === VatCategory::SERVICE_OUTSIDE_SCOPE_OF_TAX ? null : 0);
+        } else {
+            $allowance->setVatRate($taxRatePercent);
+        }
+        $this->invoice->addAllowance($allowance);
     }
 
     public function addNote(string $content, ?string $subjectCode = null, ?string $contentCode = null)

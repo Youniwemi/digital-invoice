@@ -43,6 +43,7 @@ class Invoice
 
 
     protected $invoiceInformations = [];
+    protected InvoiceTypeCode $invoiceType;
 
     protected $noTaxCategory = VatCategory::SERVICE_OUTSIDE_SCOPE_OF_TAX;
     protected $noTaxReason =  null;
@@ -84,8 +85,23 @@ class Invoice
         $this->invoiceInformations['profile'] = $profile;
         $this->invoiceInformations['invoiceId'] = $invoiceId;
         $this->invoiceInformations['date'] = $issueDate->format('Y-m-d');
-        $this->invoiceInformations['docTypeName'] = $invoiceType->value;
+        $this->invoiceInformations['docTypeName'] = $invoiceType->isCreditNote() ? 'Credit Note' : 'Invoice';
+        $this->invoiceType = $invoiceType;
         $this->xmlGenerator->initDocument($invoiceId, $issueDate, $invoiceType, $deliveryDate);
+    }
+
+    public function isCreditNote(): bool
+    {
+        return $this->invoiceType->isCreditNote();
+    }
+
+    /**
+     * Preceding invoice reference (BG-3: BT-25, BT-26), the invoice corrected or credited.
+     * Required by the French CTC for credit notes (BR-FR-CO-05).
+     */
+    public function addPrecedingInvoiceReference(string $invoiceId, ?\DateTime $issueDate = null)
+    {
+        $this->xmlGenerator->addPrecedingInvoiceReference($invoiceId, $issueDate);
     }
 
     public function setTaxExemption(VatCategory $vatCategory, ?string $reason = null)
@@ -235,6 +251,18 @@ class Invoice
         $this->xmlGenerator->addTaxLine($taxRatePercent, $totalLineBasis);
         
         return $item;
+    }
+
+    /**
+     * Document level allowance (BG-20), e.g. a discount, deducted from the VAT basis of the given rate.
+     * Reason code from UNTDID 5189, 95 = Discount (BT-97, BT-98).
+     */
+    public function addAllowance(float $amount, float $taxRatePercent, ?string $reason = 'Remise', ?string $reasonCode = '95')
+    {
+        if ($amount <= 0) {
+            throw new \Exception('The allowance amount should be positive');
+        }
+        $this->xmlGenerator->addAllowance($amount, $taxRatePercent, $reason, $reasonCode);
     }
 
     public function addPaymentMean(string $typeCode, ?string $ibanId = null, ?string $accountName = null, ?string $bicId = null)

@@ -152,8 +152,21 @@ abstract class XmlGenerator implements XmlGeneratorInterface
         // Default implementation - override in specific generators if needed
     }
 
+    public function addPrecedingInvoiceReference(string $invoiceId, ?\DateTime $issueDate = null)
+    {
+        // Default implementation - override in specific generators if needed
+    }
+
     public function setBuyerElectronicAddress(string $id, string $scheme)
     {
         // Default implementation - override in specific generators if needed
+    }
+
+    /**
+     * Document level allowance (BG-20)
+     */
+    public function addAllowance(float $amount, float $taxRatePercent, ?string $reason = null, ?string $reasonCode = null)
+    {
+        throw new \Exception('Allowances are not supported for this profile');
     }
 }

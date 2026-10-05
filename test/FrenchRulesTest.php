@@ -37,7 +37,68 @@ class FrenchRulesTest extends TestCase
             $this->markTestSkipped('Run `make fnfe` to download Saxon and the FNFE rules');
         }
 
-        $invoice = new Invoice('F202600001', new \Datetime('2026-09-01'), null, CurrencyCode::EURO, $profile);
+        $invoice = self::createInvoice($profile, 'F202600001', '380');
+        $this->assertValid($invoice, $profile, $stylesheets);
+    }
+
+    /**
+     * @dataProvider profilesProvider
+     */
+    public function testFrenchRulesCreditNote(string $profile, array $stylesheets): void
+    {
+        if (!self::fnfeAvailable()) {
+            $this->markTestSkipped('Run `make fnfe` to download Saxon and the FNFE rules');
+        }
+
+        $creditNote = self::createInvoice($profile, 'A202600001', '381');
+        $creditNote->addPrecedingInvoiceReference('F202600001', new \Datetime('2026-09-01'));
+        $this->assertTrue($creditNote->isCreditNote());
+        $this->assertValid($creditNote, $profile, $stylesheets);
+
+        // Bundled Factur-X schematron, EU ITB validator for UBL
+        $xml = $creditNote->getXml();
+        $result = $creditNote->validate($xml, true);
+        $this->assertEmpty($result, print_r($result, true)."\n".$xml);
+    }
+
+    /**
+     * @dataProvider profilesProvider
+     */
+    public function testFrenchRulesAllowance(string $profile, array $stylesheets): void
+    {
+        if (!self::fnfeAvailable()) {
+            $this->markTestSkipped('Run `make fnfe` to download Saxon and the FNFE rules');
+        }
+
+        $invoice = self::createInvoice($profile, 'F202600002', '380');
+        $invoice->addAllowance(50, 20);
+        $this->assertValid($invoice, $profile, $stylesheets);
+
+        // 750 - 50 = 700 HT, 140 TVA
+        $xml = $invoice->getXml();
+        $this->assertMatchesRegularExpression('/>700(\.00)?</', $xml);
+        $this->assertMatchesRegularExpression('/>840(\.00)?</', $xml);
+
+        $result = $invoice->validate($xml, true);
+        $this->assertEmpty($result, print_r($result, true)."\n".$xml);
+    }
+
+    private function assertValid(Invoice $invoice, string $profile, array $stylesheets): void
+    {
+        $xml = $invoice->getXml();
+        // UBL is checked with EN16931-UBL, the PEPPOL preset rules allow a single note while BR-FR-05 requires three
+        if ($profile !== Ubl::PEPPOL) {
+            // The added elements must keep the XSD order
+            $result = $invoice->validate($xml);
+            $this->assertNull($result, print_r($result, true)."\n".$xml);
+        }
+
+        $this->assertFnfeRules($xml, $stylesheets);
+    }
+
+    private static function createInvoice(string $profile, string $id, string $type): Invoice
+    {
+        $invoice = new Invoice($id, new \Datetime('2026-09-01'), null, CurrencyCode::EURO, $profile, $type);
         $invoice->setBillingMode('S1');
         $invoice->addNote('Pénalités de retard : 3 fois le taux d\'intérêt légal', 'PMD');
         $invoice->addNote('Indemnité forfaitaire pour frais de recouvrement : 40 €', 'PMT');
@@ -58,14 +119,6 @@ class FrenchRulesTest extends TestCase
         $invoice->addPaymentMean('58', 'FR7630001007941234567890185', 'Seller');
         $invoice->setPaymentTerms(new \Datetime('2026-10-01'));
 
-        $xml = $invoice->getXml();
-        // UBL is checked with EN16931-UBL, the PEPPOL preset rules allow a single note while BR-FR-05 requires three
-        if ($profile !== Ubl::PEPPOL) {
-            // The added elements must keep the XSD order
-            $result = $invoice->validate($xml);
-            $this->assertNull($result, print_r($result, true)."\n".$xml);
-        }
-
-        $this->assertFnfeRules($xml, $stylesheets);
+        return $invoice;
     }
 }
