@@ -188,3 +188,22 @@
   line-height: 1.8;
 }
 .di-payment-terms { margin-top: 8px; color: #777; font-size: 12px; }
+
+/* ── Attachments ── */
+.di-attachments { font-size: 13px; color: #555; margin-top: 20px; }
+.di-attachments h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #999;
+  margin-bottom: 10px;
+}
+.di-attachment {
+  background: #f9f9fc;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}

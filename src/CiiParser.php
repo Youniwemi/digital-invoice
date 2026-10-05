@@ -88,6 +88,23 @@ class CiiParser extends XmlParser
         }
         $data->buyerOrderReference = $agr->buyerOrderReferencedDocument?->issuerAssignedID->value ?? null;
 
+        // Supporting documents (BG-24)
+        foreach ($agr->additionalReferencedDocuments as $reference) {
+            if ($reference->typeCode !== '916') {
+                continue;
+            }
+            $attachment              = new AttachmentData();
+            $attachment->id          = $reference->issuerAssignedID->value ?? '';
+            $attachment->description = $reference->name;
+            $binary                  = $reference->attachmentBinaryObject;
+            if ($binary) {
+                $attachment->filename = $binary->filename ?? null;
+                $attachment->mimeCode = $binary->mimeCode ?? null;
+                $attachment->contents = base64_decode($binary->value, true) ?: null;
+            }
+            $data->attachments[] = $attachment;
+        }
+
         // Electronic addresses (BT-34/BT-49): easybill's TradeParty model does not map
         // URIUniversalCommunication, so read them straight from the XML.
         $this->fillElectronicAddresses($xml, $data);

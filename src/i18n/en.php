@@ -29,4 +29,5 @@
     'iban'          => 'IBAN',
     'bic'           => 'BIC',
     'account'       => 'Account',
+    'attachments'   => 'Attachments',
 ];

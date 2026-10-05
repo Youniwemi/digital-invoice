@@ -39,6 +39,17 @@ class UblParser extends XmlParser
             ];
         }
 
+        // Supporting documents (BG-24)
+        foreach ($invoice->getAttachments() as $embedded) {
+            $attachment              = new AttachmentData();
+            $attachment->id          = (string) $embedded->getId()?->getValue();
+            $attachment->description = $embedded->getDescription();
+            $attachment->filename    = $embedded->getFilename();
+            $attachment->mimeCode    = $embedded->getMimeCode();
+            $attachment->contents    = $embedded->getContents();
+            $data->attachments[]     = $attachment;
+        }
+
         // Notes
         foreach ($invoice->getNotes() as $note) {
             $data->notes[] = [

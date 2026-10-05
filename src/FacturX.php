@@ -535,18 +535,25 @@ class FacturX extends XmlGenerator
 
     public function addEmbeddedAttachment(?string $id, ?string $scheme, ?string $filename, ?string $contents, ?string $mimeCode, ?string $description)
     {
-        // The attachement is correctly added but schematron fails, need to
-        // $attachment = ReferencedDocument::create($id);
-        // $attachment->name = $description;
-        // $binary = new BinaryObject();
-        // $binary->filename=$filename;
-        // $binary->mimeCode=$mimeCode;
-        // $binary->value=base64_encode($contents);
-        // $attachment->attachmentBinaryObject = $binary;
-
-        // switch($scheme) {
-        //     // TODO, depending on the type of documents it could be attached
-        //     default : $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->invoiceReferencedDocument = $attachment;
-        // }
+        // BG-24 supporting documents are only allowed from EN16931
+        if ($this->getProfileLevel() < self::LEVEL_EN16931) {
+            throw new \Exception('Attachments are only supported from the EN16931 profile');
+        }
+        // BT-122 is mandatory, BT-125-1 and BT-125-2 are mandatory with an attached document
+        if ($id === null || ($contents !== null && ($filename === null || $mimeCode === null))) {
+            throw new \Exception('An attachment needs an id, and a filename and a mime code when it has contents');
+        }
+        $attachment = ReferencedDocument::create($id);
+        // 916: related document
+        $attachment->typeCode = '916';
+        $attachment->name = $description;
+        if ($contents !== null) {
+            $binary = new BinaryObject();
+            $binary->filename = $filename;
+            $binary->mimeCode = $mimeCode;
+            $binary->value = base64_encode($contents);
+            $attachment->attachmentBinaryObject = $binary;
+        }
+        $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->additionalReferencedDocuments[] = $attachment;
     }
 }

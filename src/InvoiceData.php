@@ -101,6 +101,20 @@ class AllowanceData
 }
 
 /**
+ * Supporting document (BG-24), e.g. a delivery note.
+ */
+class AttachmentData
+{
+    public string $id = '';
+    /** BT-123, a code in France (BON_LIVRAISON, DOCUMENT_ANNEXE…) */
+    public ?string $description = null;
+    public ?string $filename = null;
+    public ?string $mimeCode = null;
+    /** Decoded file contents, null when the document is only referenced */
+    public ?string $contents = null;
+}
+
+/**
  * Payment means extracted from an invoice.
  */
 class PaymentMeanData
@@ -157,6 +171,9 @@ class InvoiceData
 
     /** @var AllowanceData[] Document level allowances (BG-20) */
     public array $allowances = [];
+
+    /** @var AttachmentData[] Supporting documents (BG-24) */
+    public array $attachments = [];
 
     // Monetary totals
     public ?float $lineTotal = null;      // BT-106

@@ -2877,3 +2877,39 @@ enum IdentificationType: string
     case OTHER = 'Other';
 }
 
+/**
+ * BT-125-1 attached document mime code (BR-CL-24)
+ */
+enum AttachmentMimeCode: string
+{
+    use EnumToArray;
+
+    case PDF = 'application/pdf';
+    case PNG = 'image/png';
+    case JPEG = 'image/jpeg';
+    case CSV = 'text/csv';
+    case XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    case ODS = 'application/vnd.oasis.opendocument.spreadsheet';
+}
+
+/**
+ * BT-123 supporting document description, required in France (BR-FR)
+ */
+enum AttachmentDescription: string
+{
+    use EnumToArray;
+
+    case RIB = 'RIB';
+    case LISIBLE = 'LISIBLE';
+    case FEUILLE_DE_STYLE = 'FEUILLE_DE_STYLE';
+    case PJA = 'PJA';
+    case BORDEREAU_SUIVI = 'BORDEREAU_SUIVI';
+    case BORDEREAU_SUIVI_VALIDATION = 'BORDEREAU_SUIVI_VALIDATION';
+    case DOCUMENT_ANNEXE = 'DOCUMENT_ANNEXE';
+    case BON_LIVRAISON = 'BON_LIVRAISON';
+    case BON_COMMANDE = 'BON_COMMANDE';
+    case ETAT_ACOMPTE = 'ETAT_ACOMPTE';
+    case FACTURE_PAIEMENT_DIRECT = 'FACTURE_PAIEMENT_DIRECT';
+    case RECAPITULATIF_COTRAITANCE = 'RECAPITULATIF_COTRAITANCE';
+}
+

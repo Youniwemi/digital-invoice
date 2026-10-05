@@ -100,6 +100,33 @@ $invoice->addAllowance(7, 20);                          // 7 € excl. VAT at 20
 $invoice->addAllowance(18, 20, 'Remise fidélité', '95'); // reason (BT-97) and UNTDID 5189 code (BT-98)
 ```
 
+### Supporting documents
+
+Attach a supporting document (BG-24), e.g. a delivery note. It is embedded in the XML (base64) and, for PDF output, also attached to the PDF (`AFRelationship /Supplement`), visible in the attachment pane of Acrobat or Firefox. Supported by Factur-X (EN16931 and EXTENDED) and UBL.
+
+```php
+$invoice->addEmbeddedAttachment(
+    'BL-42',                // BT-122 document reference
+    null,                   // scheme, UBL only
+    'bon-de-livraison.pdf', // filename
+    file_get_contents('bon-de-livraison.pdf'),
+    AttachmentMimeCode::PDF->value,
+    AttachmentDescription::BON_LIVRAISON->value // BT-123
+);
+```
+
+The mime code must be one of `AttachmentMimeCode` (BR-CL-24): pdf, png, jpeg, csv, xlsx or ods, any other value throws an exception. The id is required, and so are the filename and the mime code when contents are given.
+
+In France, BT-123 must be one of `AttachmentDescription` (BR-FR-17): `BON_LIVRAISON`, `BON_COMMANDE`, `DOCUMENT_ANNEXE`, `RIB`, `PJA`, `BORDEREAU_SUIVI`, `BORDEREAU_SUIVI_VALIDATION`, `ETAT_ACOMPTE`, `FACTURE_PAIEMENT_DIRECT`, `RECAPITULATIF_COTRAITANCE`, `FEUILLE_DE_STYLE` or `LISIBLE` (readable copy of the invoice, once at most). It is not checked, as it is free text outside France.
+
+Some readers (macOS Preview, Chrome) do not show PDF attachments. To make PDF documents readable everywhere, append their pages after the invoice:
+
+```php
+$pdf = $invoice->getPdf(file_get_contents('template.pdf'), false, [], true);
+```
+
+A PDF the free FPDI parser can not read (e.g. PDF 1.5+ with a compressed xref) is silently not appended, the document is still embedded in the XML. Appended pages are copied as is, a document that is not PDF/A may break the PDF/A-3 conformance of the invoice.
+
 ## Reading an invoice
 
 `InvoiceReader` auto-detects the format (CII/FacturX, ZUGFeRD 1.0, UBL) and returns a normalised `InvoiceData` object.
@@ -149,6 +176,9 @@ $data->taxBreakdown;            // TaxBreakdownData[]
 
 // Document level allowances (BG-20), e.g. global discounts
 $data->allowances;              // AllowanceData[] {amount, taxRate, categoryCode, reason, reasonCode}
+
+// Supporting documents (BG-24), contents decoded
+$data->attachments;             // AttachmentData[] {id, description, filename, mimeCode, contents}
 ```
 
 #### TaxBreakdownData
@@ -211,7 +241,7 @@ The default template (`src/templates/invoice.html.php`) and stylesheet (`src/tem
 
 ## Interactive viewer
 
-`viewer.php` provides a browser-based upload-and-preview page: upload any invoice file on the left, see the rendered HTML on the right. No files are stored server-side.
+`viewer.php` provides a browser-based upload-and-preview page: upload any invoice file on the left, see the rendered HTML on the right, supporting documents can be downloaded. No files are stored server-side.
 
 ```bash
 php -S localhost:8000

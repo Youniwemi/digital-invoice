@@ -43,6 +43,8 @@ class Invoice
 
 
     protected $invoiceInformations = [];
+    // Supporting documents also embedded in the PDF, to be visible in PDF readers
+    protected $attachments = [];
     protected InvoiceTypeCode $invoiceType;
 
     protected $noTaxCategory = VatCategory::SERVICE_OUTSIDE_SCOPE_OF_TAX;
@@ -304,9 +306,10 @@ class Invoice
      * @param string $pdf
      * @param bool $addFacturxLogo
      * @param array $fpdiParams
+     * @param bool $appendAttachments Also append the PDF attachments as pages, for readers that hide attachments
      * @return string
      */
-    public function getPdf($pdf, $addFacturxLogo = false, $fpdiParams = [])
+    public function getPdf($pdf, $addFacturxLogo = false, $fpdiParams = [], $appendAttachments = false)
     {
         if (in_array($this->profile, [static::ZUGFERD_BASIC, static::ZUGFERD_CONFORT, static::ZUGFERD_EXTENDED])) {
             // Ensure false, there is no logo for those profiles
@@ -321,16 +324,32 @@ class Invoice
             null,
             true,
             '',
-            [],
+            array_map(fn ($attachment) => $attachment + ['append' => $appendAttachments], $this->attachments),
             $addFacturxLogo,
             'Data',
             $fpdiParams
         );
     }
 
+    /**
+     * Adds a supporting document (BG-24), embedded in the XML and attached to the PDF
+     *
+     * @param string|null $id          BT-122 document reference
+     * @param string|null $scheme      Reference scheme, UBL only
+     * @param string|null $filename    Attached file name
+     * @param string|null $contents    Raw file contents, null to only reference the document
+     * @param string|null $mimeCode    one of AttachmentMimeCode
+     * @param string|null $description BT-123, one of AttachmentDescription in France
+     */
     public function addEmbeddedAttachment(?string $id, ?string $scheme, ?string $filename, ?string $contents, ?string $mimeCode, ?string $description)
     {
+        if ($mimeCode !== null && AttachmentMimeCode::tryFrom($mimeCode) === null) {
+            throw new \Exception('Attachment mime code must be one of '.implode(', ', array_column(AttachmentMimeCode::cases(), 'value')));
+        }
         $this->xmlGenerator->addEmbeddedAttachment($id, $scheme, $filename, $contents, $mimeCode, $description);
+        if ($contents !== null) {
+            $this->attachments[] = ['contents' => $contents, 'name' => $filename, 'desc' => (string) $description, 'mime' => (string) $mimeCode];
+        }
     }
 
     public function addItemClassification($item, string $code, string $scheme = 'CLASS')

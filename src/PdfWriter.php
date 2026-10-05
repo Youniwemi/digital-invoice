@@ -154,20 +154,36 @@ class PdfWriter extends Facturx
                 $pdfWriter->Image(__DIR__.'/../img/'.static::FACTURX_LOGO[$facturxProfil], 197, 2.5, 7);
             }
         }
+        // PDF attachments can also be appended as pages, readers that hide attachments will still show them
+        foreach ($additionalAttachments as $attachment) {
+            if (empty($attachment['append']) || ($attachment['mime'] ?? '') !== 'application/pdf') {
+                continue;
+            }
+            // Import every page first, so an unreadable PDF (e.g. compressed xref, not supported by the free FPDI parser)
+            // adds no page at all and stays a plain attachment
+            $templates = [];
+            try {
+                $attachmentPageCount = $pdfWriter->setSourceFileWithParserParams(static::attachmentRef($attachment), $fpdiParserParams);
+                for ($i = 1; $i <= $attachmentPageCount; ++$i) {
+                    $templates[] = $pdfWriter->importPage($i, '/MediaBox');
+                }
+            } catch (\Exception $e) {
+                continue;
+            }
+            foreach ($templates as $tplIdx) {
+                $pdfWriter->AddPage();
+                $pdfWriter->useTemplate($tplIdx, 0, 0, null, null, true);
+            }
+        }
         if (! in_array($relationship, ['Data', 'Source', 'Alternative'])) {
             throw new \Exception('$relationship argument must be one of the values "Data", "Source", "Alternative".');
         }
         $pdfWriter->Attach($facturxXmlRef, static::FACTURX_FILENAME, 'Factur-X Invoice', $relationship, 'text#2Fxml');
         foreach ($additionalAttachments as $attachment) {
-            if (@is_file($attachment['path'])) {
-                $attachment_file_ref = $attachment['path'];
-            } elseif (is_string($attachment['path'])) {
-                $attachment_file_ref = sys_get_temp_dir().'/'.$attachment['name'];
-                file_put_contents($attachment_file_ref, $attachment['path']); // creating tmp file to solve mime_content_type errors
-            } else {
-                throw new \Exception('$attachment_file argument must be a string or a file');
-            }
-            $pdfWriter->Attach($attachment_file_ref, $attachment['name'], $attachment['desc']);
+            $attachmentRef = static::attachmentRef($attachment);
+            // mime_content_type() only works on files
+            $mime = ($attachment['mime'] ?? '') ?: (is_string($attachmentRef) ? '' : 'application/octet-stream');
+            $pdfWriter->Attach($attachmentRef, $attachment['name'], $attachment['desc'], 'Supplement', $mime);
         }
         $pdfWriter->OpenAttachmentPane();
         $pdfWriter->SetPDFVersion('1.7', true); // version 1.7 according to PDF/A-3 ISO 32000-1
@@ -178,5 +194,22 @@ class PdfWriter extends Facturx
         }
 
         return $this->generateFacturxString($pdfWriter, $facturxGeneratedFileName);
+    }
+
+    /**
+     * Raw 'contents' are never treated as a file path, 'path' may be a file or its contents.
+     *
+     * @return string|\setasign\Fpdi\PdfParser\StreamReader
+     */
+    protected static function attachmentRef(array $attachment)
+    {
+        if (isset($attachment['contents'])) {
+            return \setasign\Fpdi\PdfParser\StreamReader::createByString($attachment['contents']);
+        }
+        if (! is_string($attachment['path'] ?? null)) {
+            throw new \Exception('$attachment_file argument must be a string or a file');
+        }
+
+        return @is_file($attachment['path']) ? $attachment['path'] : \setasign\Fpdi\PdfParser\StreamReader::createByString($attachment['path']);
     }
 }

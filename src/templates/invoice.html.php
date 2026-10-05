@@ -222,4 +222,21 @@
   </section>
   <?php endif; ?>
 
+  <?php if ($invoice->attachments): ?>
+  <section class="di-attachments">
+    <h3><?= $labels['attachments'] ?></h3>
+    <?php foreach ($invoice->attachments as $attachment): ?>
+    <div class="di-attachment">
+      <?php $name = $attachment->filename ?: $attachment->id; ?>
+      <?php if ($attachment->contents !== null): ?>
+      <a href="data:<?= $esc($attachment->mimeCode ?: 'application/octet-stream') ?>;base64,<?= base64_encode($attachment->contents) ?>" download="<?= $esc($name) ?>"><?= $esc($name) ?></a>
+      <?php else: ?>
+      <?= $esc($name) ?>
+      <?php endif; ?>
+      <?php if ($attachment->description): ?><span class="di-label"><?= $esc($attachment->description) ?></span><?php endif; ?>
+    </div>
+    <?php endforeach; ?>
+  </section>
+  <?php endif; ?>
+
 </div>

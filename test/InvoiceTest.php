@@ -4,6 +4,7 @@ namespace DigitalInvoice\Tests;
 
 require_once __DIR__.'/FnfeRules.php';
 
+use DigitalInvoice\AttachmentDescription;
 use DigitalInvoice\CurrencyCode;
 use DigitalInvoice\FacturX;
 use DigitalInvoice\Invoice;
@@ -608,6 +609,114 @@ class InvoiceTest extends TestCase
 
         $data = \DigitalInvoice\InvoiceReader::fromXml($xml);
         $this->assertSame('BC-42', $data->buyerOrderReference);
+    }
+
+    /**
+     * BG-24 supporting document, embedded in the XML and in the PDF.
+     */
+    public function testAttachment(): void
+    {
+        $invoice = new Invoice('TEST-BG24', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, FacturX::EN16931);
+        $invoice->setBillingMode('S1');
+        $invoice->addNote('Indemnité forfaitaire pour frais de recouvrement : 40 €', 'PMT');
+        $invoice->addNote('Pénalités de retard : 3 fois le taux d\'intérêt légal', 'PMD');
+        $invoice->addNote('Pas d\'escompte pour paiement anticipé', 'AAB');
+        $invoice->setSeller('732829320', '0002', 'Seller');
+        $invoice->setSellerTaxRegistration('FR44732829320', 'VA');
+        $invoice->setSellerAddress('1 rue test', '90000', 'Paris', 'FR');
+        $invoice->setSellerElectronicAddress('732829320', '0225');
+        $invoice->setBuyer('REF-ACHETEUR', 'Buyer');
+        $invoice->setBuyerIdentifier('552100554', '0002');
+        $invoice->setBuyerElectronicAddress('buyer@example.fr', 'EM');
+        $invoice->setBuyerAddress('2 rue test', '90000', 'Paris', 'FR');
+        $invoice->addItem('item', 100, 20, 1, 'DAY', 'xxxx');
+        $invoice->addPaymentMean('58', 'FR7630001007941234567890185', 'Test');
+        $invoice->setPaymentTerms(new \Datetime('2023-12-07'));
+
+        // A distinct document, to check the right file is extracted
+        $note = new \FPDF();
+        $note->AddPage();
+        $note->SetFont('Helvetica', 'B', 24);
+        $note->Cell(0, 20, 'BON DE LIVRAISON BL-42');
+        $note->Ln();
+        $note->SetFont('Helvetica', '', 14);
+        $note->Cell(0, 10, '1 x item, livre le 07/11/2023');
+        $attachment = $note->Output('S');
+        $invoice->addEmbeddedAttachment('BL-42', null, 'bon-de-livraison.pdf', $attachment, 'application/pdf', 'BON_LIVRAISON');
+
+        $xml = $invoice->getXml();
+        // Kept for external validation
+        file_put_contents(__DIR__.'/examples/attachment.xml', $xml);
+        $pdf = $invoice->getPdf(file_get_contents(__DIR__.'/examples/basic.pdf'), true, [], true);
+        file_put_contents(__DIR__.'/examples/attachment.pdf', $pdf);
+
+        // The delivery note is appended after the invoice page
+        $pageCount = (new \setasign\Fpdi\Fpdi())->setSourceFile(\setasign\Fpdi\PdfParser\StreamReader::createByString($pdf));
+        $this->assertSame(2, $pageCount);
+        $this->assertSame(1, (new \setasign\Fpdi\Fpdi())->setSourceFile(\setasign\Fpdi\PdfParser\StreamReader::createByString($invoice->getPdf(file_get_contents(__DIR__.'/examples/basic.pdf')))));
+
+        $doc = new \DOMDocument();
+        $doc->loadXML($xml);
+        $xpath = new \DOMXPath($doc);
+        $xpath->registerNamespace('ram', 'urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100');
+        $node = $xpath->query('//ram:ApplicableHeaderTradeAgreement/ram:AdditionalReferencedDocument/ram:AttachmentBinaryObject')->item(0);
+        $this->assertNotNull($node, $xml);
+        $this->assertSame($attachment, base64_decode($node->nodeValue));
+
+        $result = $invoice->validate($xml);
+        $this->assertEmpty($result, $result ? print_r($result, true)."\n".$xml : '');
+        $result = $invoice->validate($xml, true);
+        $this->assertEmpty($result, $result ? print_r($result, true)."\n".$xml : '');
+        $this->assertFnfeRules($xml, ['FACTUR-X_EN16931', 'BR-FR-CII']);
+
+        // Visible in the attachment pane of PDF readers
+        $this->assertStringContainsString('/F (bon-de-livraison.pdf)', $pdf);
+        $this->assertStringContainsString('/AFRelationship /Supplement', $pdf);
+
+        // Read back from the PDF and offered for download by the viewer
+        $data = \DigitalInvoice\InvoiceReader::read($pdf);
+        $this->assertCount(1, $data->attachments);
+        $this->assertSame('BL-42', $data->attachments[0]->id);
+        $this->assertSame('BON_LIVRAISON', $data->attachments[0]->description);
+        $this->assertSame('bon-de-livraison.pdf', $data->attachments[0]->filename);
+        $this->assertSame('application/pdf', $data->attachments[0]->mimeCode);
+        $this->assertSame($attachment, $data->attachments[0]->contents);
+        $html = (new \DigitalInvoice\InvoiceRenderer())->render($data);
+        $this->assertStringContainsString('href="data:application/pdf;base64,'.base64_encode($attachment).'" download="bon-de-livraison.pdf"', $html);
+    }
+
+    /**
+     * A PDF attachment FPDI can not read is not appended, but is still embedded.
+     */
+    public function testAttachmentNotAppendable(): void
+    {
+        $invoice = new Invoice('TEST-BG24', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, FacturX::EN16931);
+        $invoice->setSeller('732829320', '0002', 'Seller');
+        $invoice->setSellerTaxRegistration('FR44732829320', 'VA');
+        $invoice->setSellerAddress('1 rue test', '90000', 'Paris', 'FR');
+        $invoice->setBuyer('REF-ACHETEUR', 'Buyer');
+        $invoice->setBuyerAddress('2 rue test', '90000', 'Paris', 'FR');
+        $invoice->addItem('item', 100, 20, 1, 'DAY', 'xxxx');
+        $invoice->addEmbeddedAttachment('BL-42', null, 'bon-de-livraison.pdf', 'not a pdf', 'application/pdf', 'BON_LIVRAISON');
+
+        $pdf = $invoice->getPdf(file_get_contents(__DIR__.'/examples/basic.pdf'), false, [], true);
+
+        $this->assertSame(1, (new \setasign\Fpdi\Fpdi())->setSourceFile(\setasign\Fpdi\PdfParser\StreamReader::createByString($pdf)));
+        $this->assertStringContainsString('/F (bon-de-livraison.pdf)', $pdf);
+    }
+
+    public function testAttachmentUnsupported(): void
+    {
+        $invoice = new Invoice('TEST-BG24', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, FacturX::BASIC);
+        $this->expectException(\Exception::class);
+        $invoice->addEmbeddedAttachment('BL-42', null, 'bl.pdf', 'x', 'application/pdf', 'Bon de livraison');
+    }
+
+    public function testAttachmentInvalidMimeCode(): void
+    {
+        $invoice = new Invoice('TEST-BG24', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, FacturX::EN16931);
+        $this->expectExceptionMessage('Attachment mime code must be one of application/pdf');
+        $invoice->addEmbeddedAttachment('BL-42', null, 'bl.docx', 'x', 'application/msword', AttachmentDescription::BON_LIVRAISON->value);
     }
 
     public static function buyerOrderReferenceProvider(): array
