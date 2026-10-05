@@ -17,6 +17,8 @@
     'unit_price'    => 'Einzelpreis',
     'vat_pct'       => 'MwSt. %',
     'line_total'    => 'Zeilensumme',
+    'lines_total'   => 'Summe Positionen',
+    'allowance'     => 'Nachlass',
     'tax_basis'     => 'Nettobetrag',
     'vat'           => 'MwSt.',
     'total'         => 'Gesamtbetrag',

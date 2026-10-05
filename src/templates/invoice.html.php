@@ -179,6 +179,14 @@
   <?php endif; ?>
 
   <section class="di-totals">
+    <?php if ($invoice->allowances): ?>
+    <?php if ($invoice->lineTotal !== null): ?>
+    <div class="di-total-row"><span><?= $labels['lines_total'] ?></span><span><?= $fmt($invoice->lineTotal, $cur) ?></span></div>
+    <?php endif; ?>
+    <?php foreach ($invoice->allowances as $allowance): ?>
+    <div class="di-total-row"><span><?= $esc($allowance->reason ?: $labels['allowance']) ?><?php if ($allowance->taxRate !== null): ?> (<?= $labels['vat'] ?> <?= $fmt($allowance->taxRate) ?>%)<?php endif; ?></span><span>- <?= $fmt($allowance->amount, $cur) ?></span></div>
+    <?php endforeach; ?>
+    <?php endif; ?>
     <?php if ($invoice->taxBasisTotal !== null): ?>
     <div class="di-total-row"><span><?= $labels['tax_basis'] ?></span><span><?= $fmt($invoice->taxBasisTotal, $cur) ?></span></div>
     <?php endif; ?>

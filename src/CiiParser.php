@@ -146,9 +146,26 @@ class CiiParser extends XmlParser
             $data->taxBreakdown[] = $tb;
         }
 
+        // Document level allowances (BG-20), charges are skipped
+        foreach ($set->specifiedTradeAllowanceCharge as $charge) {
+            if ($charge->indicator?->indicator !== false) {
+                continue;
+            }
+            $allowance               = new AllowanceData();
+            $allowance->amount       = (float) $charge->actualAmount->value;
+            $allowance->reason       = $charge->reason;
+            $allowance->reasonCode   = $charge->reasonCode;
+            $tax                     = $charge->tradeTax[0] ?? null;
+            $allowance->taxRate      = isset($tax->rateApplicablePercent) ? (float) $tax->rateApplicablePercent : null;
+            $allowance->categoryCode = $tax->categoryCode ?? null;
+            $data->allowances[]      = $allowance;
+        }
+
         // Totals
         $summation = $set->specifiedTradeSettlementHeaderMonetarySummation ?? null;
         if ($summation) {
+            $data->lineTotal      = isset($summation->lineTotalAmount) ? (float) $summation->lineTotalAmount->value : null;
+            $data->allowanceTotal = isset($summation->allowanceTotalAmount) ? (float) $summation->allowanceTotalAmount->value : null;
             $data->taxBasisTotal = isset($summation->taxBasisTotalAmount[0]) ? (float) $summation->taxBasisTotalAmount[0]->value : null;
             $data->taxTotal      = isset($summation->taxTotalAmount[0]) ? (float) $summation->taxTotalAmount[0]->value : null;
             $data->grandTotal    = isset($summation->grandTotalAmount[0]) ? (float) $summation->grandTotalAmount[0]->value : null;

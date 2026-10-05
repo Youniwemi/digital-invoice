@@ -89,6 +89,18 @@ class TaxBreakdownData
 }
 
 /**
+ * Document level allowance (BG-20), e.g. a global discount.
+ */
+class AllowanceData
+{
+    public float $amount = 0.0;
+    public ?float $taxRate = null;
+    public ?string $categoryCode = null;
+    public ?string $reason = null;
+    public ?string $reasonCode = null;
+}
+
+/**
  * Payment means extracted from an invoice.
  */
 class PaymentMeanData
@@ -143,7 +155,12 @@ class InvoiceData
     /** @var TaxBreakdownData[] */
     public array $taxBreakdown = [];
 
+    /** @var AllowanceData[] Document level allowances (BG-20) */
+    public array $allowances = [];
+
     // Monetary totals
+    public ?float $lineTotal = null;      // BT-106
+    public ?float $allowanceTotal = null; // BT-107
     public ?float $taxBasisTotal = null;
     public ?float $taxTotal = null;
     public ?float $grandTotal = null;

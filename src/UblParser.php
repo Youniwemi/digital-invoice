@@ -97,18 +97,33 @@ class UblParser extends XmlParser
         // Totals — read from XML to preserve original values
         $xmlTotals = $this->parseMonetaryTotals($xml);
         if ($xmlTotals) {
+            $data->lineTotal      = $xmlTotals['lineExtension'];
+            $data->allowanceTotal = $xmlTotals['allowance'];
             $data->taxBasisTotal  = $xmlTotals['taxExclusive'];
             $data->taxTotal       = $xmlTotals['taxAmount'];
             $data->grandTotal     = $xmlTotals['taxInclusive'];
             $data->prepaidAmount  = $xmlTotals['prepaid'];
             $data->duePayable     = $xmlTotals['payable'];
         } else {
-            $totals              = $invoice->getTotals();
-            $data->taxBasisTotal = $totals->taxExclusiveAmount;
+            $totals               = $invoice->getTotals();
+            $data->lineTotal      = $totals->netAmount;
+            $data->allowanceTotal = $totals->allowancesAmount ?: null;
+            $data->taxBasisTotal  = $totals->taxExclusiveAmount;
             $data->taxTotal      = $totals->vatAmount;
             $data->grandTotal    = $totals->taxInclusiveAmount;
             $data->prepaidAmount = $totals->paidAmount != 0 ? $totals->paidAmount : null;
             $data->duePayable    = $totals->payableAmount;
+        }
+
+        // Document level allowances (BG-20)
+        foreach ($invoice->getAllowances() as $charge) {
+            $allowance               = new AllowanceData();
+            $allowance->amount       = (float) $charge->getAmount();
+            $allowance->reason       = $charge->getReason();
+            $allowance->reasonCode   = $charge->getReasonCode();
+            $allowance->taxRate      = $charge->getVatRate();
+            $allowance->categoryCode = $charge->getVatCategory();
+            $data->allowances[]      = $allowance;
         }
 
         // Tax breakdown
@@ -160,6 +175,8 @@ class UblParser extends XmlParser
         $taxAmount = ($taxAmountNodes && $taxAmountNodes->length > 0) ? (float) $taxAmountNodes->item(0)->textContent : null;
 
         return [
+            'lineExtension' => $getVal('LineExtensionAmount'),
+            'allowance'    => $getVal('AllowanceTotalAmount'),
             'taxExclusive' => $getVal('TaxExclusiveAmount'),
             'taxAmount'    => $taxAmount,
             'taxInclusive' => $getVal('TaxInclusiveAmount'),

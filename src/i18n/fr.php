@@ -17,6 +17,8 @@
     'unit_price'    => 'Prix unitaire',
     'vat_pct'       => 'TVA %',
     'line_total'    => 'Total ligne',
+    'lines_total'   => 'Total lignes HT',
+    'allowance'     => 'Remise',
     'tax_basis'     => 'Base HT',
     'vat'           => 'TVA',
     'total'         => 'Total TTC',

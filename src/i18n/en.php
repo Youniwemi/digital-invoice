@@ -17,6 +17,8 @@
     'unit_price'    => 'Unit price',
     'vat_pct'       => 'VAT %',
     'line_total'    => 'Line total',
+    'lines_total'   => 'Lines total',
+    'allowance'     => 'Discount',
     'tax_basis'     => 'Tax basis',
     'vat'           => 'VAT',
     'total'         => 'Total',

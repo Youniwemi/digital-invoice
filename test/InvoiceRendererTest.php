@@ -390,6 +390,60 @@ XML;
         $this->assertStringNotContainsString('Payments on account', $html);
     }
 
+    /**
+     * @dataProvider allowanceProfilesProvider
+     */
+    public function testAllowancesAreReadAndRendered(string $profile): void
+    {
+        $invoice = new Invoice('INV-ALLOWANCE', new \DateTime('2024-03-15'), null, CurrencyCode::EURO, $profile);
+        $invoice->setSeller('12345', '0002', 'ACME Corp');
+        $invoice->setSellerAddress('1 rue de la Paix', '75001', 'Paris', 'FR');
+        $invoice->setSellerTaxRegistration('FR12312345678', 'VA');
+        $invoice->setBuyer('REF', 'Client SARL');
+        $invoice->setBuyerAddress('2 avenue de la Gare', '69001', 'Lyon', 'FR');
+        $invoice->addItem('Consulting', 200.0, 20.0, 2, 'H87', 'SVC-001');
+        $invoice->addAllowance(15, 20);
+        $invoice->addAllowance(25, 20, 'Remise fidélité', '95');
+        $invoice->addPaymentMean('58', 'FR7630006000011234567890189', 'ACME Corp');
+
+        $data = InvoiceReader::fromXml($invoice->getXml());
+        $this->assertEquals(400, $data->lineTotal);
+        $this->assertEquals(40, $data->allowanceTotal);
+        $this->assertEquals(360, $data->taxBasisTotal);
+        $this->assertCount(2, $data->allowances);
+        $this->assertEquals(15, $data->allowances[0]->amount);
+        $this->assertSame('Remise', $data->allowances[0]->reason);
+        $this->assertSame('95', $data->allowances[0]->reasonCode);
+        $this->assertEquals(20, $data->allowances[0]->taxRate);
+        $this->assertSame('S', $data->allowances[0]->categoryCode);
+        $this->assertSame('Remise fidélité', $data->allowances[1]->reason);
+
+        $html = (new InvoiceRenderer(null, null, 'fr'))->render($data);
+        $linesPos = strpos($html, 'Total lignes HT');
+        $allowancePos = strpos($html, 'Remise fidélité');
+        $basisPos = strpos($html, 'Base HT');
+        $this->assertNotFalse($linesPos, $html);
+        $this->assertGreaterThan($linesPos, $allowancePos);
+        $this->assertGreaterThan($allowancePos, $basisPos);
+        $this->assertStringContainsString('- 25.00', $html);
+    }
+
+    public static function allowanceProfilesProvider(): array
+    {
+        return [
+            'FacturX EN16931' => [FacturX::EN16931],
+            'UBL PEPPOL' => [Ubl::PEPPOL],
+        ];
+    }
+
+    public function testNoAllowanceHidesLinesTotal(): void
+    {
+        $data = $this->buildAndParse(FacturX::BASIC);
+        $html = (new InvoiceRenderer(null, null, 'fr'))->render($data);
+
+        $this->assertStringNotContainsString('Total lignes HT', $html);
+    }
+
     // ─── Sad path ────────────────────────────────────────────────────────────
 
     public function testMissingTemplateThrows(): void

@@ -124,9 +124,26 @@ class ZugferdParser extends XmlParser
             $data->taxBreakdown[] = $tb;
         }
 
+        // Document level allowances (BG-20), charges are skipped
+        foreach ($settlement->getAllowanceCharges() as $charge) {
+            if ($charge->getIndicator() !== false) {
+                continue;
+            }
+            $allowance               = new AllowanceData();
+            $allowance->amount       = (float) $charge->getActualAmount()->getValue();
+            $allowance->reason       = $charge->getReason() ? (string) $charge->getReason() : null;
+            $allowance->reasonCode   = $charge->getReasonCode() ? (string) $charge->getReasonCode() : null;
+            $tax                     = $charge->getCategoryTradeTaxes()[0] ?? null;
+            $allowance->taxRate      = $tax && $tax->getPercent() !== null ? (float) $tax->getPercent() : null;
+            $allowance->categoryCode = $tax && $tax->getCategory() ? (string) $tax->getCategory() : null;
+            $data->allowances[]      = $allowance;
+        }
+
         // Totals (MonetarySummation fields are Amount objects with ->getValue())
         $summation = $settlement->getMonetarySummation();
         if ($summation) {
+            $data->lineTotal      = $summation->getLineTotal() !== null ? (float) $summation->getLineTotal()->getValue() : null;
+            $data->allowanceTotal = $summation->getAllowanceTotal() !== null ? (float) $summation->getAllowanceTotal()->getValue() : null;
             $data->taxBasisTotal = $summation->getTaxBasisTotal() !== null ? (float) $summation->getTaxBasisTotal()->getValue() : null;
             $data->taxTotal      = $summation->getTaxTotal() !== null ? (float) $summation->getTaxTotal()->getValue() : null;
             $data->grandTotal    = $summation->getGrandTotal() !== null ? (float) $summation->getGrandTotal()->getValue() : null;

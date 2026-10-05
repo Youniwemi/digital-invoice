@@ -131,6 +131,8 @@ $data->paymentMeans;            // PaymentMeanData[]
 $data->paymentTermsDescription; // ?string
 
 // Monetary totals
+$data->lineTotal;               // ?float  sum of line net amounts (BT-106)
+$data->allowanceTotal;          // ?float  sum of document level allowances (BT-107)
 $data->taxBasisTotal;           // ?float  net amount (excl. VAT)
 $data->taxTotal;                // ?float  total VAT amount
 $data->grandTotal;              // ?float  total incl. VAT
@@ -138,6 +140,9 @@ $data->duePayable;              // ?float
 
 // Tax breakdown — one entry per rate/category
 $data->taxBreakdown;            // TaxBreakdownData[]
+
+// Document level allowances (BG-20), e.g. global discounts
+$data->allowances;              // AllowanceData[] {amount, taxRate, categoryCode, reason, reasonCode}
 ```
 
 #### TaxBreakdownData
