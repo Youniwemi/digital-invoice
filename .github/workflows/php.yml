@@ -38,5 +38,14 @@ jobs:
     - name: Install dependencies
       run: composer install
 
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '21'
+
+    - name: Download FNFE rules and Saxon
+      run: make fnfe
+
     - name: Run test suite
       run: composer run-script test

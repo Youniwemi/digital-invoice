@@ -619,6 +619,133 @@ class InvoiceTest extends TestCase
         ];
     }
 
+    /**
+     * Document level allowances (BG-20) on two VAT rates, written, validated and read back.
+     * @dataProvider allowanceProvider
+     */
+    public function testAllowance(string $profile, array $queries, string $file): void
+    {
+        // The Factur-X invoice is French CTC compliant, UBL PEPPOL allows a single note so it only gets EN16931 rules
+        $french = $profile === FacturX::EN16931;
+        $invoice = new Invoice('TEST-ALLOWANCE', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, $profile);
+        if ($french) {
+            $invoice->setBillingMode('S1');
+            $invoice->addNote('Indemnité forfaitaire pour frais de recouvrement : 40 €', 'PMT');
+            $invoice->addNote('Pénalités de retard : 3 fois le taux d\'intérêt légal', 'PMD');
+            $invoice->addNote('Pas d\'escompte pour paiement anticipé', 'AAB');
+        }
+        $invoice->setSeller('732829320', '0002', 'Seller');
+        $invoice->setSellerTaxRegistration('FR44732829320', 'VA');
+        $invoice->setSellerAddress('1 rue test', '90000', 'Paris', 'FR');
+        $invoice->setBuyer('REF-ACHETEUR', 'Buyer');
+        if ($french) {
+            $invoice->setSellerElectronicAddress('732829320', '0225');
+            $invoice->setBuyerIdentifier('552100554', '0002');
+            $invoice->setBuyerElectronicAddress('buyer@example.fr', 'EM');
+        }
+        $invoice->setBuyerAddress('2 rue test', '90000', 'Paris', 'FR');
+        $invoice->addItem('Abonnement', 100, 20, 3, 'H87', 'A1');
+        $invoice->addItem('Formation', 75, 20, 1, 'DAY', 'F1');
+        $invoice->addItem('Livre', 50, 5.5, 1, 'H87', 'L1');
+        $invoice->addAllowance(7, 20);
+        $invoice->addAllowance(18, 20, 'Remise fidélité', '95');
+        $invoice->addAllowance(10, 5.5);
+        $invoice->addPaymentMean('58', 'FR7630001007941234567890185', 'Test');
+        $invoice->setPaymentTerms(new \Datetime('2023-12-07'));
+
+        $xml = $invoice->getXml();
+        // Kept for external validation
+        file_put_contents(__DIR__.'/examples/'.$file.'.xml', $xml);
+        if ($profile === FacturX::EN16931) {
+            file_put_contents(__DIR__.'/examples/'.$file.'.pdf', $invoice->getPdf(file_get_contents(__DIR__.'/examples/basic.pdf'), true));
+        }
+
+        $doc = new \DOMDocument();
+        $doc->loadXML($xml);
+        $xpath = new \DOMXPath($doc);
+        $xpath->registerNamespace('ram', 'urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100');
+        $xpath->registerNamespace('cac', 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2');
+        $xpath->registerNamespace('cbc', 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2');
+        // Lines 300 + 75 at 20 % and 50 at 5.5 %, allowances 25 at 20 % and 10 at 5.5 %
+        $expected = [
+            'allowances' => 3,
+            'lineTotal' => 425,    // BT-106
+            'allowanceTotal' => 35, // BT-107
+            'taxBasisTotal' => 390, // BT-109
+            'taxTotal' => 72.20,    // BT-110: 350 * 20 % + 40 * 5.5 %
+            'grandTotal' => 462.20, // BT-112
+        ];
+        foreach ($expected as $name => $value) {
+            $this->assertEquals($value, $xpath->evaluate("number({$queries[$name]})"), "$name\n$xml");
+        }
+
+        $result = $invoice->validate($xml);
+        $this->assertEmpty($result, $result ? print_r($result, true)."\n".$xml : '');
+        $result = $invoice->validate($xml, true);
+        $this->assertEmpty($result, $result ? print_r($result, true)."\n".$xml : '');
+        $this->assertFnfeRules($xml, match ($profile) {
+            FacturX::EN16931 => ['FACTUR-X_EN16931', 'BR-FR-CII'],
+            Ubl::PEPPOL => ['EN16931-UBL'],
+        });
+
+        $data = \DigitalInvoice\InvoiceReader::fromXml($xml);
+        $this->assertEquals(390, $data->taxBasisTotal);
+        $this->assertEquals(72.20, $data->taxTotal);
+        $this->assertEquals(462.20, $data->grandTotal);
+        $basis = [];
+        foreach ($data->taxBreakdown as $tax) {
+            $basis[(string) $tax->rate] = $tax->basisAmount;
+        }
+        $this->assertEquals(['20' => 350, '5.5' => 40], $basis);
+    }
+
+    public static function allowanceProvider(): array
+    {
+        return [
+            'FacturX EN16931' => [FacturX::EN16931, [
+                'allowances' => 'count(//ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeAllowanceCharge)',
+                'lineTotal' => '//ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:LineTotalAmount',
+                'allowanceTotal' => '//ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:AllowanceTotalAmount',
+                'taxBasisTotal' => '//ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:TaxBasisTotalAmount',
+                'taxTotal' => '//ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:TaxTotalAmount',
+                'grandTotal' => '//ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:GrandTotalAmount',
+            ], 'basic-allowance-facturx-en16931'],
+            'UBL PEPPOL' => [Ubl::PEPPOL, [
+                'allowances' => 'count(/*/cac:AllowanceCharge)',
+                'lineTotal' => '/*/cac:LegalMonetaryTotal/cbc:LineExtensionAmount',
+                'allowanceTotal' => '/*/cac:LegalMonetaryTotal/cbc:AllowanceTotalAmount',
+                'taxBasisTotal' => '/*/cac:LegalMonetaryTotal/cbc:TaxExclusiveAmount',
+                'taxTotal' => '/*/cac:TaxTotal/cbc:TaxAmount',
+                'grandTotal' => '/*/cac:LegalMonetaryTotal/cbc:TaxInclusiveAmount',
+            ], 'basic-allowance-ubl-peppol'],
+        ];
+    }
+
+    /**
+     * @dataProvider allowanceUnsupportedProvider
+     */
+    public function testAllowanceUnsupported(string $profile): void
+    {
+        $invoice = new Invoice('TEST-ALLOWANCE', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, $profile);
+        $this->expectException(\Exception::class);
+        $invoice->addAllowance(10, 20);
+    }
+
+    public static function allowanceUnsupportedProvider(): array
+    {
+        return [
+            'FacturX MINIMUM' => [FacturX::MINIMUM],
+            'Zugferd COMFORT' => [Zugferd::ZUGFERD_CONFORT],
+        ];
+    }
+
+    public function testAllowanceAmountMustBePositive(): void
+    {
+        $invoice = new Invoice('TEST-ALLOWANCE', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, FacturX::EN16931);
+        $this->expectExceptionMessage('The allowance amount should be positive');
+        $invoice->addAllowance(-10, 20);
+    }
+
     public function testFacturXSellerContact(): void
     {
         $invoice = new Invoice('TEST-CONTACT', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, FacturX::EN16931);
