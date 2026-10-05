@@ -19,6 +19,7 @@
     'line_total'    => 'Total ligne',
     'lines_total'   => 'Total lignes HT',
     'allowance'     => 'Remise',
+    'allowance_vat_base' => 'sur base TVA',
     'tax_basis'     => 'Base HT',
     'vat'           => 'TVA',
     'total'         => 'Total TTC',

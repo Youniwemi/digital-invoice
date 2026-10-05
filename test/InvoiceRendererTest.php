@@ -426,6 +426,24 @@ XML;
         $this->assertGreaterThan($linesPos, $allowancePos);
         $this->assertGreaterThan($allowancePos, $basisPos);
         $this->assertStringContainsString('- 25.00', $html);
+        // Single VAT rate, the base of the allowance is obvious
+        $this->assertStringNotContainsString('sur base TVA', $html);
+    }
+
+    public function testAllowanceVatBaseShownWithSeveralRates(): void
+    {
+        $invoice = new Invoice('INV-ALLOWANCE', new \DateTime('2024-03-15'), null, CurrencyCode::EURO, FacturX::EN16931);
+        $invoice->setSeller('12345', '0002', 'ACME Corp');
+        $invoice->setSellerAddress('1 rue de la Paix', '75001', 'Paris', 'FR');
+        $invoice->setSellerTaxRegistration('FR12312345678', 'VA');
+        $invoice->setBuyer('REF', 'Client SARL');
+        $invoice->setBuyerAddress('2 avenue de la Gare', '69001', 'Lyon', 'FR');
+        $invoice->addItem('Consulting', 200.0, 20.0, 1);
+        $invoice->addItem('Livre', 50.0, 5.5, 1);
+        $invoice->addAllowance(10, 5.5);
+
+        $html = (new InvoiceRenderer(null, null, 'fr'))->render(InvoiceReader::fromXml($invoice->getXml()));
+        $this->assertStringContainsString('Remise (sur base TVA 5.50%)', $html);
     }
 
     public static function allowanceProfilesProvider(): array

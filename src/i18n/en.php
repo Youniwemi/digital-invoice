@@ -19,6 +19,7 @@
     'line_total'    => 'Line total',
     'lines_total'   => 'Lines total',
     'allowance'     => 'Discount',
+    'allowance_vat_base' => 'on VAT base',
     'tax_basis'     => 'Tax basis',
     'vat'           => 'VAT',
     'total'         => 'Total',

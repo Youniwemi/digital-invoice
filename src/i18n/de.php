@@ -19,6 +19,7 @@
     'line_total'    => 'Zeilensumme',
     'lines_total'   => 'Summe Positionen',
     'allowance'     => 'Nachlass',
+    'allowance_vat_base' => 'auf USt.-Basis',
     'tax_basis'     => 'Nettobetrag',
     'vat'           => 'MwSt.',
     'total'         => 'Gesamtbetrag',
