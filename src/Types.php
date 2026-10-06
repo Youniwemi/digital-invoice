@@ -2610,6 +2610,19 @@ enum VatCategory: string
 
 
 
+/*
+ Value added tax point date code (BT-8), UNTDID 2005 subset used by CII (UBL uses 3, 35, 432)
+ */
+enum VatDueDateTypeCode: string
+{
+    use EnumToArray;
+
+    case INVOICE_DATE = "5";
+    case DELIVERY_DATE = "29";
+    case PAYMENT_DATE = "72";
+}
+
+
 enum TaxTypeCodeContent: string
 {
     use EnumToArray;

@@ -8,6 +8,7 @@ use DigitalInvoice\CurrencyCode;
 use DigitalInvoice\FacturX;
 use DigitalInvoice\Invoice;
 use DigitalInvoice\Ubl;
+use DigitalInvoice\VatDueDateTypeCode;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -81,6 +82,25 @@ class FrenchRulesTest extends TestCase
 
         $result = $invoice->validate($xml, true);
         $this->assertEmpty($result, print_r($result, true)."\n".$xml);
+    }
+
+    /**
+     * @dataProvider profilesProvider
+     */
+    public function testFrenchRulesVatOnDebits(string $profile, array $stylesheets): void
+    {
+        if ($profile === Ubl::PEPPOL) {
+            $this->markTestSkipped('BT-8 is not implemented for UBL');
+        }
+        if (!self::fnfeAvailable()) {
+            $this->markTestSkipped('Run `make fnfe` to download Saxon and the FNFE rules');
+        }
+
+        // Option pour le paiement de la taxe d'après les débits
+        $invoice = self::createInvoice($profile, 'F202600003', '380');
+        $invoice->setVatDueDateTypeCode(VatDueDateTypeCode::INVOICE_DATE);
+        $this->assertValid($invoice, $profile, $stylesheets);
+        $this->assertStringContainsString('<ram:DueDateTypeCode>5</ram:DueDateTypeCode>', $invoice->getXml());
     }
 
     private function assertValid(Invoice $invoice, string $profile, array $stylesheets): void

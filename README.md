@@ -71,6 +71,7 @@ The French rules (BR-FR, XP Z12-012) require a billing mode, electronic addresse
 $invoice->setBillingMode('S1');                          // BT-23: B1, S1, M1, B2, S2, M2, S3, B4 …
 $invoice->setSellerElectronicAddress('123456789', '0225'); // BT-34, after setSeller
 $invoice->setBuyerElectronicAddress('ap@client.fr', 'EM'); // BT-49, after setBuyer
+$invoice->setVatDueDateTypeCode(VatDueDateTypeCode::INVOICE_DATE); // BT-8, optional: VAT on debits, Factur-X only
 
 $invoice->addNote('Indemnité forfaitaire pour frais de recouvrement : 40 €', 'PMT');
 $invoice->addNote('Pénalités de retard : 3 fois le taux d\'intérêt légal', 'PMD');

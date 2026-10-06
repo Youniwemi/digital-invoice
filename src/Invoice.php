@@ -153,6 +153,14 @@ class Invoice
     }
 
     /**
+     * Value added tax point date code (BT-8). France: "Option pour le paiement de la taxe d'après les débits"
+     */
+    public function setVatDueDateTypeCode(string|VatDueDateTypeCode $code)
+    {
+        $this->xmlGenerator->setVatDueDateTypeCode(is_string($code) ? VatDueDateTypeCode::from($code) : $code);
+    }
+
+    /**
      * Seller electronic address (BT-34), e.g. ('123456789', '0225') or ('a@b.fr', 'EM'). Call after setSeller.
      */
     public function setSellerElectronicAddress(string $id, string $scheme)

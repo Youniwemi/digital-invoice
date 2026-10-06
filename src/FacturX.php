@@ -367,6 +367,7 @@ class FacturX extends XmlGenerator
                 $tradeTax->basisAmount = Amount::create(self::decimalFormat($sum));
                 $tradeTax->rateApplicablePercent = self::decimalFormat($rate) ;
                 $tradeTax->calculatedAmount = Amount::create(self::decimalFormat($calculated));
+                $tradeTax->dueDateTypeCode = $this->vatDueDateTypeCode?->value;
                 if ($this->getProfileLevel() >= self::LEVEL_BASIC_WL) {
                     $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeSettlement->tradeTaxes[] = $tradeTax;
                 }

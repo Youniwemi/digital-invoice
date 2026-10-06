@@ -76,6 +76,7 @@ abstract class XmlGenerator implements XmlGeneratorInterface
 
     protected $noTaxCategory = null;
     protected $noTaxReason =  null;
+    protected ?VatDueDateTypeCode $vatDueDateTypeCode = null;
 
 
     public function __construct($profile, $currency)
@@ -130,6 +131,15 @@ abstract class XmlGenerator implements XmlGeneratorInterface
     {
         $this->noTaxCategory = $catCategory;
         $this->noTaxReason = $noTaxReason;
+    }
+
+    /**
+     * Value added tax point date code (BT-8), e.g. France: option to pay VAT on debits => invoice date
+     */
+    public function setVatDueDateTypeCode(VatDueDateTypeCode $code)
+    {
+        // Applied by generators that support it
+        $this->vatDueDateTypeCode = $code;
     }
 
     public function addItemClassification($item, string $code, string $scheme = 'CLASS')
