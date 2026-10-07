@@ -100,7 +100,10 @@ class FrenchRulesTest extends TestCase
         $invoice = self::createInvoice($profile, 'F202600003', '380');
         $invoice->setVatDueDateTypeCode(VatDueDateTypeCode::INVOICE_DATE);
         $this->assertValid($invoice, $profile, $stylesheets);
-        $this->assertStringContainsString('<ram:DueDateTypeCode>5</ram:DueDateTypeCode>', $invoice->getXml());
+        $xml = $invoice->getXml();
+        $this->assertStringContainsString('<ram:DueDateTypeCode>5</ram:DueDateTypeCode>', $xml);
+        // Kept for external validation
+        file_put_contents(__DIR__.'/examples/french-vat-on-debits-'.strtolower($stylesheets[0]).'.xml', $xml);
     }
 
     private function assertValid(Invoice $invoice, string $profile, array $stylesheets): void
