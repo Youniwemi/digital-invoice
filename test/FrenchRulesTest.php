@@ -103,7 +103,9 @@ class FrenchRulesTest extends TestCase
         $xml = $invoice->getXml();
         $this->assertStringContainsString('<ram:DueDateTypeCode>5</ram:DueDateTypeCode>', $xml);
         // Kept for external validation
-        file_put_contents(__DIR__.'/examples/french-vat-on-debits-'.strtolower($stylesheets[0]).'.xml', $xml);
+        $file = __DIR__.'/examples/french-vat-on-debits-'.strtolower($stylesheets[0]);
+        file_put_contents($file.'.xml', $xml);
+        file_put_contents($file.'.pdf', $invoice->getPdf(file_get_contents(__DIR__.'/examples/basic.pdf'), true));
     }
 
     private function assertValid(Invoice $invoice, string $profile, array $stylesheets): void
