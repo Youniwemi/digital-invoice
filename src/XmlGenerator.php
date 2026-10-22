@@ -20,7 +20,7 @@ interface XmlGeneratorInterface
 
     public function setSellerTaxRegistration(string $id, string $schemeID);
 
-    public function setBuyer(string $buyerReference, string $name, string $id = null);
+    public function setBuyer(string $buyerReference, string $name, ?string $id = null);
 
     public function setBuyerOrderReference(string $reference);
 

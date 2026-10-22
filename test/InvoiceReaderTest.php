@@ -9,6 +9,7 @@ use DigitalInvoice\InvoiceReader;
 use DigitalInvoice\PdfWriter;
 use DigitalInvoice\Ubl;
 use DigitalInvoice\Zugferd;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -240,9 +241,7 @@ class InvoiceReaderTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider creditNoteProfilesProvider
-     */
+    #[DataProvider('creditNoteProfilesProvider')]
     public function testCreditNoteRoundTrip(string $profile): void
     {
         $creditNote = new Invoice('CN-001', new \DateTime('2023-11-07'), null, CurrencyCode::EURO, $profile, '381');

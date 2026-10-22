@@ -8,6 +8,7 @@ use DigitalInvoice\Invoice;
 use DigitalInvoice\InvoiceReader;
 use DigitalInvoice\InvoiceRenderer;
 use DigitalInvoice\Ubl;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class InvoiceRendererTest extends TestCase
@@ -390,9 +391,7 @@ XML;
         $this->assertStringNotContainsString('Payments on account', $html);
     }
 
-    /**
-     * @dataProvider allowanceProfilesProvider
-     */
+    #[DataProvider('allowanceProfilesProvider')]
     public function testAllowancesAreReadAndRendered(string $profile): void
     {
         $invoice = new Invoice('INV-ALLOWANCE', new \DateTime('2024-03-15'), null, CurrencyCode::EURO, $profile);

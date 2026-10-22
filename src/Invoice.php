@@ -53,7 +53,7 @@ class Invoice
     public function __construct(
         string $invoiceId,
         \DateTime $issueDate,
-        \DateTime $deliveryDate = null,
+        ?\DateTime $deliveryDate = null,
         string|CurrencyCode $currency = CurrencyCode::EURO,
         $profile = self::FACTURX_MINIMUM,
         string|InvoiceTypeCode $invoiceType = InvoiceTypeCode::COMMERCIAL_INVOICE
@@ -131,7 +131,7 @@ class Invoice
         return DateTime::create(102, $date->format('Ymd'));
     }
 
-    public function setBuyer(string $buyerReference, string $name, string $id = null)
+    public function setBuyer(string $buyerReference, string $name, ?string $id = null)
     {
         $this->xmlGenerator->setBuyer($buyerReference, $name, $id);
     }

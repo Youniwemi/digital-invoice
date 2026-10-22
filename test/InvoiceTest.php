@@ -13,6 +13,7 @@ use DigitalInvoice\IdentificationType;
 use DigitalInvoice\PdfWriter;
 use DigitalInvoice\Ubl;
 use DigitalInvoice\Zugferd;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class InvoiceTest extends TestCase
@@ -136,9 +137,7 @@ class InvoiceTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider profilesProvider
-     */
+    #[DataProvider('profilesProvider')]
     public function testInvoiceXml($profile, $isPdf, $embedPdf = false, $taxRate = 20): void
     {
         if ($profile===Ubl::MALAYSIA){
@@ -517,8 +516,8 @@ class InvoiceTest extends TestCase
 
     /**
      * ShipToTradeParty must not contain SpecifiedTaxRegistration (CII schematron rule).
-     * @dataProvider ciiProfilesProvider
      */
+    #[DataProvider('ciiProfilesProvider')]
     public function testShipToTradePartyHasNoTaxRegistration(string $profile): void
     {
         $invoice = new Invoice('TEST-SHIPTO', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, $profile);
@@ -550,8 +549,8 @@ class InvoiceTest extends TestCase
 
     /**
      * BT-13 purchase order reference is written, validated and read back.
-     * @dataProvider buyerOrderReferenceProvider
      */
+    #[DataProvider('buyerOrderReferenceProvider')]
     public function testBuyerOrderReference(string $profile, string $query, string $file): void
     {
         // The Factur-X invoice is French CTC compliant, UBL PEPPOL allows a single note so it only gets EN16931 rules
@@ -730,8 +729,8 @@ class InvoiceTest extends TestCase
 
     /**
      * Document level allowances (BG-20) on two VAT rates, written, validated and read back.
-     * @dataProvider allowanceProvider
      */
+    #[DataProvider('allowanceProvider')]
     public function testAllowance(string $profile, array $queries, string $file): void
     {
         // The Factur-X invoice is French CTC compliant, UBL PEPPOL allows a single note so it only gets EN16931 rules
@@ -830,9 +829,7 @@ class InvoiceTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider allowanceUnsupportedProvider
-     */
+    #[DataProvider('allowanceUnsupportedProvider')]
     public function testAllowanceUnsupported(string $profile): void
     {
         $invoice = new Invoice('TEST-ALLOWANCE', new \Datetime('2023-11-07'), null, CurrencyCode::EURO, $profile);

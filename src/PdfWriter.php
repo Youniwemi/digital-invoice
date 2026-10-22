@@ -2,13 +2,25 @@
 
 namespace DigitalInvoice;
 
-use Atgp\FacturX\Facturx ;
 use Atgp\FacturX\Fpdi\FdpiFacturx;
+use Atgp\FacturX\Reader;
+use Atgp\FacturX\Utils\ProfileHandler;
+use Atgp\FacturX\Writer;
+use Atgp\FacturX\XsdValidator;
 
 // We need to overide, Atgp is not full compatible with zugferd1.0 so we by pass
-// We also need to overide generateFacturxFromFiles to use setSourceFileWithParserParams instead of setSourceFile (and pass params)
-class PdfWriter extends Facturx
+// We also need generateFacturxFromFiles to use setSourceFileWithParserParams instead of setSourceFile (and pass params)
+class PdfWriter extends Writer
 {
+    public const PROFIL_FACTURX_MINIMUM = ProfileHandler::PROFILE_FACTURX_MINIMUM;
+    public const PROFIL_FACTURX_BASICWL = ProfileHandler::PROFILE_FACTURX_BASICWL;
+    public const PROFIL_FACTURX_BASIC = ProfileHandler::PROFILE_FACTURX_BASIC;
+    public const PROFIL_FACTURX_EN16931 = ProfileHandler::PROFILE_FACTURX_EN16931;
+    public const PROFIL_FACTURX_EXTENDED = ProfileHandler::PROFILE_FACTURX_EXTENDED;
+    public const PROFIL_ZUGFERD = ProfileHandler::PROFILE_ZUGFERD;
+
+    // Used by Writer::updatePdfMetadata
+    public const XMP_CONFORMANCE_LEVELS = self::FACTURX_PROFIL_TO_XMP;
     public const FACTURX_PROFIL_TO_XMP = [
         self::PROFIL_FACTURX_MINIMUM => 'MINIMUM',
         self::PROFIL_FACTURX_BASICWL => 'BASIC WL',
@@ -35,9 +47,32 @@ class PdfWriter extends Facturx
         ];
     }
 
-    protected function preparePdfMetadata(\DOMDocument $facturxXml)
+    protected function preparePdfMetadata(\DOMDocument $facturxXml): array
     {
-        return $this->pdfMetaData;
+        return $this->pdfMetaData ?? parent::preparePdfMetadata($facturxXml);
+    }
+
+    /**
+     * Get Factur-X XML from Factur-X PDF.
+     *
+     * @param string $pdfInvoice File name or content of the PDF invoice
+     * @param bool   $checkXsd   check Factur-X XML against official XSD
+     *
+     * @throws \Exception
+     *
+     * @return string
+     */
+    public function getFacturxXmlFromPdf($pdfInvoice, $checkXsd = true)
+    {
+        // Reader's own XSD check cannot detect the zugferd profile, so we validate here
+        $xml = (new Reader())->extractXML(@is_file($pdfInvoice) ? file_get_contents($pdfInvoice) : $pdfInvoice, false);
+        if ($checkXsd) {
+            $doc = new \DOMDocument();
+            $doc->loadXML($xml);
+            (new XsdValidator())->validateWithException($xml, $this->getFacturxProfil($doc));
+        }
+
+        return $xml;
     }
 
     /**
@@ -70,10 +105,10 @@ class PdfWriter extends Facturx
         $doc_id = $elements->item(0)->nodeValue;
         $doc_id_exploded = explode(':', $doc_id);
         $profil = end($doc_id_exploded);
-        if (! array_key_exists(strtolower($profil), static::FACTURX_PROFIL_TO_XSD)) {
+        if (! ProfileHandler::has(strtolower($profil))) {
             $profil = $doc_id_exploded[count($doc_id_exploded) - 2];
         }
-        if (! array_key_exists(strtolower($profil), static::FACTURX_PROFIL_TO_XSD)) {
+        if (! ProfileHandler::has(strtolower($profil))) {
             throw new \Exception('Invalid Factur-X URN : '.$doc_id. $profil);
         }
 
@@ -121,7 +156,7 @@ class PdfWriter extends Facturx
             $facturxXmlRef = $facturxXml;
         } elseif (is_string($facturxXml)) {
             if ('<?xml' != substr($facturxXml, 0, 5)) { // Add XML tags
-                $facturxXml = "<?xml version='1.0' encoding='".static::FACTURX_ENCODING."' ?>\n".$facturxXml;
+                $facturxXml = "<?xml version='1.0' encoding='".static::ENCODING."' ?>\n".$facturxXml;
             }
             $xmlString = $facturxXml;
             $facturxXmlRef = \setasign\Fpdi\PdfParser\StreamReader::createByString($facturxXml);
@@ -135,14 +170,14 @@ class PdfWriter extends Facturx
             $facturxProfil = $this->getFacturxProfil($docFacturx);
         }
 
-        if (! array_key_exists($facturxProfil, static::FACTURX_PROFIL_TO_XSD)) {
+        if (! ProfileHandler::has($facturxProfil)) {
             throw new \Exception("Wrong profil '$facturxProfil' for Factur-X invoice.");
         }
+        $this->profile = $facturxProfil;
 
-        // changed from original : profil is private, so we skip updating it here (it is set by checkFacturxXsd )
-        // $this->profil = $facturxProfil;
-        // So we force the xsd check to ensure $this->profil is set correctly (it will be used in updatePdfMetadata to set pdf metadata)
-        $this->checkFacturxXsd($facturxXml, $facturxProfil);
+        if ($checkXsd) {
+            (new XsdValidator())->validateWithException($xmlString, $facturxProfil);
+        }
 
         $pdfWriter = new FdpiFacturx();
         $pageCount = $pdfWriter->setSourceFileWithParserParams($pdfInvoiceRef, $fpdiParserParams);
@@ -151,7 +186,7 @@ class PdfWriter extends Facturx
             $pdfWriter->AddPage();
             $pdfWriter->useTemplate($tplIdx, 0, 0, null, null, true);
             if (true == $addFacturxLogo && 1 == $i) { // add Factur-X logo on first page only
-                $pdfWriter->Image(__DIR__.'/../img/'.static::FACTURX_LOGO[$facturxProfil], 197, 2.5, 7);
+                $pdfWriter->Image(__DIR__.'/../img/'.static::LOGOS[$facturxProfil], 197, 2.5, 7);
             }
         }
         // PDF attachments can also be appended as pages, readers that hide attachments will still show them
@@ -178,7 +213,7 @@ class PdfWriter extends Facturx
         if (! in_array($relationship, ['Data', 'Source', 'Alternative'])) {
             throw new \Exception('$relationship argument must be one of the values "Data", "Source", "Alternative".');
         }
-        $pdfWriter->Attach($facturxXmlRef, static::FACTURX_FILENAME, 'Factur-X Invoice', $relationship, 'text#2Fxml');
+        $pdfWriter->Attach($facturxXmlRef, Reader::FACTURX_FILENAME, 'Factur-X Invoice', $relationship, 'text#2Fxml');
         foreach ($additionalAttachments as $attachment) {
             $attachmentRef = static::attachmentRef($attachment);
             // mime_content_type() only works on files
@@ -187,13 +222,18 @@ class PdfWriter extends Facturx
         }
         $pdfWriter->OpenAttachmentPane();
         $pdfWriter->SetPDFVersion('1.7', true); // version 1.7 according to PDF/A-3 ISO 32000-1
-        $pdfWriter = $this->updatePdfMetadata($pdfWriter, $docFacturx);
-        $facturxGeneratedFileName = 'invoice-facturx-'.date('Ymdhis').'.pdf';
+        $this->updatePdfMetadata($pdfWriter, $docFacturx);
         if (! empty($outputFilePath)) {
-            return $this->generateFacturxFile($pdfWriter, $outputFilePath, $facturxGeneratedFileName);
+            if (! is_dir($outputFilePath)) {
+                throw new \Exception(sprintf('Invalid output directory : %s', $outputFilePath));
+            }
+            $outputCompleteFilePath = sprintf('%s/invoice-facturx-%s.pdf', $outputFilePath, date('Ymdhis'));
+            $pdfWriter->Output('F', $outputCompleteFilePath);
+
+            return $outputCompleteFilePath;
         }
 
-        return $this->generateFacturxString($pdfWriter, $facturxGeneratedFileName);
+        return $pdfWriter->Output('S');
     }
 
     /**

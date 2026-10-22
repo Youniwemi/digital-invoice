@@ -283,7 +283,7 @@ class FacturX extends XmlGenerator
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->sellerTradeParty->taxRegistrations[] = TaxRegistration::create($id, $schemeID);
     }
 
-    public function setBuyer(string $buyerReference, string $name, string $id = null)
+    public function setBuyer(string $buyerReference, string $name, ?string $id = null)
     {
 
         $this->invoice->supplyChainTradeTransaction->applicableHeaderTradeAgreement->buyerReference = $buyerReference;
@@ -438,7 +438,7 @@ class FacturX extends XmlGenerator
         return (new Validator())->validateAgainstXsd($xml, $against);
     }
 
-    public function addItem(string $name, float $price, float $taxRatePercent, float  $quantity, UnitOfMeasurement $unit, ?string $globalID = null, string $globalIDCode = null, ?string $description = null): array
+    public function addItem(string $name, float $price, float $taxRatePercent, float  $quantity, UnitOfMeasurement $unit, ?string $globalID = null, ?string $globalIDCode = null, ?string $description = null): array
     {
 
         $item = new SupplyChainTradeLineItem();

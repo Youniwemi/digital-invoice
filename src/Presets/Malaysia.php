@@ -584,7 +584,7 @@ class Malaysia extends AbstractPreset {
     /**
      * Helper method to convert street name elements to AddressLine format
      */
-    private function convertToAddressLine(\DOMDocument $dom, \DOMElement $parentNode, string $addressValue, \DOMElement $insertBefore = null): void
+    private function convertToAddressLine(\DOMDocument $dom, \DOMElement $parentNode, string $addressValue, ?\DOMElement $insertBefore = null): void
     {
         $addressLineElement = $dom->createElement('cac:AddressLine');
         $lineElement = $dom->createElement('cbc:Line', $addressValue);

@@ -9,6 +9,7 @@ use DigitalInvoice\FacturX;
 use DigitalInvoice\Invoice;
 use DigitalInvoice\Ubl;
 use DigitalInvoice\VatDueDateTypeCode;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -29,9 +30,7 @@ class FrenchRulesTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider profilesProvider
-     */
+    #[DataProvider('profilesProvider')]
     public function testFrenchRules(string $profile, array $stylesheets): void
     {
         if (!self::fnfeAvailable()) {
@@ -42,9 +41,7 @@ class FrenchRulesTest extends TestCase
         $this->assertValid($invoice, $profile, $stylesheets);
     }
 
-    /**
-     * @dataProvider profilesProvider
-     */
+    #[DataProvider('profilesProvider')]
     public function testFrenchRulesCreditNote(string $profile, array $stylesheets): void
     {
         if (!self::fnfeAvailable()) {
@@ -62,9 +59,7 @@ class FrenchRulesTest extends TestCase
         $this->assertEmpty($result, print_r($result, true)."\n".$xml);
     }
 
-    /**
-     * @dataProvider profilesProvider
-     */
+    #[DataProvider('profilesProvider')]
     public function testFrenchRulesAllowance(string $profile, array $stylesheets): void
     {
         if (!self::fnfeAvailable()) {
@@ -84,9 +79,7 @@ class FrenchRulesTest extends TestCase
         $this->assertEmpty($result, print_r($result, true)."\n".$xml);
     }
 
-    /**
-     * @dataProvider profilesProvider
-     */
+    #[DataProvider('profilesProvider')]
     public function testFrenchRulesVatOnDebits(string $profile, array $stylesheets): void
     {
         if ($profile === Ubl::PEPPOL) {

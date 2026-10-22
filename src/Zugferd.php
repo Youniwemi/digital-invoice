@@ -205,7 +205,7 @@ class Zugferd extends XmlGenerator
         $this->seller->addTaxRegistration(new TaxRegistration($schemeID, $id));
     }
 
-    public function setBuyer(string $buyerReference, string $name, string $id = null)
+    public function setBuyer(string $buyerReference, string $name, ?string $id = null)
     {
         $this->buyer = new TradeParty(
             $name,
@@ -273,7 +273,7 @@ class Zugferd extends XmlGenerator
         }
     }
 
-    public function addItem(string $name, float $price, float $taxRatePercent, float  $quantity, UnitOfMeasurement $unit, ?string $globalID = null, string $globalIDCode = null, ?string $description = null): array
+    public function addItem(string $name, float $price, float $taxRatePercent, float  $quantity, UnitOfMeasurement $unit, ?string $globalID = null, ?string $globalIDCode = null, ?string $description = null): array
     {
         $lineNumber = count($this->items) + 1;
         $tradeAgreement = new SpecifiedTradeAgreement();

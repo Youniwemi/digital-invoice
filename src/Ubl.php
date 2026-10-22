@@ -87,7 +87,6 @@ class Ubl extends XmlGenerator
         ]);
         $res = curl_exec($ch);
         $curlError = curl_error($ch);
-        curl_close($ch);
         unset($ch);
 
         if ($res === false || empty($res)) {
