@@ -425,6 +425,9 @@ class FacturX extends XmlGenerator
         };
 
         if ($schematron) {
+            if (!class_exists(Schematron::class)) {
+                throw new \RuntimeException('Install milo/schematron to use schematron validation');
+            }
             // easybill/zugferd-php no longer ships the schematrons, they are bundled in src/Schematron
             // avoid deprecation milo/schematron is not fully php8.2 compatible, but gets the job done
             $schematron = @new Schematron();

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "569e09796bc90878c4dcdc0312247589",
+    "content-hash": "37f9aac60e4b1c3e5196e11728a7c69c",
     "packages": [
         {
             "name": "atgp/factur-x",
@@ -540,48 +540,6 @@
             "time": "2022-05-28T16:43:25+00:00"
         },
         {
-            "name": "milo/schematron",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Youniwemi/schematron",
-                "reference": "d590637d9db8645cce9c1dec6b69519ef052565f"
-            },
-            "require": {
-                "ext-dom": "*",
-                "php": ">=5.3.0"
-            },
-            "require-dev": {
-                "nette/tester": "^2.5"
-            },
-            "default-branch": true,
-            "type": "library",
-            "autoload": {
-                "classmap": [
-                    "src/Schematron.php"
-                ]
-            },
-            "scripts": {
-                "test": [
-                    "vendor/bin/tester -s tests"
-                ]
-            },
-            "license": [
-                "BSD-3-Clause",
-                "GPL-2.0",
-                "GPL-3.0",
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Miloslav Hůla",
-                    "homepage": "https://github.com/milo"
-                }
-            ],
-            "description": "Implementation of ISO Schematron with Schematron 1.5 back compatibility. Library does not need any XSLT.",
-            "time": "2023-12-08T13:13:42+00:00"
-        },
-        {
             "name": "phpstan/phpdoc-parser",
             "version": "2.3.6",
             "source": {
@@ -883,6 +841,48 @@
         }
     ],
     "packages-dev": [
+        {
+            "name": "milo/schematron",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Youniwemi/schematron",
+                "reference": "d590637d9db8645cce9c1dec6b69519ef052565f"
+            },
+            "require": {
+                "ext-dom": "*",
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "nette/tester": "^2.5"
+            },
+            "default-branch": true,
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "src/Schematron.php"
+                ]
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/tester -s tests"
+                ]
+            },
+            "license": [
+                "BSD-3-Clause",
+                "GPL-2.0",
+                "GPL-3.0",
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Miloslav Hůla",
+                    "homepage": "https://github.com/milo"
+                }
+            ],
+            "description": "Implementation of ISO Schematron with Schematron 1.5 back compatibility. Library does not need any XSLT.",
+            "time": "2023-12-08T13:13:42+00:00"
+        },
         {
             "name": "myclabs/deep-copy",
             "version": "1.14.0",
