@@ -633,14 +633,8 @@ class InvoiceTest extends TestCase
         $invoice->setPaymentTerms(new \Datetime('2023-12-07'));
 
         // A distinct document, to check the right file is extracted
-        $note = new \FPDF();
-        $note->AddPage();
-        $note->SetFont('Helvetica', 'B', 24);
-        $note->Cell(0, 20, 'BON DE LIVRAISON BL-42');
-        $note->Ln();
-        $note->SetFont('Helvetica', '', 14);
-        $note->Cell(0, 10, '1 x item, livre le 07/11/2023');
-        $attachment = $note->Output('S');
+        // (PDF/A fixture with embedded fonts: FPDF's core fonts are not embedded)
+        $attachment = file_get_contents(__DIR__.'/examples/delivery-note.pdf');
         $invoice->addEmbeddedAttachment('BL-42', null, 'bon-de-livraison.pdf', $attachment, 'application/pdf', 'BON_LIVRAISON');
 
         $xml = $invoice->getXml();
