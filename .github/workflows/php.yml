@@ -48,4 +48,21 @@ jobs:
       run: make fnfe
 
     - name: Run test suite
-      run: composer run-script test
+      run: composer run-script test -- --log-junit junit.xml --testdox-text testdox.txt
+
+    - name: Test report
+      if: always()
+      run: |
+        {
+          echo '### PHP ${{ matrix.php-versions }}'
+          echo '```'
+          cat testdox.txt
+          echo '```'
+        } >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Upload JUnit report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: junit-${{ matrix.php-versions }}
+        path: junit.xml
