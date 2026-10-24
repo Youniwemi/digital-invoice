@@ -17,7 +17,7 @@ Digital Invoice offers a unified interface for **generating and reading** e-invo
 composer require youniwemi/digital-invoice
 ```
 
-Requires PHP 8.3+ (easybill/zugferd-php 6).
+Requires PHP 8.3+ (easybill/zugferd-php 6), tested on 8.3, 8.4 and 8.5.
 
 ### Upgrading to 0.4
 
