@@ -2,6 +2,7 @@
 #
 #   make release                 # bump patch of latest tag (v0.3.2 -> v0.3.3)
 #   make release VERSION=v0.4.0  # explicit version
+#   make release CONFIRM=yes     # skip the confirmation prompt
 #
 # Packagist picks up new tags through the GitHub hook. If PACKAGIST_USERNAME
 # and PACKAGIST_TOKEN are set, the package update is also triggered via API.
@@ -50,7 +51,7 @@ check:
 	@test -z "$$(git log HEAD..origin/$(BRANCH) --oneline)" || { echo "origin/$(BRANCH) has commits you don't have"; exit 1; }
 
 release: check test
-	@read -p "Release $(VERSION) (previous $(LATEST))? [y/N] " ok && [ "$$ok" = y ]
+	@[ "$(CONFIRM)" = yes ] || { read -p "Release $(VERSION) (previous $(LATEST))? [y/N] " ok && [ "$$ok" = y ]; }
 	git tag -a $(VERSION) -m "Release $(VERSION)"
 	git push origin $(BRANCH)
 	git push origin $(VERSION)
